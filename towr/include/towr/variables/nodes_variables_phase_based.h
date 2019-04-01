@@ -111,6 +111,8 @@ public:
    */
   virtual bool IsConstantNode(int node_id) const;
 
+  NodeIds GetIndicesOfAllNodes() const;
+
   /**
    * @brief The indices of those nodes that don't belong to a constant phase.
    *

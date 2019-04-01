@@ -73,10 +73,11 @@ public:
     for (int ee=0; ee<n_ee; ++ee) {
       params.ee_phase_durations_.push_back(gait_gen_->GetPhaseDurations(msg.total_duration, ee));
       params.ee_in_contact_at_start_.push_back(gait_gen_->IsInContactAtStart(ee));
+      params.dt_constraint_range_of_motion_=0.01;
     }
 
     // Here you can also add other constraints or change parameters
-    // params.constraints_.push_back(Parameters::BaseRom);
+//     params.constraints_.push_back(Parameters::BaseRom);
 
     // increases optimization time, but sometimes helps find a solution for
     // more difficult terrain.
@@ -100,7 +101,8 @@ public:
     // this uses numerical derivatives for ALL constraints, there doesn't yet
     // exist an option to turn on numerical derivatives for only some constraint
     // sets.
-    solver_->SetOption("jacobian_approximation", "finite-difference-values"); // finite difference-values
+//    solver_->SetOption("jacobian_approximation", "exact"); // finite difference-values
+    solver_->SetOption("jacobian_approximation", "finite-difference-values");
 
     // This is a great to test if the analytical derivatives implemented in are
     // correct. Some derivatives that are correct are still flagged, showing a
@@ -108,7 +110,7 @@ public:
     // solver_->SetOption("derivative_test", "first-order");
 
     solver_->SetOption("max_cpu_time", 40.0);
-    solver_->SetOption("print_level", 5);
+//    solver_->SetOption("print_level", 5);
 
     if (msg.play_initialization)
       solver_->SetOption("max_iter", 0);

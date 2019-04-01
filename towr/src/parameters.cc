@@ -42,7 +42,12 @@ Parameters::Parameters ()
   // constructs optimization variables
   duration_base_polynomial_ = 0.1;
   force_polynomials_per_stance_phase_ = 3;
-  ee_polynomials_per_swing_phase_ = 2; // so step can at least lift leg
+  ee_polynomials_per_swing_phase_ = 3; // so step can at least lift leg
+
+  //NEW: only one phase with the total duration!
+  //TODO for drift: 3 phases, but fix timings here!
+  std::vector<double> phase_n_and_t{2.4};
+  ee_phase_durations_.push_back(phase_n_and_t);
 
   // parameters related to specific constraints (only used when it is added as well)
   force_limit_in_normal_direction_ = 1000;
@@ -57,7 +62,7 @@ Parameters::Parameters ()
   constraints_.push_back(BaseAcc); // so accelerations don't jump between polynomials
   constraints_.push_back(EndeffectorRom); //Ensures that the range of motion is respected at discrete times.
   constraints_.push_back(Force); // ensures unilateral forces and inside the friction cone.
-  constraints_.push_back(Swing); // creates smoother swing motions, not absolutely required.
+//  constraints_.push_back(Swing); // creates smoother swing motions, not absolutely required.
 
   // optional costs to e.g penalize endeffector forces
   // costs_.push_back({ForcesCostID, 1.0}); weighed by 1.0 relative to other costs
@@ -76,7 +81,8 @@ void
 
 Parameters::OptimizePhaseDurations ()
 {
-  constraints_.push_back(TotalTime);
+//	NEW: dont optimize over phase durations!
+//  constraints_.push_back(TotalTime);
 }
 
 Parameters::VecTimes
@@ -131,7 +137,11 @@ Parameters::IsOptimizeTimings () const
   // if total time is constrained, then timings are optimized
   ConstraintName c = TotalTime;
   auto v = constraints_; // shorthand
-  return std::find(v.begin(), v.end(), c) != v.end();
+
+  //NEW: dont optimize over timings, so always return false:
+//  return std::find(v.begin(), v.end(), c) != v.end();
+  bool optimize=false;
+  return optimize;
 }
 
 } // namespace towr

@@ -82,6 +82,7 @@ QuadrupedGaitGenerator::SetCombo (Combos combo)
     case C2: SetGaits({Stand, Run3, Run3, Run3, Run3E, Stand}); break; // pace
     case C3: SetGaits({Stand, Hop1, Hop1, Hop1, Hop1E, Stand}); break; // bound
     case C4: SetGaits({Stand, Hop3, Hop3, Hop3, Hop3E, Stand}); break; // gallop
+    case C5: SetGaits({Stand, Drive, Drive, Drive, DriveE, Stand}); break; // gallop
     default: assert(false); std::cout << "Gait not defined\n"; break;
   }
 }
@@ -106,8 +107,40 @@ QuadrupedGaitGenerator::GetGait(Gaits gait) const
     case Hop3:    return GetStrideGallop();
     case Hop3E:   return RemoveTransition(GetStrideGallop());
     case Hop5:    return GetStrideLimp();
+    case Drive:	  return GetStrideDrive();
+    case DriveE:  return GetStrideDriveEnd();
     default: assert(false); // gait not implemented
   }
+}
+
+QuadrupedGaitGenerator::GaitInfo
+QuadrupedGaitGenerator::GetStrideDrive () const
+{
+  auto times =
+  {
+      0.3,
+  };
+  auto contacts =
+  {
+      BB_,
+  };
+
+  return std::make_pair(times, contacts);
+}
+
+QuadrupedGaitGenerator::GaitInfo
+QuadrupedGaitGenerator::GetStrideDriveEnd () const
+{
+  auto times =
+  {
+      0.3,
+  };
+  auto contacts =
+  {
+      BB_,
+  };
+
+  return std::make_pair(times, contacts);
 }
 
 QuadrupedGaitGenerator::GaitInfo

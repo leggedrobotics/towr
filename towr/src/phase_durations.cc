@@ -90,12 +90,17 @@ PhaseDurations::SetVariables (const VectorXd& x)
   // but I'm leaving this in here to show that this is undefined behavior and a clean
   // implementation is still required. PR desired ;)
   assert(t_total_>x.sum());
+//  NEW: Set duration of first phase equal to duration of total phase and the rest 0.
 
-  for (int i=0; i<GetRows(); ++i)
-    durations_.at(i) = x(i);
+  durations_.at(0) = t_total_;
 
-  // last phase duration not optimized, used to fill up to total time.
-  durations_.back() =  t_total_ - x.sum();
+  for (int i=1; i<GetRows(); ++i)
+//    durations_.at(i) = x(i);
+	  durations_.at(i) = 0;
+  durations_.back()=0;
+//
+//  // last phase duration not optimized, used to fill up to total time.
+//  durations_.back() =  t_total_ - x.sum();
   UpdateObservers();
 }
 

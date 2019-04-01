@@ -117,6 +117,17 @@ NodesVariablesPhaseBased::IsInConstantPhase(int poly_id) const
 }
 
 NodesVariablesPhaseBased::NodeIds
+NodesVariablesPhaseBased::GetIndicesOfAllNodes() const
+{
+  NodeIds node_ids;
+
+  for (int id=0; id<GetNodes().size(); ++id)
+      node_ids.push_back(id);
+
+  return node_ids;
+}
+
+NodesVariablesPhaseBased::NodeIds
 NodesVariablesPhaseBased::GetIndicesOfNonConstantNodes() const
 {
   NodeIds node_ids;
@@ -215,39 +226,63 @@ NodesVariablesEEMotion::GetPhaseBasedEEParameterization ()
   int idx = 0; // index in variables set
   for (int node_id=0; node_id<nodes_.size(); ++node_id) {
     // swing node:
-    if (!IsConstantNode(node_id)) {
-      for (int dim=0; dim<GetDim(); ++dim) {
-        // intermediate way-point position of swing motion are optimized
-        index_map[idx++].push_back(NodeValueInfo(node_id, kPos, dim));
-
-        // velocity in vertical direction fixed to zero and not optimized.
-        // Since we often choose two polynomials per swing-phase, this restricts
-        // the swing to have reached it's extreme at half-time and creates
-        // smoother stepping motions.
-        if (dim == Z)
-          nodes_.at(node_id).at(kVel).z() = 0.0;
-        else
-          // velocity in x,y dimension during swing fully optimized.
-          index_map[idx++].push_back(NodeValueInfo(node_id, kVel, dim));
-      }
-    }
+//    if (!IsConstantNode(node_id)) {
+//      for (int dim=0; dim<GetDim(); ++dim) {
+//        // intermediate way-point position of swing motion are optimized
+//        index_map[idx++].push_back(NodeValueInfo(node_id, kPos, dim));
+//
+//        // velocity in vertical direction fixed to zero and not optimized.
+//        // Since we often choose two polynomials per swing-phase, this restricts
+//        // the swing to have reached it's extreme at half-time and creates
+//        // smoother stepping motions.
+//
+//        //TODO maybe change here that if dim=Y also no velocity!
+//        if (dim == Z)
+//          nodes_.at(node_id).at(kVel).z() = 0.0;
+//        else if (dim == Y)
+//            nodes_.at(node_id).at(kVel).y() = 0.0;
+//        else
+//          // velocity in x,y dimension during swing fully optimized.
+//          index_map[idx++].push_back(NodeValueInfo(node_id, kVel, dim));
+//      }
+//    }
     // stance node (next one will also be stance, so handle that one too):
-    else {
-      // ensure that foot doesn't move by not even optimizing over velocities
-      nodes_.at(node_id).at(kVel).setZero();
-      nodes_.at(node_id+1).at(kVel).setZero();
+//    else {
 
-      // position of foot is still an optimization variable used for
-      // both start and end node of that polynomial
+    	// new: we have a velocity in x direction (drive)
+//      nodes_.at(node_id).at(kVel).setZero();
+//      nodes_.at(node_id+1).at(kVel).setZero();
+
       for (int dim=0; dim<GetDim(); ++dim) {
+
+    	velocity:
+//    	  if (dim == Z)
+    	     nodes_.at(node_id).at(kVel).z() = 0.0;
+//    	  else if (dim == Y)
+    		 nodes_.at(node_id).at(kVel).y() = 0.0;
+    	  if (dim == X)
+    	      // velocity in x dimension during drive fully optimized.
+    	      index_map[idx++].push_back(NodeValueInfo(node_id, kVel, dim));
+
+
+    	// position of foot is still an optimization variable used for
+        // both start and end node of that polynomial
+
+//    	if (dim == X){
         index_map[idx].push_back(NodeValueInfo(node_id,   kPos, dim));
         index_map[idx].push_back(NodeValueInfo(node_id+1, kPos, dim));
         idx++;
+//    	}
+//    	else if (dim==Y){
+//    		nodes_.at(node_id).at(kPos).y() = 0.2;
+//    		nodes_.at(node_id+1).at(kPos).y() = -0.2;
+//    	}
+
       }
 
       node_id += 1; // already added next constant node, so skip
     }
-  }
+//  }
 
   return index_map;
 }
@@ -274,24 +309,26 @@ NodesVariablesEEForce::GetPhaseBasedEEParameterization ()
   for (int id=0; id<nodes_.size(); ++id) {
     // stance node:
     // forces can be created during stance, so these nodes are optimized over.
-    if (!IsConstantNode(id)) {
+
+	  //NEW: Forces in every phase need to be optimized over!!
+//    if (!IsConstantNode(id)) {
       for (int dim=0; dim<GetDim(); ++dim) {
         index_map[idx++].push_back(NodeValueInfo(id, kPos, dim));
         index_map[idx++].push_back(NodeValueInfo(id, kVel, dim));
       }
-    }
+//    }
     // swing node (next one will also be swing, so handle that one too)
-    else {
+//    else {
       // forces can't exist during swing phase, so no need to be optimized
       // -> all node values simply set to zero.
-      nodes_.at(id).at(kPos).setZero();
-      nodes_.at(id+1).at(kPos).setZero();
+//      nodes_.at(id).at(kPos).setZero();
+//      nodes_.at(id+1).at(kPos).setZero();
 
-      nodes_.at(id).at(kVel).setZero();
-      nodes_.at(id+1).at(kVel).setZero();
+//      nodes_.at(id).at(kVel).setZero();
+//      nodes_.at(id+1).at(kVel).setZero();
 
       id += 1; // already added next constant node, so skip
-    }
+//    }
   }
 
   return index_map;

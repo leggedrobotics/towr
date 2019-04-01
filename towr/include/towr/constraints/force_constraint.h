@@ -56,6 +56,8 @@ class ForceConstraint : public ifopt::ConstraintSet {
 public:
   using Vector3d = Eigen::Vector3d;
   using EE = uint;
+  using Vector2d = Eigen::Vector2d; //new
+
 
   /**
    * @brief Constructs a force contraint.
@@ -83,6 +85,10 @@ private:
   double mu_;              ///< friction coeff between robot feet and terrain.
   int n_constraints_per_node_; ///< number of constraint for each node.
   EE ee_;                  ///< The endeffector force to be constrained.
+
+  double t_swing_avg_ = 0.3; //new
+//  int n_rows_force_Jacobian = 0;
+//  int n_rows_motion_Jacobian = 0;
 
   /**
    * The are those Hermite-nodes that shape the polynomial during the

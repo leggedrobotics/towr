@@ -73,7 +73,7 @@ TerrainConstraint::VecBound
 TerrainConstraint::GetBounds () const
 {
   VecBound bounds(GetRows());
-  double max_distance_above_terrain = 1e20; // [m]
+  double max_distance_above_terrain = 0; // [m]
 
   int row = 0;
   for (int id : node_ids_) {
