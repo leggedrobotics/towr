@@ -100,7 +100,7 @@ public:
     // this uses numerical derivatives for ALL constraints, there doesn't yet
     // exist an option to turn on numerical derivatives for only some constraint
     // sets.
-    solver_->SetOption("jacobian_approximation", "exact"); // finite difference-values
+    solver_->SetOption("jacobian_approximation", "finite-difference-values"); // finite difference-values
 
     // This is a great to test if the analytical derivatives implemented in are
     // correct. Some derivatives that are correct are still flagged, showing a
