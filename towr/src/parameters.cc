@@ -46,8 +46,10 @@ Parameters::Parameters ()
 
   //NEW: only one phase with the total duration!
   //TODO for drift: 3 phases, but fix timings here!
-  std::vector<double> phase_n_and_t{2.8};
-  ee_phase_durations_.push_back(phase_n_and_t);
+//  std::vector<double> phase_n_and_t{2.8};
+//  ee_phase_durations_.push_back(phase_n_and_t);
+//  ee_phase_durations_({2.8});
+
 
   // parameters related to specific constraints (only used when it is added as well)
   force_limit_in_normal_direction_ = 1000;
@@ -57,7 +59,7 @@ Parameters::Parameters ()
   bound_phase_duration_ = std::make_pair(0.2, 5.0);  // used only when optimizing phase durations, so gait
 
   // a minimal set of basic constraints
-  constraints_.push_back(Terrain);
+//  constraints_.push_back(Terrain);
   constraints_.push_back(Dynamic); //Ensures that the dynamic model is fullfilled at discrete times.
   constraints_.push_back(BaseAcc); // so accelerations don't jump between polynomials
   constraints_.push_back(EndeffectorRom); //Ensures that the range of motion is respected at discrete times.
@@ -69,9 +71,10 @@ Parameters::Parameters ()
 
   // bounds on final 6DoF base state
   bounds_final_lin_pos_ = {X,Y};
-  bounds_final_lin_vel_ = {X,Y,Z};
-  bounds_final_ang_pos_ = {X,Y,Z};
-  bounds_final_ang_vel_ = {X,Y,Z};
+//  bounds_final_lin_vel_ = {X,Y,Z};
+  bounds_final_lin_vel_ = {X,Y};
+//  bounds_final_ang_pos_ = {X,Y,Z};
+//  bounds_final_ang_vel_ = {X,Y,Z};
 
   // additional restrictions are set directly on the variables in nlp_factory,
   // such as e.g. initial and endeffector,...

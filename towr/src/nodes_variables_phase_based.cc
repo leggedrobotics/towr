@@ -48,8 +48,8 @@ BuildPolyInfos (int phase_count, bool first_phase_constant,
 //    if (phase_constant)
 //      polynomial_info.push_back(PolyInfo(i,0,1, true));
 //    else
-      for (int j=0; j<7; ++j)
-        polynomial_info.push_back(PolyInfo(i,j,7, false));
+      for (int j=0; j<n_polys_in_changing_phase; ++j)
+        polynomial_info.push_back(PolyInfo(i,j,n_polys_in_changing_phase, false));
 
 //    phase_constant = !phase_constant; // constant and non-constant phase alternate
   }
@@ -103,9 +103,9 @@ NodesVariablesPhaseBased::IsConstantNode (int node_id) const
 
   // node is considered constant if either left or right polynomial
   // belongs to a constant phase
-  for (int poly_id : GetAdjacentPolyIds(node_id))
-    if (IsInConstantPhase(poly_id))
-      is_constant = true;
+//  for (int poly_id : GetAdjacentPolyIds(node_id))
+//    if (IsInConstantPhase(poly_id))
+//      is_constant = true;
 
   return is_constant;
 }
@@ -210,7 +210,7 @@ NodesVariablesEEMotion::NodesVariablesEEMotion(int phase_count,
                                                const std::string& name,
                                                int n_polys_in_changing_phase)
     :NodesVariablesPhaseBased(phase_count,
-                              is_in_contact_at_start, // contact phase for motion is constant
+                              !is_in_contact_at_start, // contact phase for motion is !not! constant
                               name,
                               n_polys_in_changing_phase)
 {
@@ -232,8 +232,8 @@ NodesVariablesEEMotion::GetPhaseBasedEEParameterization ()
 		  if (dim == X or dim == Y){
 			  index_map[idx++].push_back(NodeValueInfo(node_id, kPos, dim));
 	      	}
-	      else
-	    	  nodes_.at(node_id).at(kPos).z() = 0.0;
+//	      else
+//	    	  nodes_.at(node_id).at(kPos).z() = 0.0;
 	   }
 
 //	  only optimize velocity in x-direction:

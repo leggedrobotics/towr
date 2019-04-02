@@ -165,7 +165,7 @@ public:
   virtual ~Parameters() = default;
 
   /// Number and initial duration of each foot's swing and stance phases.
-  std::vector<VecTimes> ee_phase_durations_;
+  std::vector<VecTimes> ee_phase_durations_{{2.8}};
 
   /// True if the foot is initially in contact with the terrain.
   std::vector<bool> ee_in_contact_at_start_;
@@ -199,9 +199,9 @@ public:
 
   /// which dimensions (x,y,z) of the final base state should be bounded
   std::vector<int> bounds_final_lin_pos_,
-                   bounds_final_lin_vel_,
-                   bounds_final_ang_pos_,
-                   bounds_final_ang_vel_;
+                   bounds_final_lin_vel_;
+//                   bounds_final_ang_pos_,
+//                   bounds_final_ang_vel_;
 
   /** Minimum and maximum time [s] for each phase (swing,stance).
    *

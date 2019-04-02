@@ -117,8 +117,8 @@ NlpFormulation::MakeBaseVariables () const
   spline_ang->SetByLinearInterpolation(initial_base_.ang.p(), final_base_.ang.p(), params_.GetTotalTime());
   spline_ang->AddStartBound(kPos, {X,Y,Z}, initial_base_.ang.p());
   spline_ang->AddStartBound(kVel, {X,Y,Z}, initial_base_.ang.v());
-  spline_ang->AddFinalBound(kPos, params_.bounds_final_ang_pos_, final_base_.ang.p());
-  spline_ang->AddFinalBound(kVel, params_.bounds_final_ang_vel_, final_base_.ang.v());
+//  spline_ang->AddFinalBound(kPos, params_.bounds_final_ang_pos_, final_base_.ang.p());
+//  spline_ang->AddFinalBound(kVel, params_.bounds_final_ang_vel_, final_base_.ang.v());
   vars.push_back(spline_ang);
 
   return vars;
@@ -146,8 +146,8 @@ NlpFormulation::MakeEndeffectorVariables () const
     Vector3d final_ee_pos_W = final_base_.lin.p() + w_R_b*model_.kinematic_model_->GetNominalStanceInBase().at(ee);
     double x = final_ee_pos_W.x();
     double y = final_ee_pos_W.y();
-    double z = terrain_->GetHeight(x,y);
-    nodes->SetByLinearInterpolation(initial_ee_W_.at(ee), Vector3d(x,y,z), T);
+//    double z = terrain_->GetHeight(x,y);
+    nodes->SetByLinearInterpolation(initial_ee_W_.at(ee), Vector3d(x,y,0), T);
 
     nodes->AddStartBound(kPos, {X,Y,Z}, initial_ee_W_.at(ee));
     vars.push_back(nodes);

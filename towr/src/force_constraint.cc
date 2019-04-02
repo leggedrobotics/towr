@@ -49,14 +49,14 @@ ForceConstraint::ForceConstraint (const HeightMap::Ptr& terrain,
   mu_      = terrain->GetFrictionCoeff();
   ee_      = ee;
 
-//  n_constraints_per_node_ = 1 + 2*k2D; // positive normal force + 4 friction pyramid constraints
+  n_constraints_per_node_ = 1 + 2*k2D; // positive normal force + 4 friction pyramid constraints
 
   //new: plus pos and vel of every node: Node::n_derivatives*k2D
 //  n_constraints_per_node_ = 1 + 2*k2D + Node::n_derivatives*k2D;
-  n_constraints_per_node_ = 1 + 2*k2D + 1;
+//  n_constraints_per_node_ = 1 + 2*k2D + 1;
 
 //  cout << "n_constraints_per_node: " << n_constraints_per_node_ << endl;
-  cout << "ee_: " << ee_ << endl;
+//  cout << "ee_: " << ee_ << endl;
 
 }
 
@@ -128,51 +128,51 @@ ForceConstraint::GetValues () const
 //      g(row++) = f.transpose() * t2;
 //    }
 
-//    else {
-//    for (int m_node_id : motion_node_ids_) {
-    //new
-    // assumes three splines per drive phase (and starting and ending in stance??)
-        auto curr = nodes.at(f_node_id);
-
-        //TODO no velocity in Y direction during drive!
-//        Vector2d prev;
-//        Vector2d next;
-
-        Vector2d prev = nodes.at(f_node_id-1).p().topRows<2>();	//1 for just x-direction
-//        prev.row(1).setZero();
-
-        Vector2d next = nodes.at(f_node_id+1).p().topRows<2>();
-//        next.row(1).setZero();
-
-//        Vector2d ybound = nodes.at(f_node_id).p().topRows<2>();
-
-
-//        des_vel_center.row(1).setZero();
-//        des_vel_center(Y)=0;
-//        xy_center(Y)=0;
-
-//        for (auto dim : {X,Y}) {
-//          g(row++) = curr.p()(dim) - xy_center(dim);
-//          g(row++) = curr.v()(dim) - des_vel_center(dim);
+////    else {
+////    for (int m_node_id : motion_node_ids_) {
+//    //new
+//    // assumes three splines per drive phase (and starting and ending in stance??)
+//        auto curr = nodes.at(f_node_id);
+//
+//        //TODO no velocity in Y direction during drive!
+////        Vector2d prev;
+////        Vector2d next;
+//
+//        Vector2d prev = nodes.at(f_node_id-1).p().topRows<2>();	//1 for just x-direction
+////        prev.row(1).setZero();
+//
+//        Vector2d next = nodes.at(f_node_id+1).p().topRows<2>();
+////        next.row(1).setZero();
+//
+////        Vector2d ybound = nodes.at(f_node_id).p().topRows<2>();
+//
+//
+////        des_vel_center.row(1).setZero();
+////        des_vel_center(Y)=0;
+////        xy_center(Y)=0;
+//
+////        for (auto dim : {X,Y}) {
+////          g(row++) = curr.p()(dim) - xy_center(dim);
+////          g(row++) = curr.v()(dim) - des_vel_center(dim);
+////        }
+//        if (f_node_id == 0){
+//        	Vector2d distance_xy    = next - curr.p().topRows<2>();
+//        	        Vector2d xy_center      = curr.p().topRows<2>() + distance_xy;
+//        	        Vector2d des_vel_center = distance_xy/(t_drive_/3); // linear interpolation not accurate
+////        	        g(row++) = curr.p()(X) - xy_center(X);
+//        	        g(row++) = curr.v()(X) - des_vel_center(X);
+//        	//        g(row++) = curr.p()(Y) - prev(Y);
+////        	        g(row++) = curr.v()(Y);
 //        }
-        if (f_node_id == 0){
-        	Vector2d distance_xy    = next - curr.p().topRows<2>();
-        	        Vector2d xy_center      = curr.p().topRows<2>() + distance_xy;
-        	        Vector2d des_vel_center = distance_xy/(t_drive_/3); // linear interpolation not accurate
-//        	        g(row++) = curr.p()(X) - xy_center(X);
-        	        g(row++) = curr.v()(X) - des_vel_center(X);
-        	//        g(row++) = curr.p()(Y) - prev(Y);
-//        	        g(row++) = curr.v()(Y);
-        }
-        else {
-        	Vector2d distance_xy    = next - prev;
-        	Vector2d xy_center      = prev + distance_xy;
-        	Vector2d des_vel_center = distance_xy/(t_drive_/3); // linear interpolation not accurate
-//        	g(row++) = curr.p()(X) - xy_center(X);
-        	g(row++) = curr.v()(X) - des_vel_center(X);
-        	//        g(row++) = curr.p()(Y) - prev(Y);
-//        	g(row++) = curr.v()(Y);
-        }
+//        else {
+//        	Vector2d distance_xy    = next - prev;
+//        	Vector2d xy_center      = prev + distance_xy;
+//        	Vector2d des_vel_center = distance_xy/(t_drive_/3); // linear interpolation not accurate
+////        	g(row++) = curr.p()(X) - xy_center(X);
+//        	g(row++) = curr.v()(X) - des_vel_center(X);
+//        	//        g(row++) = curr.p()(Y) - prev(Y);
+////        	g(row++) = curr.v()(Y);
+//        }
 //    }
   }
 
@@ -196,7 +196,7 @@ ForceConstraint::GetBounds () const
 //	  }
 
 //	  else {
-    bounds.push_back(ifopt::BoundZero);	//bound for x-velocity
+//    bounds.push_back(ifopt::BoundZero);	//bound for x-velocity
 //    bounds.push_back(ifopt::BoundZero);
 //    bounds.push_back(ifopt::BoundZero); //bound for y-pos (=previous pos)
 //    bounds.push_back(ifopt::BoundZero); //bound for y-vel
@@ -214,25 +214,25 @@ ForceConstraint::FillJacobianBlock (std::string var_set,
 //    int row = 0;
 //    auto nodes = ee_motion_->GetNodes();	//new
 //    for (int f_node_id : pure_stance_force_node_ids_) {
-//      // unilateral force
+////      // unilateral force
 //      int phase   = ee_force_->GetPhase(f_node_id);
 ////      Vector3d p  = ee_motion_->GetValueAtStartOfPhase(phase); // doesn't change during phase
 //      Vector3d p = nodes.at(f_node_id).p();
 //      Vector3d n  = terrain_->GetNormalizedBasis(HeightMap::Normal,   p.x(), p.y());
 //      Vector3d t1 = terrain_->GetNormalizedBasis(HeightMap::Tangent1, p.x(), p.y());
 //      Vector3d t2 = terrain_->GetNormalizedBasis(HeightMap::Tangent2, p.x(), p.y());
-//
-////      //new: added different constraints for x direction
-////            int idx = ee_force_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id, kPos, X));
 ////
-////                    int row_reset=row;
+//////      //new: added different constraints for x direction
+//////            int idx = ee_force_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id, kPos, X));
+//////
+//////                    int row_reset=row;
+//////
+//////                    jac.coeffRef(row_reset++, idx) = n(X);              // unilateral force
+//////                    jac.coeffRef(row_reset++, idx) = -t1(X)+mu_*n(X);  // f_t1 >  mu*n	//new
+//////                    jac.coeffRef(row_reset++, idx) = -t1(X)-mu_*n(X);  // f_t1 < -mu*n	//new
+//////                    jac.coeffRef(row_reset++, idx) = -t2(X)+mu_*n(X);  // f_t2 <  mu*n
+//////                    jac.coeffRef(row_reset++, idx) = -t2(X)-mu_*n(X);  // f_t2 > -mu*n
 ////
-////                    jac.coeffRef(row_reset++, idx) = n(X);              // unilateral force
-////                    jac.coeffRef(row_reset++, idx) = -t1(X)+mu_*n(X);  // f_t1 >  mu*n	//new
-////                    jac.coeffRef(row_reset++, idx) = -t1(X)-mu_*n(X);  // f_t1 < -mu*n	//new
-////                    jac.coeffRef(row_reset++, idx) = -t2(X)+mu_*n(X);  // f_t2 <  mu*n
-////                    jac.coeffRef(row_reset++, idx) = -t2(X)-mu_*n(X);  // f_t2 > -mu*n
-//
 //      for (auto dim : {X,Y,Z}) {
 //        int idx = ee_force_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id, kPos, dim));
 //
@@ -244,109 +244,109 @@ ForceConstraint::FillJacobianBlock (std::string var_set,
 //        jac.coeffRef(row_reset++, idx) = t2(dim)-mu_*n(dim);  // f_t2 <  mu*n
 //        jac.coeffRef(row_reset++, idx) = t2(dim)+mu_*n(dim);  // f_t2 > -mu*n
 //
-////        auto curr = nodes.at(f_node_id);
-////
-////                              //TODO no velocity in Y direction during drive!
-////                      //        Vector2d prev;
-////                      //        Vector2d next;
-////
-////                              Vector2d prev = nodes.at(f_node_id-1).p().topRows<2>();	//1 for just x-direction
-////                      //        prev.row(1).setZero();
-////
-////                              Vector2d next = nodes.at(f_node_id+1).p().topRows<2>();
-////                      //        next.row(1).setZero();
-////
-////                      //        Vector2d ybound = nodes.at(f_node_id).p().topRows<2>();
-////
-////                              Vector2d distance_xy    = next - prev;
-////                              Vector2d xy_center      = prev + 0.5*distance_xy;
-////                              Vector2d des_vel_center = distance_xy/t_swing_avg_;
-////        if (dim == X){
-////        	jac.coeffRef(row_reset++, idx) = curr.p()(X) - xy_center(X);
-////        	jac.coeffRef(row_reset++, idx) = curr.v()(X) - des_vel_center(X);
-////        	jac.coeffRef(row_reset++, idx) = 0;
-////        	jac.coeffRef(row_reset++, idx) = 0;
-////        }
-////
-////        if (dim == Y){
-////               	jac.coeffRef(row_reset++, idx) = 0;
-////               	jac.coeffRef(row_reset++, idx) = 0;
-////               	jac.coeffRef(row_reset++, idx) = curr.p()(Y) - prev(Y);
-////               	jac.coeffRef(row_reset++, idx) = curr.v()(Y);
-////               }
-////
-////        if (dim == Z){
-////                       	jac.coeffRef(row_reset++, idx) = 0;
-////                       	jac.coeffRef(row_reset++, idx) = 0;
-////                       	jac.coeffRef(row_reset++, idx) = 0;
-////                       	jac.coeffRef(row_reset++, idx) = 0;
-////                       }
-////                              if (dim == X){
-////
-////
-////                              // position constraint
-////                                                          jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kPos, X_))) =  curr.p()(X) - xy_center(X);  // current node
-////                              //                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id+1, kPos, X_))) = -0.5;  // next node
-////                              //                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id-1, kPos, X_))) = -0.5;  // previous node
-////                              //                            row_reset++;
-////
-////                                            // velocity constraint
-////                                                          jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kVel, X_))) =  curr.v()(X) - des_vel_center(X);              // current node
-////                              //                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id+1, kPos, X_))) = -1.0/t_swing_avg_; // next node
-////                              //                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id-1, kPos, X_))) = +1.0/t_swing_avg_; // previous node
-////                              //                            row_reset++;
-////
-////                                                          //pos und vel in y rtg bei "X constraint" muss 0 sein
-////                                                          jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kPos, X_))) =  0;
-////                                                          jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kVel, X_))) =  0;
-////                              }
-////                              if (dim == Y){
-////
-////
-////                                                            // position constraint
-////                                                                                        jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kPos, Y_))) =  0;  // current node
-////                                                            //                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id+1, kPos, X_))) = -0.5;  // next node
-////                                                            //                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id-1, kPos, X_))) = -0.5;  // previous node
-////                                                            //                            row_reset++;
-////
-////                                                                          // velocity constraint
-////                                                                                        jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kVel, Y_))) =  0;              // current node
-////                                                            //                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id+1, kPos, X_))) = -1.0/t_swing_avg_; // next node
-////                                                            //                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id-1, kPos, X_))) = +1.0/t_swing_avg_; // previous node
-////                                                            //                            row_reset++;
-////
-////                                                                                        //pos und vel in y rtg bei "X constraint" muss 0 sein
-////                                                                                        jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kPos, Y_))) =  curr.p()(Y) - prev(Y);  // current node;
-////                                                                                        jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kVel, Y_))) =  curr.v()(Y);
-////                                                            }
-////                              if (dim == Z){
-////
-////
-////                                                            // position constraint
-////                                                                                        jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kPos, Z))) =  0;  // current node
-////                                                            //                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id+1, kPos, X_))) = -0.5;  // next node
-////                                                            //                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id-1, kPos, X_))) = -0.5;  // previous node
-////                                                            //                            row_reset++;
-////
-////                                                                          // velocity constraint
-////                                                                                        jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kVel, Z))) =  0;              // current node
-////                                                            //                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id+1, kPos, X_))) = -1.0/t_swing_avg_; // next node
-////                                                            //                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id-1, kPos, X_))) = +1.0/t_swing_avg_; // previous node
-////                                                            //                            row_reset++;
-////
-////                                                                                        //pos und vel in y rtg bei "X constraint" muss 0 sein
-////                                                                                        jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kPos, Z))) =  0;
-////                                                                                        jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kVel, Z))) =  0;
-////                                                            }
+//////        auto curr = nodes.at(f_node_id);
+//////
+//////                              //TODO no velocity in Y direction during drive!
+//////                      //        Vector2d prev;
+//////                      //        Vector2d next;
+//////
+//////                              Vector2d prev = nodes.at(f_node_id-1).p().topRows<2>();	//1 for just x-direction
+//////                      //        prev.row(1).setZero();
+//////
+//////                              Vector2d next = nodes.at(f_node_id+1).p().topRows<2>();
+//////                      //        next.row(1).setZero();
+//////
+//////                      //        Vector2d ybound = nodes.at(f_node_id).p().topRows<2>();
+//////
+//////                              Vector2d distance_xy    = next - prev;
+//////                              Vector2d xy_center      = prev + 0.5*distance_xy;
+//////                              Vector2d des_vel_center = distance_xy/t_swing_avg_;
+//////        if (dim == X){
+//////        	jac.coeffRef(row_reset++, idx) = curr.p()(X) - xy_center(X);
+//////        	jac.coeffRef(row_reset++, idx) = curr.v()(X) - des_vel_center(X);
+//////        	jac.coeffRef(row_reset++, idx) = 0;
+//////        	jac.coeffRef(row_reset++, idx) = 0;
+//////        }
+//////
+//////        if (dim == Y){
+//////               	jac.coeffRef(row_reset++, idx) = 0;
+//////               	jac.coeffRef(row_reset++, idx) = 0;
+//////               	jac.coeffRef(row_reset++, idx) = curr.p()(Y) - prev(Y);
+//////               	jac.coeffRef(row_reset++, idx) = curr.v()(Y);
+//////               }
+//////
+//////        if (dim == Z){
+//////                       	jac.coeffRef(row_reset++, idx) = 0;
+//////                       	jac.coeffRef(row_reset++, idx) = 0;
+//////                       	jac.coeffRef(row_reset++, idx) = 0;
+//////                       	jac.coeffRef(row_reset++, idx) = 0;
+//////                       }
+//////                              if (dim == X){
+//////
+//////
+//////                              // position constraint
+//////                                                          jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kPos, X_))) =  curr.p()(X) - xy_center(X);  // current node
+//////                              //                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id+1, kPos, X_))) = -0.5;  // next node
+//////                              //                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id-1, kPos, X_))) = -0.5;  // previous node
+//////                              //                            row_reset++;
+//////
+//////                                            // velocity constraint
+//////                                                          jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kVel, X_))) =  curr.v()(X) - des_vel_center(X);              // current node
+//////                              //                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id+1, kPos, X_))) = -1.0/t_swing_avg_; // next node
+//////                              //                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id-1, kPos, X_))) = +1.0/t_swing_avg_; // previous node
+//////                              //                            row_reset++;
+//////
+//////                                                          //pos und vel in y rtg bei "X constraint" muss 0 sein
+//////                                                          jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kPos, X_))) =  0;
+//////                                                          jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kVel, X_))) =  0;
+//////                              }
+//////                              if (dim == Y){
+//////
+//////
+//////                                                            // position constraint
+//////                                                                                        jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kPos, Y_))) =  0;  // current node
+//////                                                            //                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id+1, kPos, X_))) = -0.5;  // next node
+//////                                                            //                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id-1, kPos, X_))) = -0.5;  // previous node
+//////                                                            //                            row_reset++;
+//////
+//////                                                                          // velocity constraint
+//////                                                                                        jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kVel, Y_))) =  0;              // current node
+//////                                                            //                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id+1, kPos, X_))) = -1.0/t_swing_avg_; // next node
+//////                                                            //                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id-1, kPos, X_))) = +1.0/t_swing_avg_; // previous node
+//////                                                            //                            row_reset++;
+//////
+//////                                                                                        //pos und vel in y rtg bei "X constraint" muss 0 sein
+//////                                                                                        jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kPos, Y_))) =  curr.p()(Y) - prev(Y);  // current node;
+//////                                                                                        jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kVel, Y_))) =  curr.v()(Y);
+//////                                                            }
+//////                              if (dim == Z){
+//////
+//////
+//////                                                            // position constraint
+//////                                                                                        jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kPos, Z))) =  0;  // current node
+//////                                                            //                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id+1, kPos, X_))) = -0.5;  // next node
+//////                                                            //                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id-1, kPos, X_))) = -0.5;  // previous node
+//////                                                            //                            row_reset++;
+//////
+//////                                                                          // velocity constraint
+//////                                                                                        jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kVel, Z))) =  0;              // current node
+//////                                                            //                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id+1, kPos, X_))) = -1.0/t_swing_avg_; // next node
+//////                                                            //                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id-1, kPos, X_))) = +1.0/t_swing_avg_; // previous node
+//////                                                            //                            row_reset++;
+//////
+//////                                                                                        //pos und vel in y rtg bei "X constraint" muss 0 sein
+//////                                                                                        jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kPos, Z))) =  0;
+//////                                                                                        jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kVel, Z))) =  0;
+//////                                                            }
 //      }
 //
 //      row += n_constraints_per_node_;
-////        row += 5;
+//////        row += 5;
 //    }
-////    cout << "n_rows_force_Jacobian: " << row;
-////    n_rows_force_Jacobian = row;
+//////    cout << "n_rows_force_Jacobian: " << row;
+//////    n_rows_force_Jacobian = row;
 //      }
-//
+////
 //  if (var_set == ee_motion_->GetName()) {
 //    int row = 0;
 //    auto force_nodes = ee_force_->GetNodes();
@@ -360,153 +360,153 @@ ForceConstraint::FillJacobianBlock (std::string var_set,
 //      Vector3d f = force_nodes.at(f_node_id).p();
 //
 //      //new: seperated for X and Y direction!
-////      for (auto dim : {X_,Y_}) {
-////        Vector3d dn  = terrain_->GetDerivativeOfNormalizedBasisWrt(HeightMap::Normal, dim, p.x(), p.y());
-////        Vector3d dt1 = terrain_->GetDerivativeOfNormalizedBasisWrt(HeightMap::Tangent1, dim, p.x(), p.y());
-////        Vector3d dt2 = terrain_->GetDerivativeOfNormalizedBasisWrt(HeightMap::Tangent2, dim, p.x(), p.y());
+//      for (auto dim : {X_,Y_}) {
+//        Vector3d dn  = terrain_->GetDerivativeOfNormalizedBasisWrt(HeightMap::Normal, dim, p.x(), p.y());
+//        Vector3d dt1 = terrain_->GetDerivativeOfNormalizedBasisWrt(HeightMap::Tangent1, dim, p.x(), p.y());
+//        Vector3d dt2 = terrain_->GetDerivativeOfNormalizedBasisWrt(HeightMap::Tangent2, dim, p.x(), p.y());
 ////
-////        //TODO what should ee_node_id be? (not only ID at Start of phase..?
-////        int idx = ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(ee_node_id, kPos, dim));
-////        int row_reset=row;
-////
-////        // unilateral force
-////        jac.coeffRef(row_reset++, idx) = f.transpose()*dn;
-////
-////        // friction force tangent 1 derivative
-////        jac.coeffRef(row_reset++, idx) = f.transpose()*(dt1-mu_*dn);
-////        jac.coeffRef(row_reset++, idx) = f.transpose()*(dt1+mu_*dn);
-////
-////        // friction force tangent 2 derivative
-////        jac.coeffRef(row_reset++, idx) = f.transpose()*(dt2-mu_*dn);
-////        jac.coeffRef(row_reset++, idx) = f.transpose()*(dt2+mu_*dn);
-////
-////        //new
-////        // position constraint
-////                      jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kPos, dim))) =  1.0;  // current node
-////                      jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id+1, kPos, dim))) = -0.5;  // next node
-////                      jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id-1, kPos, dim))) = -0.5;  // previous node
-////                      row_reset++;
-////
-////        // velocity constraint
-////                      jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kVel, dim))) =  1.0;              // current node
-////                      jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id+1, kPos, dim))) = -1.0/t_swing_avg_; // next node
-////                      jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id-1, kPos, dim))) = +1.0/t_swing_avg_; // previous node
-////                      row_reset++;
-////      }
+//////        //TODO what should ee_node_id be? (not only ID at Start of phase..?
+//        int idx = ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(ee_node_id, kPos, dim));
+//        int row_reset=row;
 //
-//              Vector3d dn  = terrain_->GetDerivativeOfNormalizedBasisWrt(HeightMap::Normal, X_, p.x(), p.y());
-//              Vector3d dt1 = terrain_->GetDerivativeOfNormalizedBasisWrt(HeightMap::Tangent1, X_, p.x(), p.y());
-//              Vector3d dt2 = terrain_->GetDerivativeOfNormalizedBasisWrt(HeightMap::Tangent2, X_, p.x(), p.y());
+//        // unilateral force
+//        jac.coeffRef(row_reset++, idx) = f.transpose()*dn;
 //
-//              //TODO what should ee_node_id be? (not only ID at Start of phase..? same as f_node_id!
-//              int idx1 = ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(ee_node_id, kPos, X_));
-//              int row_reset=row;
+//        // friction force tangent 1 derivative
+//        jac.coeffRef(row_reset++, idx) = f.transpose()*(dt1-mu_*dn);
+//        jac.coeffRef(row_reset++, idx) = f.transpose()*(dt1+mu_*dn);
 //
-//              // unilateral force
-//              jac.coeffRef(row_reset++, idx1) = f.transpose()*dn;
-//
-//              // friction force tangent 1 derivative
-//              jac.coeffRef(row_reset++, idx1) = f.transpose()*(dt1-mu_*dn);
-//              jac.coeffRef(row_reset++, idx1) = f.transpose()*(dt1+mu_*dn);
-//
-//              // friction force tangent 2 derivative
-//              jac.coeffRef(row_reset++, idx1) = f.transpose()*(dt2-mu_*dn);
-//              jac.coeffRef(row_reset++, idx1) = f.transpose()*(dt2+mu_*dn);
-//
-////              new
-//              auto curr = nodes.at(f_node_id);
-//              Vector2d prev = nodes.at(f_node_id-1).p().topRows<2>();
-//              Vector2d next = nodes.at(f_node_id+1).p().topRows<2>();
-//              Vector2d distance_xy    = next - prev;
-//              Vector2d xy_center      = prev + 0.5*distance_xy;
-//              Vector2d des_vel_center = distance_xy/t_swing_avg_;
-//
-//              // position constraint
-//                            jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kPos, X_))) =  curr.p()(X) - xy_center(X);  // current node
-////                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id+1, kPos, X_))) = -0.5;  // next node
-////                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id-1, kPos, X_))) = -0.5;  // previous node
-////                            row_reset++;
-//
-//              // velocity constraint
-//                            jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kVel, X_))) =  curr.v()(X) - des_vel_center(X);              // current node
-////                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id+1, kPos, X_))) = -1.0/t_swing_avg_; // next node
-////                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id-1, kPos, X_))) = +1.0/t_swing_avg_; // previous node
-////                            row_reset++;
-//
-//                            //pos und vel in y rtg bei "X constraint" muss 0 sein
-//                            jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kPos, X_))) =  0;
-//                            jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kVel, X_))) =  0;
-//
-//
-////              auto curr = nodes.at(f_node_id);
-////
-////                      //TODO no velocity in Y direction during drive!
-////              //        Vector2d prev;
-////              //        Vector2d next;
-////
-////                      Vector2d prev = nodes.at(f_node_id-1).p().topRows<2>();	//1 for just x-direction
-////              //        prev.row(1).setZero();
-////
-////                      Vector2d next = nodes.at(f_node_id+1).p().topRows<2>();
-////              //        next.row(1).setZero();
-////
-////              //        Vector2d ybound = nodes.at(f_node_id).p().topRows<2>();
-////
-////                      Vector2d distance_xy    = next - prev;
-////                      Vector2d xy_center      = prev + 0.5*distance_xy;
-////                      Vector2d des_vel_center = distance_xy/t_swing_avg_;
+//        // friction force tangent 2 derivative
+//        jac.coeffRef(row_reset++, idx) = f.transpose()*(dt2-mu_*dn);
+//        jac.coeffRef(row_reset++, idx) = f.transpose()*(dt2+mu_*dn);
 //////
-////                      jac.coeffRef(row_reset++, idx1) = curr.p()(X) - xy_center(X);
-////                      jac.coeffRef(row_reset++, idx1) = curr.v()(X) - des_vel_center(X);
-////                      jac.coeffRef(row_reset++, idx1) = 0;
-////                      jac.coeffRef(row_reset++, idx1) = 0;
-//
-//                            Vector3d dny  = terrain_->GetDerivativeOfNormalizedBasisWrt(HeightMap::Normal, Y_, p.x(), p.y());
-//                                          Vector3d dt1y = terrain_->GetDerivativeOfNormalizedBasisWrt(HeightMap::Tangent1, Y_, p.x(), p.y());
-//                                          Vector3d dt2y = terrain_->GetDerivativeOfNormalizedBasisWrt(HeightMap::Tangent2, Y_, p.x(), p.y());
-//
-//                                          //TODO what should ee_node_id be? (not only ID at Start of phase..?
-//                                          int idx2 = ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(ee_node_id, kPos, Y_));
-//                                          int row_resety=row;
-//
-//                                          // unilateral force
-//                                          jac.coeffRef(row_resety++, idx2) = f.transpose()*dny;
-//
-//                                          // friction force tangent 1 derivative
-//                                          jac.coeffRef(row_resety++, idx2) = f.transpose()*(dt1y-mu_*dny);
-//                                          jac.coeffRef(row_resety++, idx2) = f.transpose()*(dt1y+mu_*dny);
-//
-//                                          // friction force tangent 2 derivative
-//                                          jac.coeffRef(row_resety++, idx2) = f.transpose()*(dt2y-mu_*dny);
-//                                          jac.coeffRef(row_resety++, idx2) = f.transpose()*(dt2y+mu_*dny);
-//
-//                                          jac.coeffRef(row_resety++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kPos, Y_))) =  0;
-//                                          jac.coeffRef(row_resety++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kVel, Y_))) =  0;
-////                                          //new
-////                                          // position constraint
-//                                                        jac.coeffRef(row_resety++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kPos, Y_))) =  curr.p()(Y) - prev(Y);  // current node
-////                                                        jac.coeffRef(row_resety, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id+1, kPos, Y_))) = 1.0;  // next node
-////                                                        jac.coeffRef(row_resety, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id-1, kPos, Y_))) = 1.0;  // previous node
-////                                                        row_resety++;
+//////        //new
+//////        // position constraint
+//////                      jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kPos, dim))) =  1.0;  // current node
+//////                      jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id+1, kPos, dim))) = -0.5;  // next node
+//////                      jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id-1, kPos, dim))) = -0.5;  // previous node
+//////                      row_reset++;
+//////
+//////        // velocity constraint
+//////                      jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kVel, dim))) =  1.0;              // current node
+//////                      jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id+1, kPos, dim))) = -1.0/t_swing_avg_; // next node
+//////                      jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id-1, kPos, dim))) = +1.0/t_swing_avg_; // previous node
+//////                      row_reset++;
+//////      }
 ////
-////                                          // velocity constraint
-//                                                        jac.coeffRef(row_resety++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kVel, Y_))) =  curr.v()(Y);              // current node
-////                                                        jac.coeffRef(row_resety, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id+1, kPos, Y_))) = 1.0/t_swing_avg_; // next node
-////                                                        jac.coeffRef(row_resety, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id-1, kPos, Y_))) = 1.0/t_swing_avg_; // previous node
-////                                                        row_resety++;
+////              Vector3d dn  = terrain_->GetDerivativeOfNormalizedBasisWrt(HeightMap::Normal, X_, p.x(), p.y());
+////              Vector3d dt1 = terrain_->GetDerivativeOfNormalizedBasisWrt(HeightMap::Tangent1, X_, p.x(), p.y());
+////              Vector3d dt2 = terrain_->GetDerivativeOfNormalizedBasisWrt(HeightMap::Tangent2, X_, p.x(), p.y());
+////
+////              //TODO what should ee_node_id be? (not only ID at Start of phase..? same as f_node_id!
+////              int idx1 = ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(ee_node_id, kPos, X_));
+////              int row_reset=row;
+////
+////              // unilateral force
+////              jac.coeffRef(row_reset++, idx1) = f.transpose()*dn;
+////
+////              // friction force tangent 1 derivative
+////              jac.coeffRef(row_reset++, idx1) = f.transpose()*(dt1-mu_*dn);
+////              jac.coeffRef(row_reset++, idx1) = f.transpose()*(dt1+mu_*dn);
+////
+////              // friction force tangent 2 derivative
+////              jac.coeffRef(row_reset++, idx1) = f.transpose()*(dt2-mu_*dn);
+////              jac.coeffRef(row_reset++, idx1) = f.transpose()*(dt2+mu_*dn);
 //
-//
-//
-////                                          jac.coeffRef(row_resety++, idx2) = 0;
-////                                          jac.coeffRef(row_resety++, idx2) = 0;
-////                                          jac.coeffRef(row_resety++, idx2) = curr.p()(Y) - prev(Y);
-////                                          jac.coeffRef(row_resety++, idx2) = curr.v()(Y);
+//////              new
+////              auto curr = nodes.at(f_node_id);
+////              Vector2d prev = nodes.at(f_node_id-1).p().topRows<2>();
+////              Vector2d next = nodes.at(f_node_id+1).p().topRows<2>();
+////              Vector2d distance_xy    = next - prev;
+////              Vector2d xy_center      = prev + 0.5*distance_xy;
+////              Vector2d des_vel_center = distance_xy/t_swing_avg_;
+////
+////              // position constraint
+////                            jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kPos, X_))) =  curr.p()(X) - xy_center(X);  // current node
+//////                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id+1, kPos, X_))) = -0.5;  // next node
+//////                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id-1, kPos, X_))) = -0.5;  // previous node
+//////                            row_reset++;
+////
+////              // velocity constraint
+////                            jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kVel, X_))) =  curr.v()(X) - des_vel_center(X);              // current node
+//////                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id+1, kPos, X_))) = -1.0/t_swing_avg_; // next node
+//////                            jac.coeffRef(row_reset, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id-1, kPos, X_))) = +1.0/t_swing_avg_; // previous node
+//////                            row_reset++;
+////
+////                            //pos und vel in y rtg bei "X constraint" muss 0 sein
+////                            jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kPos, X_))) =  0;
+////                            jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kVel, X_))) =  0;
+////
+////
+//////              auto curr = nodes.at(f_node_id);
+//////
+//////                      //TODO no velocity in Y direction during drive!
+//////              //        Vector2d prev;
+//////              //        Vector2d next;
+//////
+//////                      Vector2d prev = nodes.at(f_node_id-1).p().topRows<2>();	//1 for just x-direction
+//////              //        prev.row(1).setZero();
+//////
+//////                      Vector2d next = nodes.at(f_node_id+1).p().topRows<2>();
+//////              //        next.row(1).setZero();
+//////
+//////              //        Vector2d ybound = nodes.at(f_node_id).p().topRows<2>();
+//////
+//////                      Vector2d distance_xy    = next - prev;
+//////                      Vector2d xy_center      = prev + 0.5*distance_xy;
+//////                      Vector2d des_vel_center = distance_xy/t_swing_avg_;
+////////
+//////                      jac.coeffRef(row_reset++, idx1) = curr.p()(X) - xy_center(X);
+//////                      jac.coeffRef(row_reset++, idx1) = curr.v()(X) - des_vel_center(X);
+//////                      jac.coeffRef(row_reset++, idx1) = 0;
+//////                      jac.coeffRef(row_reset++, idx1) = 0;
+////
+////                            Vector3d dny  = terrain_->GetDerivativeOfNormalizedBasisWrt(HeightMap::Normal, Y_, p.x(), p.y());
+////                                          Vector3d dt1y = terrain_->GetDerivativeOfNormalizedBasisWrt(HeightMap::Tangent1, Y_, p.x(), p.y());
+////                                          Vector3d dt2y = terrain_->GetDerivativeOfNormalizedBasisWrt(HeightMap::Tangent2, Y_, p.x(), p.y());
+////
+////                                          //TODO what should ee_node_id be? (not only ID at Start of phase..?
+////                                          int idx2 = ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(ee_node_id, kPos, Y_));
+////                                          int row_resety=row;
+////
+////                                          // unilateral force
+////                                          jac.coeffRef(row_resety++, idx2) = f.transpose()*dny;
+////
+////                                          // friction force tangent 1 derivative
+////                                          jac.coeffRef(row_resety++, idx2) = f.transpose()*(dt1y-mu_*dny);
+////                                          jac.coeffRef(row_resety++, idx2) = f.transpose()*(dt1y+mu_*dny);
+////
+////                                          // friction force tangent 2 derivative
+////                                          jac.coeffRef(row_resety++, idx2) = f.transpose()*(dt2y-mu_*dny);
+////                                          jac.coeffRef(row_resety++, idx2) = f.transpose()*(dt2y+mu_*dny);
+////
+////                                          jac.coeffRef(row_resety++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kPos, Y_))) =  0;
+////                                          jac.coeffRef(row_resety++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kVel, Y_))) =  0;
+//////                                          //new
+//////                                          // position constraint
+////                                                        jac.coeffRef(row_resety++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kPos, Y_))) =  curr.p()(Y) - prev(Y);  // current node
+//////                                                        jac.coeffRef(row_resety, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id+1, kPos, Y_))) = 1.0;  // next node
+//////                                                        jac.coeffRef(row_resety, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id-1, kPos, Y_))) = 1.0;  // previous node
+//////                                                        row_resety++;
+//////
+//////                                          // velocity constraint
+////                                                        jac.coeffRef(row_resety++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id,   kVel, Y_))) =  curr.v()(Y);              // current node
+//////                                                        jac.coeffRef(row_resety, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id+1, kPos, Y_))) = 1.0/t_swing_avg_; // next node
+//////                                                        jac.coeffRef(row_resety, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id-1, kPos, Y_))) = 1.0/t_swing_avg_; // previous node
+//////                                                        row_resety++;
+////
+////
+////
+//////                                          jac.coeffRef(row_resety++, idx2) = 0;
+//////                                          jac.coeffRef(row_resety++, idx2) = 0;
+//////                                          jac.coeffRef(row_resety++, idx2) = curr.p()(Y) - prev(Y);
+//////                                          jac.coeffRef(row_resety++, idx2) = curr.v()(Y);
 //      row += n_constraints_per_node_;
 //    }
-//    cout << "n_rows_motion_Jacobian: " << row;
-//    n_rows_motion_Jacobian = row;
+////    cout << "n_rows_motion_Jacobian: " << row;
+////    n_rows_motion_Jacobian = row;
 //  }
-
+//  }
 }
 
 } /* namespace towr */
