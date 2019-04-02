@@ -86,15 +86,15 @@ private:
   int n_constraints_per_node_; ///< number of constraint for each node.
   EE ee_;                  ///< The endeffector force to be constrained.
 
-  double t_swing_avg_ = 0.3; //new
-//  int n_rows_force_Jacobian = 0;
-//  int n_rows_motion_Jacobian = 0;
+  double t_drive_ = 2.8; //new
 
   /**
    * The are those Hermite-nodes that shape the polynomial during the
    * stance phases, while all the others are already set to zero force (swing)
    **/
   std::vector<int> pure_stance_force_node_ids_;
+  std::vector<int> stance_node_ids_;
+  std::vector<int> motion_node_ids_;
 };
 
 } /* namespace towr */

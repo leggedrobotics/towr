@@ -135,6 +135,7 @@ NlpFormulation::MakeEndeffectorVariables () const
     auto nodes = std::make_shared<NodesVariablesEEMotion>(
                                               params_.GetPhaseCount(ee),
                                               params_.ee_in_contact_at_start_.at(ee),
+//											  false,
                                               id::EEMotionNodes(ee),
                                               params_.ee_polynomials_per_swing_phase_);
 

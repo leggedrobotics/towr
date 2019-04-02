@@ -40,13 +40,13 @@ namespace towr {
 Parameters::Parameters ()
 {
   // constructs optimization variables
-  duration_base_polynomial_ = 0.1;
+  duration_base_polynomial_ = 0.4;
   force_polynomials_per_stance_phase_ = 3;
   ee_polynomials_per_swing_phase_ = 3; // so step can at least lift leg
 
   //NEW: only one phase with the total duration!
   //TODO for drift: 3 phases, but fix timings here!
-  std::vector<double> phase_n_and_t{2.4};
+  std::vector<double> phase_n_and_t{2.8};
   ee_phase_durations_.push_back(phase_n_and_t);
 
   // parameters related to specific constraints (only used when it is added as well)
@@ -54,7 +54,7 @@ Parameters::Parameters ()
   dt_constraint_range_of_motion_ = 0.08;
   dt_constraint_dynamic_ = 0.1;
   dt_constraint_base_motion_ = duration_base_polynomial_/4.; // only for base RoM constraint
-  bound_phase_duration_ = std::make_pair(0.2, 1.0);  // used only when optimizing phase durations, so gait
+  bound_phase_duration_ = std::make_pair(0.2, 5.0);  // used only when optimizing phase durations, so gait
 
   // a minimal set of basic constraints
   constraints_.push_back(Terrain);

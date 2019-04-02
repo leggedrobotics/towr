@@ -70,7 +70,7 @@ TowrUserInterface::TowrUserInterface ()
   robot_      = RobotModel::Anymal;
   terrain_    = HeightMap::FlatID;
   gait_combo_ = GaitGenerator::C5;
-  total_duration_ = 2.4;
+  total_duration_ = 2.8;
   visualize_trajectory_ = false;
   plot_trajectory_ = false;
   replay_speed_ = 1.0; // realtime

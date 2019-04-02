@@ -48,7 +48,8 @@ towr::SwingConstraint::InitVariableDependedQuantities (const VariablesPtr& x)
   // constrain xy position and velocity of every swing node
   int constraint_count =  pure_swing_node_ids_.size()*Node::n_derivatives*k2D;
 
-  SetRows(constraint_count);
+//  SetRows(constraint_count);
+  SetRows(0);
 }
 
 Eigen::VectorXd
@@ -69,8 +70,8 @@ SwingConstraint::GetValues () const
     Vector2d xy_center      = prev + 0.5*distance_xy;
     Vector2d des_vel_center = distance_xy/t_swing_avg_; // linear interpolation not accurate
     for (auto dim : {X,Y}) {
-      g(row++) = curr.p()(dim) - xy_center(dim);
-      g(row++) = curr.v()(dim) - des_vel_center(dim);
+//      g(row++) = curr.p()(dim) - xy_center(dim);
+//      g(row++) = curr.v()(dim) - des_vel_center(dim);
     }
   }
 
@@ -80,31 +81,31 @@ SwingConstraint::GetValues () const
 SwingConstraint::VecBound
 SwingConstraint::GetBounds () const
 {
-  return VecBound(GetRows(), ifopt::BoundZero);
+//  return VecBound(GetRows(), ifopt::BoundZero);
 }
 
 void
 SwingConstraint::FillJacobianBlock (std::string var_set,
                                     Jacobian& jac) const
 {
-  if (var_set == ee_motion_->GetName()) {
-    int row = 0;
-    for (int node_id : pure_swing_node_ids_) {
-      for (auto dim : {X,Y}) {
-        // position constraint
-        jac.coeffRef(row, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(node_id,   kPos, dim))) =  1.0;  // current node
-        jac.coeffRef(row, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(node_id+1, kPos, dim))) = -0.5;  // next node
-        jac.coeffRef(row, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(node_id-1, kPos, dim))) = -0.5;  // previous node
-        row++;
-
-        // velocity constraint
-        jac.coeffRef(row, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(node_id,   kVel, dim))) =  1.0;              // current node
-        jac.coeffRef(row, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(node_id+1, kPos, dim))) = -1.0/t_swing_avg_; // next node
-        jac.coeffRef(row, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(node_id-1, kPos, dim))) = +1.0/t_swing_avg_; // previous node
-        row++;
-      }
-    }
-  }
+//  if (var_set == ee_motion_->GetName()) {
+//    int row = 0;
+//    for (int node_id : pure_swing_node_ids_) {
+//      for (auto dim : {X,Y}) {
+//        // position constraint
+//        jac.coeffRef(row, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(node_id,   kPos, dim))) =  1.0;  // current node
+//        jac.coeffRef(row, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(node_id+1, kPos, dim))) = -0.5;  // next node
+//        jac.coeffRef(row, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(node_id-1, kPos, dim))) = -0.5;  // previous node
+//        row++;
+//
+//        // velocity constraint
+//        jac.coeffRef(row, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(node_id,   kVel, dim))) =  1.0;              // current node
+//        jac.coeffRef(row, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(node_id+1, kPos, dim))) = -1.0/t_swing_avg_; // next node
+//        jac.coeffRef(row, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(node_id-1, kPos, dim))) = +1.0/t_swing_avg_; // previous node
+//        row++;
+//      }
+//    }
+//  }
 }
 
 } /* namespace towr */

@@ -39,13 +39,6 @@ using namespace std;
 
 namespace towr {
 
-//new
-//SwingConstraint::SwingConstraint (std::string ee_motion)
-//    :ConstraintSet(kSpecifyLater, "swing-" + ee_motion)
-//{
-//  ee_motion_id_ = ee_motion;
-//}
-
 ForceConstraint::ForceConstraint (const HeightMap::Ptr& terrain,
                                   double force_limit,
                                   EE ee)
@@ -59,28 +52,45 @@ ForceConstraint::ForceConstraint (const HeightMap::Ptr& terrain,
 //  n_constraints_per_node_ = 1 + 2*k2D; // positive normal force + 4 friction pyramid constraints
 
   //new: plus pos and vel of every node: Node::n_derivatives*k2D
-  n_constraints_per_node_ = 1 + 2*k2D + Node::n_derivatives*k2D;
+//  n_constraints_per_node_ = 1 + 2*k2D + Node::n_derivatives*k2D;
+  n_constraints_per_node_ = 1 + 2*k2D + 1;
 
-  cout << "n_constraints_per_node: " << n_constraints_per_node_ << endl;
-//  cout << "n_rows_force_Jacobian: " << n_rows_force_Jacobian << endl;
-//  cout << "n_rows_motion_Jacobian: " << n_rows_motion_Jacobian << endl;
+//  cout << "n_constraints_per_node: " << n_constraints_per_node_ << endl;
+  cout << "ee_: " << ee_ << endl;
 
 }
+
+//SwingConstraint::SwingConstraint (std::string ee_motion)
+//    :ConstraintSet(kSpecifyLater, "swing-" + ee_motion)
+//{
+//  ee_motion_id_ = ee_motion;
+//}
 
 void
 ForceConstraint::InitVariableDependedQuantities (const VariablesPtr& x)
 {
   ee_force_  = x->GetComponent<NodesVariablesPhaseBased>(id::EEForceNodes(ee_));
   ee_motion_ = x->GetComponent<NodesVariablesPhaseBased>(id::EEMotionNodes(ee_));
+//  ee_motion_ = x->GetComponent<NodesVariablesPhaseBased>(ee_motion_id_);
 
   //take all nodes because we have pure driving:
-  pure_stance_force_node_ids_ = ee_force_->GetIndicesOfAllNodes();
-//  pure_stance_force_node_ids_ = ee_motion_->GetIndicesOfNonConstantNodes();
+  	pure_stance_force_node_ids_ = ee_force_->GetIndicesOfAllNodes();
+//  	stance_node_ids_ = {0,2,4,6};
+//  	motion_node_ids_ = {1,3,5,7};
+//  pure_stance_force_node_ids_ = ee_motion_->GetIndicesOfAllNodes();
+//  pure_stance_force_node_ids_ = ee_force_->GetIndicesOfNonConstantNodes();
 //  pure_stance_force_node_ids_.push_back(ee_force_->GetIndicesOfConstantNodes());
 
+//  	pure_stance_force_node_ids_ = {0,1,2,3};
+
   int constraint_count = pure_stance_force_node_ids_.size()*n_constraints_per_node_;
+//  int constraint_count = 4*5 + 4*1; //4 force nodes und 4 motion nodes
+
   SetRows(constraint_count);
   cout << "number of TOTAL constraints (per node*nodes): " << constraint_count << endl;
+//  for (int f_node_id : pure_stance_force_node_ids_) {
+//	  cout << "node ids used: " << pure_stance_force_node_ids_[f_node_id] << ", ";
+//  }
 }
 
 Eigen::VectorXd
@@ -92,11 +102,13 @@ ForceConstraint::GetValues () const
   auto force_nodes = ee_force_->GetNodes();
   auto nodes = ee_motion_->GetNodes();	//new
   for (int f_node_id : pure_stance_force_node_ids_) {
+//  for (int f_node_id : stance_node_ids_) {
     int phase  = ee_force_->GetPhase(f_node_id);
 //    Vector3d p = ee_motion_->GetValueAtStartOfPhase(phase); // doesn't change during stance phase
 
+//    if (f_node_id == 0 or f_node_id == 2 or f_node_id == 4 or f_node_id == 6){
     //new
-    Vector3d p = nodes.at(f_node_id).p();
+    Vector3d p = nodes.at(f_node_id).p(); //nicht alle nodes existieren..!
 
     Vector3d n = terrain_->GetNormalizedBasis(HeightMap::Normal, p.x(), p.y());
     Vector3d f = force_nodes.at(f_node_id).p();
@@ -114,10 +126,12 @@ ForceConstraint::GetValues () const
     g(row++) = f.transpose() * (t2 - mu_*n); // t2 < mu*n
     g(row++) = f.transpose() * (t2 + mu_*n); // t2 > -mu*n
 //      g(row++) = f.transpose() * t2;
+//    }
 
-
+//    else {
+//    for (int m_node_id : motion_node_ids_) {
     //new
-    // assumes two splines per swingphase and starting and ending in stance
+    // assumes three splines per drive phase (and starting and ending in stance??)
         auto curr = nodes.at(f_node_id);
 
         //TODO no velocity in Y direction during drive!
@@ -132,9 +146,7 @@ ForceConstraint::GetValues () const
 
 //        Vector2d ybound = nodes.at(f_node_id).p().topRows<2>();
 
-        Vector2d distance_xy    = next - prev;
-        Vector2d xy_center      = prev + 0.5*distance_xy;
-        Vector2d des_vel_center = distance_xy/t_swing_avg_; // linear interpolation not accurate
+
 //        des_vel_center.row(1).setZero();
 //        des_vel_center(Y)=0;
 //        xy_center(Y)=0;
@@ -143,11 +155,25 @@ ForceConstraint::GetValues () const
 //          g(row++) = curr.p()(dim) - xy_center(dim);
 //          g(row++) = curr.v()(dim) - des_vel_center(dim);
 //        }
-        g(row++) = curr.p()(X) - xy_center(X);
-        g(row++) = curr.v()(X) - des_vel_center(X);
-        g(row++) = curr.p()(Y) - prev(Y);
-        g(row++) = curr.v()(Y);
-
+        if (f_node_id == 0){
+        	Vector2d distance_xy    = next - curr.p().topRows<2>();
+        	        Vector2d xy_center      = curr.p().topRows<2>() + distance_xy;
+        	        Vector2d des_vel_center = distance_xy/(t_drive_/3); // linear interpolation not accurate
+//        	        g(row++) = curr.p()(X) - xy_center(X);
+        	        g(row++) = curr.v()(X) - des_vel_center(X);
+        	//        g(row++) = curr.p()(Y) - prev(Y);
+//        	        g(row++) = curr.v()(Y);
+        }
+        else {
+        	Vector2d distance_xy    = next - prev;
+        	Vector2d xy_center      = prev + distance_xy;
+        	Vector2d des_vel_center = distance_xy/(t_drive_/3); // linear interpolation not accurate
+//        	g(row++) = curr.p()(X) - xy_center(X);
+        	g(row++) = curr.v()(X) - des_vel_center(X);
+        	//        g(row++) = curr.p()(Y) - prev(Y);
+//        	g(row++) = curr.v()(Y);
+        }
+//    }
   }
 
 //  cout << "n_constraints: " << g;
@@ -161,16 +187,20 @@ ForceConstraint::GetBounds () const
   VecBound bounds;
 
   for (int f_node_id : pure_stance_force_node_ids_) {
+//	  if (f_node_id == 0 or f_node_id == 2 or f_node_id == 4 or f_node_id == 6){
     bounds.push_back(ifopt::Bounds(0.0, fn_max_)); // unilateral forces
     bounds.push_back(ifopt::BoundSmallerZero); // f_t1 >  mu*n
     bounds.push_back(ifopt::BoundGreaterZero); // f_t1 < -mu*n
     bounds.push_back(ifopt::BoundSmallerZero); // f_t2 <  mu*n
     bounds.push_back(ifopt::BoundGreaterZero); // f_t2 > -mu*n
-//    bounds.push_back(ifopt::BoundZero); // f_t2 = 0
-    bounds.push_back(ifopt::BoundZero);	//
-    bounds.push_back(ifopt::BoundZero);
-    bounds.push_back(ifopt::BoundZero); //bound for y-pos (=previous pos)
-    bounds.push_back(ifopt::BoundZero); //bound for y-vel
+//	  }
+
+//	  else {
+    bounds.push_back(ifopt::BoundZero);	//bound for x-velocity
+//    bounds.push_back(ifopt::BoundZero);
+//    bounds.push_back(ifopt::BoundZero); //bound for y-pos (=previous pos)
+//    bounds.push_back(ifopt::BoundZero); //bound for y-vel
+//	  }
   }
 
   return bounds;

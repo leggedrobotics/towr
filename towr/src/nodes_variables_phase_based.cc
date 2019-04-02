@@ -45,13 +45,13 @@ BuildPolyInfos (int phase_count, bool first_phase_constant,
   bool phase_constant = first_phase_constant;
 
   for (int i=0; i<phase_count; ++i) {
-    if (phase_constant)
-      polynomial_info.push_back(PolyInfo(i,0,1, true));
-    else
-      for (int j=0; j<n_polys_in_changing_phase; ++j)
-        polynomial_info.push_back(PolyInfo(i,j,n_polys_in_changing_phase, false));
+//    if (phase_constant)
+//      polynomial_info.push_back(PolyInfo(i,0,1, true));
+//    else
+      for (int j=0; j<7; ++j)
+        polynomial_info.push_back(PolyInfo(i,j,7, false));
 
-    phase_constant = !phase_constant; // constant and non-constant phase alternate
+//    phase_constant = !phase_constant; // constant and non-constant phase alternate
   }
 
   return polynomial_info;
@@ -223,66 +223,25 @@ NodesVariablesEEMotion::GetPhaseBasedEEParameterization ()
 {
   OptIndexMap index_map;
 
+  //for driving phase:
+
   int idx = 0; // index in variables set
   for (int node_id=0; node_id<nodes_.size(); ++node_id) {
-    // swing node:
-//    if (!IsConstantNode(node_id)) {
-//      for (int dim=0; dim<GetDim(); ++dim) {
-//        // intermediate way-point position of swing motion are optimized
-//        index_map[idx++].push_back(NodeValueInfo(node_id, kPos, dim));
-//
-//        // velocity in vertical direction fixed to zero and not optimized.
-//        // Since we often choose two polynomials per swing-phase, this restricts
-//        // the swing to have reached it's extreme at half-time and creates
-//        // smoother stepping motions.
-//
-//        //TODO maybe change here that if dim=Y also no velocity!
-//        if (dim == Z)
-//          nodes_.at(node_id).at(kVel).z() = 0.0;
-//        else if (dim == Y)
-//            nodes_.at(node_id).at(kVel).y() = 0.0;
-//        else
-//          // velocity in x,y dimension during swing fully optimized.
-//          index_map[idx++].push_back(NodeValueInfo(node_id, kVel, dim));
-//      }
-//    }
-    // stance node (next one will also be stance, so handle that one too):
-//    else {
 
-    	// new: we have a velocity in x direction (drive)
-//      nodes_.at(node_id).at(kVel).setZero();
-//      nodes_.at(node_id+1).at(kVel).setZero();
+	  for (int dim=0; dim<GetDim(); ++dim) {
+		  if (dim == X or dim == Y){
+			  index_map[idx++].push_back(NodeValueInfo(node_id, kPos, dim));
+	      	}
+	      else
+	    	  nodes_.at(node_id).at(kPos).z() = 0.0;
+	   }
 
-      for (int dim=0; dim<GetDim(); ++dim) {
+//	  only optimize velocity in x-direction:
+	  index_map[idx++].push_back(NodeValueInfo(node_id, kVel, X));
+	  nodes_.at(node_id).at(kVel).y() = 0.0;
+	  nodes_.at(node_id).at(kVel).z() = 0.0;
 
-    	velocity:
-//    	  if (dim == Z)
-    	     nodes_.at(node_id).at(kVel).z() = 0.0;
-//    	  else if (dim == Y)
-    		 nodes_.at(node_id).at(kVel).y() = 0.0;
-    	  if (dim == X)
-    	      // velocity in x dimension during drive fully optimized.
-    	      index_map[idx++].push_back(NodeValueInfo(node_id, kVel, dim));
-
-
-    	// position of foot is still an optimization variable used for
-        // both start and end node of that polynomial
-
-//    	if (dim == X){
-        index_map[idx].push_back(NodeValueInfo(node_id,   kPos, dim));
-        index_map[idx].push_back(NodeValueInfo(node_id+1, kPos, dim));
-        idx++;
-//    	}
-//    	else if (dim==Y){
-//    		nodes_.at(node_id).at(kPos).y() = 0.2;
-//    		nodes_.at(node_id+1).at(kPos).y() = -0.2;
-//    	}
-
-      }
-
-      node_id += 1; // already added next constant node, so skip
     }
-//  }
 
   return index_map;
 }
@@ -327,7 +286,7 @@ NodesVariablesEEForce::GetPhaseBasedEEParameterization ()
 //      nodes_.at(id).at(kVel).setZero();
 //      nodes_.at(id+1).at(kVel).setZero();
 
-      id += 1; // already added next constant node, so skip
+//      id += 1; // already added next constant node, so skip
 //    }
   }
 
