@@ -239,7 +239,7 @@ NodesVariablesEEMotion::GetPhaseBasedEEParameterization ()
 //	  only optimize velocity in x-direction:
 	  index_map[idx++].push_back(NodeValueInfo(node_id, kVel, X));
 	  nodes_.at(node_id).at(kVel).y() = 0.0;
-	  nodes_.at(node_id).at(kVel).z() = 0.0;
+//	  nodes_.at(node_id).at(kVel).z() = 0.0;
 
     }
 
