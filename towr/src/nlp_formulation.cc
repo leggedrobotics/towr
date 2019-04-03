@@ -116,8 +116,10 @@ NlpFormulation::MakeBaseVariables () const
   auto spline_ang = std::make_shared<NodesVariablesAll>(n_nodes, k3D, id::base_ang_nodes);
   spline_ang->SetByLinearInterpolation(initial_base_.ang.p(), final_base_.ang.p(), params_.GetTotalTime());
   spline_ang->AddStartBound(kPos, {X,Y,Z}, initial_base_.ang.p());
+
+//  spline_ang->AddStartBound(kPos, {X,Y,Z}, (0.5, 0.01, 0.01));
   spline_ang->AddStartBound(kVel, {X,Y,Z}, initial_base_.ang.v());
-//  spline_ang->AddFinalBound(kPos, params_.bounds_final_ang_pos_, final_base_.ang.p());
+  spline_ang->AddFinalBound(kPos, params_.bounds_final_ang_pos_, final_base_.ang.p());
   spline_ang->AddFinalBound(kVel, params_.bounds_final_ang_vel_, final_base_.ang.v());
   vars.push_back(spline_ang);
 
@@ -141,7 +143,10 @@ NlpFormulation::MakeEndeffectorVariables () const
 
     // initialize towards final footholds
     double yaw = final_base_.ang.p().z();
-    Eigen::Vector3d euler(0.0, 0.0, yaw);
+    double pitch = final_base_.ang.p().y(); //new
+    double roll = final_base_.ang.p().x(); //new
+//    Eigen::Vector3d euler(0.0, 0.0, yaw);
+    Eigen::Vector3d euler(roll, pitch, yaw); //new
     Eigen::Matrix3d w_R_b = EulerConverter::GetRotationMatrixBaseToWorld(euler);
     Vector3d final_ee_pos_W = final_base_.lin.p() + w_R_b*model_.kinematic_model_->GetNominalStanceInBase().at(ee);
     double x = final_ee_pos_W.x();

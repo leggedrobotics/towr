@@ -55,6 +55,7 @@ public:
     );
 
     formulation_.initial_base_.lin.at(kPos).z() = - nominal_stance_B.front().z() + z_ground;
+//    formulation_.initial_base_.ang.at(kPos).y() = 0.05;
   }
 
   /**
