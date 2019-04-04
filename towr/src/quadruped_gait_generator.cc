@@ -47,6 +47,8 @@ QuadrupedGaitGenerator::QuadrupedGaitGenerator ()
   Bb_ = BP_ = bB_ = PB_             = init; // three-leg support
   BB_                               = init; // four-leg support phase
 
+  // true is drive, false is drift!
+
   // flight_phase
   II_ = ContactState(n_ee, false);
   // one stanceleg
@@ -82,7 +84,9 @@ QuadrupedGaitGenerator::SetCombo (Combos combo)
     case C2: SetGaits({Stand, Run3, Run3, Run3, Run3E, Stand}); break; // pace
     case C3: SetGaits({Stand, Hop1, Hop1, Hop1, Hop1E, Stand}); break; // bound
     case C4: SetGaits({Stand, Hop3, Hop3, Hop3, Hop3E, Stand}); break; // gallop
-    case C5: SetGaits({Stand, Drive, Drive, Drive, DriveE, Stand}); break; // gallop
+    case C5: SetGaits({Stand, Drive, Drive, Drive, DriveE, Stand}); break; // just drive
+//    case C6: SetGaits({Stand, DriveDrift, Stand}); break; // Drive and Drift (bei Drift ist auch drive dabei!)
+    case C6: SetGaits({DriveDrift}); break; //ohne stand, das waere ein erneuter phase change!
     default: assert(false); std::cout << "Gait not defined\n"; break;
   }
 }
@@ -109,6 +113,8 @@ QuadrupedGaitGenerator::GetGait(Gaits gait) const
     case Hop5:    return GetStrideLimp();
     case Drive:	  return GetStrideDrive();
     case DriveE:  return GetStrideDriveEnd();
+    case DriveDrift:	return GetStrideDriveDrift();
+    case DriveDriftE:  	return GetStrideDriveDriftEnd();
     default: assert(false); // gait not implemented
   }
 }
@@ -141,6 +147,41 @@ QuadrupedGaitGenerator::GetStrideDriveEnd () const
   };
 
   return std::make_pair(times, contacts);
+}
+
+QuadrupedGaitGenerator::GaitInfo
+QuadrupedGaitGenerator::GetStrideDriveDrift () const
+{
+  double drive   = 1.8;
+  double drift = 0.6;
+
+  auto times =
+  {
+      drive, drift
+  };
+  auto phase_contacts =
+  {
+      BB_, BB_,
+  };
+
+  return std::make_pair(times, phase_contacts);
+}
+
+QuadrupedGaitGenerator::GaitInfo
+QuadrupedGaitGenerator::GetStrideDriveDriftEnd () const
+{
+  double drive   = 2.4;
+
+  auto times =
+  {
+      drive
+  };
+  auto phase_contacts =
+  {
+      BB_,
+  };
+
+  return std::make_pair(times, phase_contacts);
 }
 
 QuadrupedGaitGenerator::GaitInfo

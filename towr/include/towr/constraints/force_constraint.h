@@ -76,6 +76,8 @@ public:
   VecBound GetBounds() const override;
   void FillJacobianBlock (std::string var_set, Jacobian&) const override;
 
+  EE ee_;                  ///< The endeffector force to be constrained. //NEW!
+
 private:
   NodesVariablesPhaseBased::Ptr ee_force_;  ///< the current xyz foot forces.
   NodesVariablesPhaseBased::Ptr ee_motion_; ///< the current xyz foot positions.
@@ -84,9 +86,9 @@ private:
   double fn_max_;          ///< force limit in normal direction.
   double mu_;              ///< friction coeff between robot feet and terrain.
   int n_constraints_per_node_; ///< number of constraint for each node.
-  EE ee_;                  ///< The endeffector force to be constrained.
+//  EE ee_;                  ///< The endeffector force to be constrained.
 
-  double t_drive_ = 2.8; //new
+//  double t_drive_ = 2.4; //new
 
   /**
    * The are those Hermite-nodes that shape the polynomial during the

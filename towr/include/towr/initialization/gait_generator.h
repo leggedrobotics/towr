@@ -55,7 +55,7 @@ public:
   /**
    * @brief Predefined combinations of different strides.
    */
-  enum Combos { C0, C1, C2, C3, C4, C5, COMBO_COUNT};
+  enum Combos { C0, C1, C2, C3, C4, C5, C6, COMBO_COUNT};
 
   /**
    * @brief Predefined strides, each with a different gait diagram.
@@ -63,8 +63,10 @@ public:
   enum Gaits  {Stand=0, Flight,
                Walk1, Walk2, Walk2E,
                Run2, Run2E, Run1, Run1E, Run3, Run3E,
-               Hop1, Hop1E, Hop2, Hop3, Hop3E, Hop5, Hop5E, Drive, DriveE,
+               Hop1, Hop1E, Hop2, Hop3, Hop3E, Hop5, Hop5E, Drive, DriveE, DriveDrift, DriveDriftE,
                GAIT_COUNT};
+
+  std::vector<ContactState> contacts_; //new!
 
   static Ptr MakeGaitGenerator(int leg_count);
 
@@ -106,7 +108,8 @@ protected:
    * The contact state for the complete robot. The size of this vector must
    * be equal to the above times_.
    */
-  std::vector<ContactState> contacts_;
+
+//  std::vector<ContactState> contacts_; //new!
 
   /**
    * Removes the last phase that would transition to a new stride.

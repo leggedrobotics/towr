@@ -92,9 +92,11 @@ PhaseDurations::SetVariables (const VectorXd& x)
   assert(t_total_>x.sum());
 //  NEW: Set duration of first phase equal to duration of total phase and the rest 0.
 
-  durations_.at(0) = t_total_;
+  //TODO: add third phase here as well!!!
+  durations_.at(0) = 1.8;
+  durations_.at(1) = 0.6;
 
-  for (int i=1; i<GetRows(); ++i)
+  for (int i=2; i<GetRows(); ++i)
 //    durations_.at(i) = x(i);
 	  durations_.at(i) = 0;
   durations_.back()=0;
@@ -125,7 +127,8 @@ bool
 PhaseDurations::IsContactPhase (double t) const
 {
   int phase_id = Spline::GetSegmentID(t, durations_);
-  return phase_id%2 == 0? initial_contact_state_ : !initial_contact_state_;
+//  return phase_id%2 == 0? initial_contact_state_ : !initial_contact_state_;
+  return true;
 }
 
 PhaseDurations::Jacobian
@@ -159,5 +162,3 @@ PhaseDurations::GetJacobianOfPos (int current_phase,
 }
 
 } /* namespace towr */
-
-

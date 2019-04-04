@@ -27,6 +27,11 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************/
 
+#include <towr/initialization/quadruped_gait_generator.h>
+#include <towr/initialization/gait_generator.h>
+
+#include <towr/constraints/force_constraint.h>
+
 #include <towr/variables/nodes_variables_phase_based.h>
 #include <towr/variables/cartesian_dimensions.h>
 
@@ -42,7 +47,7 @@ BuildPolyInfos (int phase_count, bool first_phase_constant,
   using PolyInfo = NodesVariablesPhaseBased::PolyInfo;
   std::vector<PolyInfo> polynomial_info;
 
-  bool phase_constant = first_phase_constant;
+  bool phase_constant = first_phase_constant;	//first phase for all drive phase, so "constant"
 
   for (int i=0; i<phase_count; ++i) {
 //    if (phase_constant)
@@ -101,6 +106,7 @@ NodesVariablesPhaseBased::IsConstantNode (int node_id) const
 {
   bool is_constant = false;
 
+
   // node is considered constant if either left or right polynomial
   // belongs to a constant phase
 //  for (int poly_id : GetAdjacentPolyIds(node_id))
@@ -142,10 +148,21 @@ NodesVariablesPhaseBased::GetIndicesOfNonConstantNodes() const
 int
 NodesVariablesPhaseBased::GetPhase (int node_id) const
 {
-  assert(!IsConstantNode(node_id)); // because otherwise it has two phases
+//  assert(!IsConstantNode(node_id)); // because otherwise it has two phases
+//
+//  int poly_id = GetAdjacentPolyIds(node_id).front();
+//  return polynomial_info_.at(poly_id).phase_;
+	if (node_id == 0 or node_id == 1 or node_id == 2 or node_id == 3){
+//	if (GaitGenerator::contacts_(ee) == true){
+		return 0;
+	}
+//	else if ((node_id == 3 or node_id == 4 or node_id == 5 or node_id == 6) and GaitGenerator::contacts_(ee) == false){
+	else
+		return 1;
 
-  int poly_id = GetAdjacentPolyIds(node_id).front();
-  return polynomial_info_.at(poly_id).phase_;
+//  if (GaitGenerator::contacts_(ForceConstraint::ee_) == true){		//anstatt 0 muss ee_ rein! dann kann man nur hintere EEs in naechste phase bringen.
+//	  ;
+//  }
 }
 
 int
@@ -223,11 +240,16 @@ NodesVariablesEEMotion::GetPhaseBasedEEParameterization ()
 {
   OptIndexMap index_map;
 
-  //for driving phase:
-
   int idx = 0; // index in variables set
   for (int node_id=0; node_id<nodes_.size(); ++node_id) {
+	 int phase = GetPhase(node_id);
 
+	 //Braucht noch Bedingung, ob der ee driften darf oder nicht:
+	 // irgendwie if IB_.at(LF) == false;
+
+
+	 //for driving phase (phase 0):
+	 if (phase == 0){
 	  for (int dim=0; dim<GetDim(); ++dim) {
 		  if (dim == X or dim == Y){
 			  index_map[idx++].push_back(NodeValueInfo(node_id, kPos, dim));
@@ -240,8 +262,20 @@ NodesVariablesEEMotion::GetPhaseBasedEEParameterization ()
 	  index_map[idx++].push_back(NodeValueInfo(node_id, kVel, X));
 	  nodes_.at(node_id).at(kVel).y() = 0.0;
 //	  nodes_.at(node_id).at(kVel).z() = 0.0;
-
     }
+
+	 //for drifting phase (phase 1):
+	 else if (phase == 1){
+	  for (int dim=0; dim<GetDim(); ++dim) {
+		 if (dim == X or dim == Y){
+			  index_map[idx++].push_back(NodeValueInfo(node_id, kPos, dim));
+		 }
+	  }
+	  // optimize velocity in x and y-direction:
+	  	index_map[idx++].push_back(NodeValueInfo(node_id, kVel, X));
+	  	index_map[idx++].push_back(NodeValueInfo(node_id, kVel, Y));
+	 }
+  }
 
   return index_map;
 }
@@ -269,7 +303,7 @@ NodesVariablesEEForce::GetPhaseBasedEEParameterization ()
     // stance node:
     // forces can be created during stance, so these nodes are optimized over.
 
-	  //NEW: Forces in every phase need to be optimized over!!
+	  //NEW: Forces in every phase need to be optimized over!! (drive and drift phase)
 //    if (!IsConstantNode(id)) {
       for (int dim=0; dim<GetDim(); ++dim) {
         index_map[idx++].push_back(NodeValueInfo(id, kPos, dim));

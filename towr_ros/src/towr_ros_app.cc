@@ -102,15 +102,15 @@ public:
     // this uses numerical derivatives for ALL constraints, there doesn't yet
     // exist an option to turn on numerical derivatives for only some constraint
     // sets.
-    solver_->SetOption("jacobian_approximation", "exact"); // finite difference-values
-//    solver_->SetOption("jacobian_approximation", "finite-difference-values");
+//    solver_->SetOption("jacobian_approximation", "exact"); // finite difference-values
+    solver_->SetOption("jacobian_approximation", "finite-difference-values");
 
     // This is a great to test if the analytical derivatives implemented in are
     // correct. Some derivatives that are correct are still flagged, showing a
     // deviation of 10e-4, which is fine. What to watch out for is deviations > 10e-2.
-    // solver_->SetOption("derivative_test", "first-order");
+//     solver_->SetOption("derivative_test", "first-order");
 
-    solver_->SetOption("max_cpu_time", 40.0);
+    solver_->SetOption("max_cpu_time", 500.0);
 //    solver_->SetOption("print_level", 5);
 
     if (msg.play_initialization)

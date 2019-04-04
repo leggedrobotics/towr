@@ -69,7 +69,7 @@ public:
     int phase_; ///< The phase ID this polynomial represents.
     int poly_in_phase_; ///< is this the 1st, 2nd, ... polynomial or this phase.
     int n_polys_in_phase_; ///< the number of polynomials used for this phase.
-    bool is_constant_; ///< Does this polynomial represent a constant phase.
+    bool is_constant_; ///<  is_constant now says if it is drive or drift! (need to implement this!)
     PolyInfo(int phase, int poly_in_phase, int n_polys_in_phase, bool is_const);
   };
 

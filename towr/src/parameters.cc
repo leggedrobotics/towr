@@ -44,7 +44,7 @@ Parameters::Parameters ()
   force_polynomials_per_stance_phase_ = 3;
   ee_polynomials_per_swing_phase_ = 3; // so step can at least lift leg
 
-  //NEW: only one phase with the total duration!
+
   //TODO for drift: 3 phases, but fix timings here!
 //  std::vector<double> phase_n_and_t{2.8};
 //  ee_phase_durations_.push_back(phase_n_and_t);
@@ -72,9 +72,11 @@ Parameters::Parameters ()
   // bounds on final 6DoF base state
   bounds_final_lin_pos_ = {X,Y};
 //  bounds_final_lin_vel_ = {X,Y,Z};
-  bounds_final_lin_vel_ = {X,Y};
-//  bounds_final_ang_pos_ = {X,Y,Z};
+  bounds_final_lin_vel_ = {Y};
+  bounds_final_ang_pos_ = {X,Y,Z};
+//  bounds_final_ang_pos_ = {Z};
   bounds_final_ang_vel_ = {X,Y,Z};
+//  bounds_final_ang_vel_ = {Z};
 
   // additional restrictions are set directly on the variables in nlp_factory,
   // such as e.g. initial and endeffector,...

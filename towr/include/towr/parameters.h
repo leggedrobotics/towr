@@ -165,7 +165,8 @@ public:
   virtual ~Parameters() = default;
 
   /// Number and initial duration of each foot's swing and stance phases.
-  std::vector<VecTimes> ee_phase_durations_{{2.8}};
+//  std::vector<VecTimes> ee_phase_durations_{{2.4, 1.2}, {2.4, 1.2}, {2.4, 1.2}, {2.4, 1.2}};
+  std::vector<VecTimes> ee_phase_durations_{{2.4}, {2.4}, {1.8, 0.6}, {1.8, 0.6}}; //nur hintere Räder wechseln Phase!
 
   /// True if the foot is initially in contact with the terrain.
   std::vector<bool> ee_in_contact_at_start_;
