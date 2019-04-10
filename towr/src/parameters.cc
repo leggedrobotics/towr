@@ -41,8 +41,8 @@ Parameters::Parameters ()
 {
   // constructs optimization variables
   duration_base_polynomial_ = 0.4;
-  force_polynomials_per_stance_phase_ = 3;
-  ee_polynomials_per_swing_phase_ = 3; // so step can at least lift leg
+  force_polynomials_per_stance_phase_ = 6;
+  ee_polynomials_per_swing_phase_ = 6; // so step can at least lift leg
 
 
   //TODO for drift: 3 phases, but fix timings here!
@@ -56,7 +56,7 @@ Parameters::Parameters ()
   dt_constraint_range_of_motion_ = 0.08;
   dt_constraint_dynamic_ = 0.1;
   dt_constraint_base_motion_ = duration_base_polynomial_/4.; // only for base RoM constraint
-  bound_phase_duration_ = std::make_pair(0.2, 5.0);  // used only when optimizing phase durations, so gait
+  bound_phase_duration_ = std::make_pair(0.2, 10);  // used only when optimizing phase durations, so gait
 
   // a minimal set of basic constraints
 //  constraints_.push_back(Terrain);
@@ -71,10 +71,10 @@ Parameters::Parameters ()
 
   // bounds on final 6DoF base state
   bounds_final_lin_pos_ = {X,Y};
-//  bounds_final_lin_vel_ = {X,Y,Z};
-  bounds_final_lin_vel_ = {Y};
-  bounds_final_ang_pos_ = {X,Y,Z};
-//  bounds_final_ang_pos_ = {Z};
+  bounds_final_lin_vel_ = {X,Y,Z};
+//  bounds_final_lin_vel_ = {Y};
+//  bounds_final_ang_pos_ = {X,Y,Z};
+  bounds_final_ang_pos_ = {Z};
   bounds_final_ang_vel_ = {X,Y,Z};
 //  bounds_final_ang_vel_ = {Z};
 

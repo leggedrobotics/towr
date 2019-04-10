@@ -152,7 +152,7 @@ NodesVariablesPhaseBased::GetPhase (int node_id) const
 //
 //  int poly_id = GetAdjacentPolyIds(node_id).front();
 //  return polynomial_info_.at(poly_id).phase_;
-	if (node_id == 0 or node_id == 1 or node_id == 2 or node_id == 3){
+	if (node_id < 7){
 //	if (GaitGenerator::contacts_(ee) == true){
 		return 0;
 	}

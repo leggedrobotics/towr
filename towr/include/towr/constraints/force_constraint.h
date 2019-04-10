@@ -34,6 +34,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <towr/variables/nodes_variables_phase_based.h>
 #include <towr/terrain/height_map.h> // for friction cone
+#include <towr/variables/euler_converter.h>
+#include <towr/variables/state.h>
 
 namespace towr {
 

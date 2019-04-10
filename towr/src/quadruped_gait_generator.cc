@@ -86,7 +86,7 @@ QuadrupedGaitGenerator::SetCombo (Combos combo)
     case C4: SetGaits({Stand, Hop3, Hop3, Hop3, Hop3E, Stand}); break; // gallop
     case C5: SetGaits({Stand, Drive, Drive, Drive, DriveE, Stand}); break; // just drive
 //    case C6: SetGaits({Stand, DriveDrift, Stand}); break; // Drive and Drift (bei Drift ist auch drive dabei!)
-    case C6: SetGaits({DriveDrift}); break; //ohne stand, das waere ein erneuter phase change!
+    case C6: SetGaits({Stand, Drive, Drive, Drive, DriveDrift, Stand}); break; //ohne stand, das waere ein erneuter phase change!
     default: assert(false); std::cout << "Gait not defined\n"; break;
   }
 }
@@ -152,7 +152,7 @@ QuadrupedGaitGenerator::GetStrideDriveEnd () const
 QuadrupedGaitGenerator::GaitInfo
 QuadrupedGaitGenerator::GetStrideDriveDrift () const
 {
-  double drive   = 1.8;
+  double drive   = 0.9;
   double drift = 0.6;
 
   auto times =
@@ -161,7 +161,7 @@ QuadrupedGaitGenerator::GetStrideDriveDrift () const
   };
   auto phase_contacts =
   {
-      BB_, BB_,
+      BB_, IB_,
   };
 
   return std::make_pair(times, phase_contacts);
