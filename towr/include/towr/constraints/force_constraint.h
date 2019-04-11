@@ -97,6 +97,7 @@ private:
    * stance phases, while all the others are already set to zero force (swing)
    **/
   std::vector<int> pure_stance_force_node_ids_;
+  std::vector<int> pure_swing_node_ids_;
   std::vector<int> stance_node_ids_;
   std::vector<int> motion_node_ids_;
 };

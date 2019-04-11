@@ -152,17 +152,17 @@ NodesVariablesPhaseBased::GetPhase (int node_id) const
 //
 //  int poly_id = GetAdjacentPolyIds(node_id).front();
 //  return polynomial_info_.at(poly_id).phase_;
-	if (node_id < 7){
-//	if (GaitGenerator::contacts_(ee) == true){
-		return 0;
-	}
-//	else if ((node_id == 3 or node_id == 4 or node_id == 5 or node_id == 6) and GaitGenerator::contacts_(ee) == false){
-	else
-		return 1;
 
-//  if (GaitGenerator::contacts_(ForceConstraint::ee_) == true){		//anstatt 0 muss ee_ rein! dann kann man nur hintere EEs in naechste phase bringen.
-//	  ;
-//  }
+//	if (node_id < 16){
+//		return 0;
+//	}
+//	else
+//		return 1;
+	if (node_id < 40){
+			return 0;
+		}
+		else
+			return 1;
 }
 
 int
@@ -305,9 +305,26 @@ NodesVariablesEEForce::GetPhaseBasedEEParameterization ()
 
 	  //NEW: Forces in every phase need to be optimized over!! (drive and drift phase)
 //    if (!IsConstantNode(id)) {
+
+	  //forces in drive phase only in x and z-direction!
+	  int phase = GetPhase(id);
+
+	  if (phase == 0){
+		  nodes_.at(id).at(kPos).y()=0.0;
       for (int dim=0; dim<GetDim(); ++dim) {
+    	if (dim == X or dim == Z){
         index_map[idx++].push_back(NodeValueInfo(id, kPos, dim));
         index_map[idx++].push_back(NodeValueInfo(id, kVel, dim));
+    	}
+      }
+	  }
+
+      else if (phase == 1){
+    	  for (int dim=0; dim<GetDim(); ++dim) {
+    	        index_map[idx++].push_back(NodeValueInfo(id, kPos, dim));
+    	        index_map[idx++].push_back(NodeValueInfo(id, kVel, dim));
+    	  }
+      }
       }
 //    }
     // swing node (next one will also be swing, so handle that one too)
@@ -322,7 +339,6 @@ NodesVariablesEEForce::GetPhaseBasedEEParameterization ()
 
 //      id += 1; // already added next constant node, so skip
 //    }
-  }
 
   return index_map;
 }

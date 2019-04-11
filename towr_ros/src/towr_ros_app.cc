@@ -116,7 +116,7 @@ public:
     if (msg.play_initialization)
       solver_->SetOption("max_iter", 0);
     else
-      solver_->SetOption("max_iter", 3000);
+      solver_->SetOption("max_iter", 6000);
   }
 };
 

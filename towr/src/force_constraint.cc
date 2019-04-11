@@ -69,23 +69,10 @@ ForceConstraint::InitVariableDependedQuantities (const VariablesPtr& x)
 
   //take all nodes because we have pure driving:
   	pure_stance_force_node_ids_ = ee_force_->GetIndicesOfAllNodes();
-//  pure_stance_force_node_ids_ = {0,1,2,3,4,5,6};
+//  	pure_swing_node_ids_ = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 
-//  pure_stance_force_node_ids_ = ee_motion_->GetIndicesOfAllNodes();
-//  pure_stance_force_node_ids_ = ee_force_->GetIndicesOfNonConstantNodes();
-
-  int constraint_count = pure_stance_force_node_ids_.size()*n_constraints_per_node_;
-//
-//  int constraint_count = 0;
-//
-//  if (ee_ == 0 or ee_ == 3){
-//	  constraint_count = 7*5;
-//  }
-//  else {
-//	  constraint_count = 4*5;
-//  }
-
-
+//  int constraint_count = pure_stance_force_node_ids_.size()*n_constraints_per_node_+pure_swing_node_ids_.size();
+  	int constraint_count = pure_stance_force_node_ids_.size()*n_constraints_per_node_;
   SetRows(constraint_count);
   cout << "number of nodes: " << pure_stance_force_node_ids_.size() << endl;
   cout << "number of TOTAL constraints (per node*nodes): " << constraint_count << endl;
@@ -147,14 +134,20 @@ ForceConstraint::GetValues () const
     	g(row++) = f.transpose() * (t1 - mu_*n); // t1 < mu*n
     	g(row++) = f.transpose() * (t1 + mu_*n); // t1 > -mu*n
     	g(row++) = f.transpose() * (t2 - mu_*n); // t2 < mu*n
-    g(row++) = f.transpose() * (t2 + mu_*n); // t2 > -mu*n
+    	g(row++) = f.transpose() * (t2 + mu_*n); // t2 > -mu*n
 //    g(row++) = nodes.at(f_node_id).v().y(); // keine y geschw. der vorderen Füsse!
-    }
+
+
+    	//smooth drive motion constraints:
+//    	auto curr = nodes.at(f_node_id);
+//        g(row++) = nodes.at(f_node_id).v()(X);
+      }
+
     else if (phase == 1){
-    	g(row++) = f.transpose() * (t1 - mu_*n); // t1 < mu*n
+    	g(row++) = f.transpose() * (t1 - mu_*n); // t1 = mu*n nur in positive x-richtung driften!
 //    	    g(row++) = f.transpose() * (t1 + mu_*n); // t1 > -mu*n
-    	g(row++) = f.transpose() * (t2 - mu_*n); // t2 > mu*n
-//    	g(row++) = f.transpose() * (t2 + mu_*n); // t2 < -mu*n
+    	g(row++) = f.transpose() * (t2 - mu_*n); // t2 = mu*n
+//    	g(row++) = f.transpose() * (t2 + mu_*n); // t2 = -mu*n
 //    	g(row++) = f.transpose() * (t1 + mu_*n); // t1 > -mu*n
     	g(row++) = 0; //damit Anzahl constraints stimmt.
     	g(row++) = 0; //damit Anzahl constraints stimmt.
@@ -179,15 +172,16 @@ ForceConstraint::GetBounds () const
     bounds.push_back(ifopt::BoundGreaterZero); // f_t1 < -mu*n
     bounds.push_back(ifopt::BoundSmallerZero); // f_t2 <  mu*n
     bounds.push_back(ifopt::BoundGreaterZero); // f_t2 > -mu*n
+//    bounds.push_back(ifopt::BoundGreaterZero); //nur geschwindigkeit in pos. x-rtg!
 //    bounds.push_back(ifopt::BoundZero); //no y-velocity
     }
 
     else if (phase == 1) {
 //    else {
     	bounds.push_back(ifopt::Bounds(0.0, fn_max_)); // unilateral forces
-    	bounds.push_back(ifopt::BoundZero); // f_t1 <  mu*n
-    	bounds.push_back(ifopt::BoundZero); // f_t1 > -mu*n
-    	bounds.push_back(ifopt::BoundZero); // f_t2 >  mu*n
+    	bounds.push_back(ifopt::BoundZero); // f_t1 =  mu*n
+    	bounds.push_back(ifopt::BoundZero); // f_t2 =  mu*n
+    	bounds.push_back(ifopt::BoundZero); //
     	bounds.push_back(ifopt::BoundZero); //
     }
   }
@@ -244,15 +238,10 @@ ForceConstraint::FillJacobianBlock (std::string var_set,
                     jac.coeffRef(row_reset++, idx) = 0;
                     jac.coeffRef(row_reset++, idx) = 0;
            }
-
-//          else{
-//        	  jac.coeffRef(row_reset++, idx) = n(dim);
-//          }
         }
-//        if (phase == 0)
+
         row += n_constraints_per_node_;
-//        else
-//        	row += 1;
+
       }
     }
 
