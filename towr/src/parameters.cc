@@ -41,10 +41,10 @@ Parameters::Parameters ()
 {
   // constructs optimization variables
   duration_base_polynomial_ = 0.1;
-//  force_polynomials_per_stance_phase_ = 15;
-//  ee_polynomials_per_swing_phase_ = 15; // so step can at least lift leg
-  force_polynomials_per_stance_phase_ = 39;
-    ee_polynomials_per_swing_phase_ = 39; // so step can at least lift leg
+  force_polynomials_per_stance_phase_ = 15;
+  ee_polynomials_per_swing_phase_ = 15; // so step can at least lift leg
+//  force_polynomials_per_stance_phase_ = 39;
+//    ee_polynomials_per_swing_phase_ = 39;
 
 
   //TODO for drift: 3 phases, but fix timings here!
@@ -73,12 +73,12 @@ Parameters::Parameters ()
 
   // bounds on final 6DoF base state
   bounds_final_lin_pos_ = {X,Y};
-//  bounds_final_lin_vel_ = {X,Y,Z};
-  bounds_final_lin_vel_ = {Y,Z};
+  bounds_final_lin_vel_ = {X,Y,Z};
+//  bounds_final_lin_vel_ = {Y,Z};
 //  bounds_final_ang_pos_ = {X,Y,Z};
   bounds_final_ang_pos_ = {Z};
-//  bounds_final_ang_vel_ = {X,Y,Z};
-  bounds_final_ang_vel_ = {Z};
+  bounds_final_ang_vel_ = {X,Y,Z};
+//  bounds_final_ang_vel_ = {Z};
 
   // additional restrictions are set directly on the variables in nlp_factory,
   // such as e.g. initial and endeffector,...

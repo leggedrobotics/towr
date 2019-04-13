@@ -37,6 +37,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <towr/variables/euler_converter.h>
 #include <towr/variables/state.h>
 
+#include <towr/variables/spline_holder.h>
+#include <towr/variables/spline.h>
+#include "time_discretization_constraint.h"
+
 namespace towr {
 
 /**
@@ -69,11 +73,13 @@ public:
    */
   ForceConstraint (const HeightMap::Ptr& terrain,
                    double force_limit_in_normal_direction,
-                   EE endeffector_id);
+                   EE endeffector_id,
+				   const SplineHolder& spline_holder);
   virtual ~ForceConstraint () = default;
 
   void InitVariableDependedQuantities(const VariablesPtr& x) override;
 
+//  VectorXd GetValues(double t) const override;
   VectorXd GetValues() const override;
   VecBound GetBounds() const override;
   void FillJacobianBlock (std::string var_set, Jacobian&) const override;
@@ -83,6 +89,7 @@ public:
 private:
   NodesVariablesPhaseBased::Ptr ee_force_;  ///< the current xyz foot forces.
   NodesVariablesPhaseBased::Ptr ee_motion_; ///< the current xyz foot positions.
+  EulerConverter base_angular_; ///< the orientation of the base.
 
   HeightMap::Ptr terrain_; ///< gradient information at every position (x,y).
   double fn_max_;          ///< force limit in normal direction.

@@ -32,6 +32,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "nodes_variables.h"
 
+//#include <towr/variables/euler_converter.h>
+//#include <towr/variables/state.h>
+//
+//#include <towr/variables/spline_holder.h>
+//#include <towr/variables/spline.h>
+//#include "time_discretization_constraint.h"
+
 namespace towr {
 
 /**
@@ -61,6 +68,8 @@ public:
   using Ptr         = std::shared_ptr<NodesVariablesPhaseBased>;
   using NodeIds     = std::vector<int>;
   using OptIndexMap = std::map<int, std::vector<NodeValueInfo> >;
+
+  using Vector3d = Eigen::Vector3d;
 
   /**
    * @brief Holds semantic information each polynomial in spline.
@@ -182,6 +191,9 @@ private:
 
   /** @brief IDs of the polynomial to the left and right of node_id. */
   std::vector<int> GetAdjacentPolyIds(int node_id) const;
+
+//  // for Rotation Matrix
+//  EulerConverter base_angular_; ///< the orientation of the base.
 };
 
 

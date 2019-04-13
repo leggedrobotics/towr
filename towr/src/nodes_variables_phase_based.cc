@@ -153,16 +153,21 @@ NodesVariablesPhaseBased::GetPhase (int node_id) const
 //  int poly_id = GetAdjacentPolyIds(node_id).front();
 //  return polynomial_info_.at(poly_id).phase_;
 
-//	if (node_id < 16){
-//		return 0;
-//	}
-//	else
-//		return 1;
-	if (node_id < 40){
-			return 0;
-		}
-		else
-			return 1;
+	if (node_id < 16){
+		return 0;
+	}
+	else if (node_id > 30)
+		return 2;
+	else
+		return 1;
+
+//	if (node_id < 40){
+//			return 0;
+//		}
+//		else if (node_id > 78)
+//			return 2;
+//		else
+//			return 1;
 }
 
 int
@@ -244,12 +249,21 @@ NodesVariablesEEMotion::GetPhaseBasedEEParameterization ()
   for (int node_id=0; node_id<nodes_.size(); ++node_id) {
 	 int phase = GetPhase(node_id);
 
-	 //Braucht noch Bedingung, ob der ee driften darf oder nicht:
-	 // irgendwie if IB_.at(LF) == false;
+	 //get orientation OF THE BASE "at this node" or instance (only around z)
+	 //t The current time in the euler angles spline
+//	 Eigen::Matrix3d RotMat_base_world = EulerConverter::GetRotationMatrixBaseToWorld();
+
+//	     double z_rot = nodes_.at(node_id).ang.p();
+	 //    double z_rot = 0;
+	 //    if (f_node_id > 6)
+	 //    	double z_rot = (f_node_id-6)*0.083;
+	 //
+	 //    Eigen::Matrix3d RotMat_base_world_wrt_zrot = EulerConverter::GetRotationMatrixBaseToWorld({0.0,0.0,z_rot});
+	 //    Eigen::Matrix3d RotMat_world_base_wrt_zrot = RotMat_base_world_wrt_zrot.inverse();
 
 
 	 //for driving phase (phase 0):
-	 if (phase == 0){
+	 if (phase == 0 or phase == 2){
 	  for (int dim=0; dim<GetDim(); ++dim) {
 		  if (dim == X or dim == Y){
 			  index_map[idx++].push_back(NodeValueInfo(node_id, kPos, dim));
@@ -258,10 +272,23 @@ NodesVariablesEEMotion::GetPhaseBasedEEParameterization ()
 //	    	  nodes_.at(node_id).at(kPos).z() = 0.0;
 	   }
 
+	  // attention: X is WORLD x-direction!! so optimize x and y velocity (in case of driving not in x dir)
 //	  only optimize velocity in x-direction:
 	  index_map[idx++].push_back(NodeValueInfo(node_id, kVel, X));
-	  nodes_.at(node_id).at(kVel).y() = 0.0;
-//	  nodes_.at(node_id).at(kVel).z() = 0.0;
+	  index_map[idx++].push_back(NodeValueInfo(node_id, kVel, Y));
+
+//	  nodes_.at(node_id).at(kVel).y() = 0.0;
+	  nodes_.at(node_id).at(kVel).z() = 0.0;
+
+	  //y-velocity of body frame is zero in world frame!:
+//	  double t = 0.0; //get time from the current node!
+//	  EulerConverter::MatrixSXd b_R_w = base_angular_.GetRotationMatrixBaseToWorld(t);
+//	  EulerConverter::MatrixSXd w_R_b = base_angular_.GetRotationMatrixBaseToWorld(t).transpose();
+//
+//	  Vector3d v_wrt_b = w_R_b*nodes_.at(node_id).at(kVel);
+//	  Vector3d v_b_y = {0, v_wrt_b(1), 0};
+//	  Vector3d v_y = b_R_w*v_b_y;
+
     }
 
 	 //for drifting phase (phase 1):
@@ -306,16 +333,16 @@ NodesVariablesEEForce::GetPhaseBasedEEParameterization ()
 	  //NEW: Forces in every phase need to be optimized over!! (drive and drift phase)
 //    if (!IsConstantNode(id)) {
 
-	  //forces in drive phase only in x and z-direction!
+	  //forces in drive phase only in x and z-direction! NO, just in first driving phase...
 	  int phase = GetPhase(id);
 
-	  if (phase == 0){
-		  nodes_.at(id).at(kPos).y()=0.0;
+	  if (phase == 0 or phase == 2){
+//		  nodes_.at(id).at(kPos).y()=0.0; //WORLD Frame y force set to zero...is wrong!
       for (int dim=0; dim<GetDim(); ++dim) {
-    	if (dim == X or dim == Z){
+//    	if (dim == X or dim == Z){
         index_map[idx++].push_back(NodeValueInfo(id, kPos, dim));
         index_map[idx++].push_back(NodeValueInfo(id, kVel, dim));
-    	}
+//    	}
       }
 	  }
 

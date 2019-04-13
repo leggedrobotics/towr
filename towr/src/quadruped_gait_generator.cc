@@ -152,16 +152,17 @@ QuadrupedGaitGenerator::GetStrideDriveEnd () const
 QuadrupedGaitGenerator::GaitInfo
 QuadrupedGaitGenerator::GetStrideDriveDrift () const
 {
-  double drive   = 0.9;
-  double drift = 0.6;
+  double drive1   = 1.0;
+  double drift = 1.0;
+  double drive2 = 0.5;
 
   auto times =
   {
-      drive, drift
+      drive1, drift, drive2
   };
   auto phase_contacts =
   {
-      BB_, IB_,
+      BB_, IB_, BB_,
   };
 
   return std::make_pair(times, phase_contacts);

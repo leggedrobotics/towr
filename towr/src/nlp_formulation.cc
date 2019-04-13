@@ -145,8 +145,8 @@ NlpFormulation::MakeEndeffectorVariables () const
     double yaw = final_base_.ang.p().z();
     double pitch = final_base_.ang.p().y(); //new
     double roll = final_base_.ang.p().x(); //new
-//    Eigen::Vector3d euler(0.0, 0.0, yaw);
-    Eigen::Vector3d euler(roll, pitch, yaw); //new
+    Eigen::Vector3d euler(0.0, 0.0, yaw);
+//    Eigen::Vector3d euler(roll, pitch, yaw); //new
     Eigen::Matrix3d w_R_b = EulerConverter::GetRotationMatrixBaseToWorld(euler);
     Vector3d final_ee_pos_W = final_base_.lin.p() + w_R_b*model_.kinematic_model_->GetNominalStanceInBase().at(ee);
     double x = final_ee_pos_W.x();
@@ -224,7 +224,8 @@ NlpFormulation::GetConstraint (Parameters::ConstraintName name,
     case Parameters::BaseRom:        return MakeBaseRangeOfMotionConstraint(s);
     case Parameters::TotalTime:      return MakeTotalTimeConstraint();
     case Parameters::Terrain:        return MakeTerrainConstraint();
-    case Parameters::Force:          return MakeForceConstraint();
+//    case Parameters::Force:          return MakeForceConstraint();
+    case Parameters::Force:          return MakeForceConstraint(s);
     case Parameters::Swing:          return MakeSwingConstraint();
     case Parameters::BaseAcc:        return MakeBaseAccConstraint(s);
     default: throw std::runtime_error("constraint not defined!");
@@ -295,14 +296,15 @@ NlpFormulation::MakeTerrainConstraint () const
 }
 
 NlpFormulation::ContraintPtrVec
-NlpFormulation::MakeForceConstraint () const
+NlpFormulation::MakeForceConstraint (const SplineHolder& s) const
 {
   ContraintPtrVec constraints;
 
   for (int ee=0; ee<params_.GetEECount(); ee++) {
     auto c = std::make_shared<ForceConstraint>(terrain_,
                                                params_.force_limit_in_normal_direction_,
-                                               ee);
+                                               ee,
+											   s);
     constraints.push_back(c);
   }
 
