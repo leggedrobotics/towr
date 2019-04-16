@@ -34,6 +34,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <towr/variables/nodes_variables_phase_based.h>
 
+#include <towr/variables/euler_converter.h>
+
+#include <towr/variables/spline_holder.h>
+#include <towr/variables/spline.h>
+#include <towr/parameters.h>
+
 namespace towr {
 
 /**
@@ -49,12 +55,16 @@ namespace towr {
 class SwingConstraint : public ifopt::ConstraintSet {
 public:
   using Vector2d = Eigen::Vector2d;
+  using Vector3d = Eigen::Vector3d;
+  using EE = uint;
 
   /**
    * @brief Links the swing constraint with current foot variables.
    * @param ee_motion_id  The name of the foot variables in the optimization.
    */
-  SwingConstraint (std::string ee_motion_id);
+  SwingConstraint (EE ee,
+		  	  const SplineHolder& spline_holder);
+
   virtual ~SwingConstraint () = default;
 
   VectorXd GetValues() const override;
@@ -65,8 +75,13 @@ public:
 
 private:
   NodesVariablesPhaseBased::Ptr ee_motion_;
+  NodesVariablesPhaseBased::Ptr ee_force_;
+  EulerConverter base_angular_; ///< the orientation of the base.
+
   double t_swing_avg_ = 0.3;
   std::string ee_motion_id_;
+  EE ee_;
+  Parameters params_;
 
   std::vector<int> pure_swing_node_ids_;
 };

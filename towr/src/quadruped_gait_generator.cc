@@ -85,8 +85,8 @@ QuadrupedGaitGenerator::SetCombo (Combos combo)
     case C3: SetGaits({Stand, Hop1, Hop1, Hop1, Hop1E, Stand}); break; // bound
     case C4: SetGaits({Stand, Hop3, Hop3, Hop3, Hop3E, Stand}); break; // gallop
     case C5: SetGaits({Stand, Drive, Drive, Drive, DriveE, Stand}); break; // just drive
-//    case C6: SetGaits({Stand, DriveDrift, Stand}); break; // Drive and Drift (bei Drift ist auch drive dabei!)
-    case C6: SetGaits({Stand, Drive, Drive, Drive, DriveDrift, Stand}); break; //ohne stand, das waere ein erneuter phase change!
+    case C6: SetGaits({Stand, DriveDrift, Stand}); break; // Drive and Drift (bei Drift ist auch drive dabei!)
+//    case C6: SetGaits({Stand, Drive, Drive, Drive, DriveDrift, Stand}); break; //ohne stand, das waere ein erneuter phase change!
     default: assert(false); std::cout << "Gait not defined\n"; break;
   }
 }

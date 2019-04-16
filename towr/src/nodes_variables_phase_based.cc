@@ -65,7 +65,8 @@ BuildPolyInfos (int phase_count, bool first_phase_constant,
 NodesVariablesPhaseBased::NodesVariablesPhaseBased (int phase_count,
                                                     bool first_phase_constant,
                                                     const std::string& name,
-                                                    int n_polys_in_changing_phase)
+                                                    int n_polys_in_changing_phase,
+													EE ee)
     :NodesVariables(name)
 {
   polynomial_info_ = BuildPolyInfos(phase_count, first_phase_constant, n_polys_in_changing_phase);
@@ -134,6 +135,18 @@ NodesVariablesPhaseBased::GetIndicesOfAllNodes() const
 }
 
 NodesVariablesPhaseBased::NodeIds
+NodesVariablesPhaseBased::GetIndicesNodesWOFirstAndLast() const
+{
+  NodeIds node_ids;
+
+  for (int id=1; id<(GetNodes().size()-1); ++id)
+      node_ids.push_back(id);
+
+  return node_ids;
+}
+
+
+NodesVariablesPhaseBased::NodeIds
 NodesVariablesPhaseBased::GetIndicesOfNonConstantNodes() const
 {
   NodeIds node_ids;
@@ -146,28 +159,32 @@ NodesVariablesPhaseBased::GetIndicesOfNonConstantNodes() const
 }
 
 int
-NodesVariablesPhaseBased::GetPhase (int node_id) const
+NodesVariablesPhaseBased::GetPhase (int node_id, EE ee) const
 {
 //  assert(!IsConstantNode(node_id)); // because otherwise it has two phases
 //
 //  int poly_id = GetAdjacentPolyIds(node_id).front();
 //  return polynomial_info_.at(poly_id).phase_;
+	int n_nodes_per_phase = params_.force_polynomials_per_stance_phase_ + 1;
 
-	if (node_id < 16){
-		return 0;
+	if (node_id < n_nodes_per_phase){
+		if (ee == 0 or ee == 1)
+			return 0;
+		if (ee == 2 or ee == 3)
+			return 3;
 	}
-	else if (node_id > 30)
-		return 2;
-	else
-		return 1;
-
-//	if (node_id < 40){
-//			return 0;
-//		}
-//		else if (node_id > 78)
-//			return 2;
-//		else
-//			return 1;
+	else if (node_id > (2*n_nodes_per_phase - 2)){
+		if (ee == 0 or ee == 1)
+			return 2;
+		if (ee == 2 or ee == 3)
+			return 5;
+	}
+	else {
+		if (ee == 0 or ee == 1)
+					return 1;
+		if (ee == 2 or ee == 3)
+					return 4;
+	}
 }
 
 int
@@ -230,24 +247,26 @@ NodesVariablesPhaseBased::SetNumberOfVariables(int n_variables)
 NodesVariablesEEMotion::NodesVariablesEEMotion(int phase_count,
                                                bool is_in_contact_at_start,
                                                const std::string& name,
-                                               int n_polys_in_changing_phase)
+                                               int n_polys_in_changing_phase,
+											   EE ee)
     :NodesVariablesPhaseBased(phase_count,
                               !is_in_contact_at_start, // contact phase for motion is !not! constant
                               name,
-                              n_polys_in_changing_phase)
+                              n_polys_in_changing_phase,
+							  ee)
 {
-  index_to_node_value_info_ = GetPhaseBasedEEParameterization();
+  index_to_node_value_info_ = GetPhaseBasedEEParameterization(ee);
   SetNumberOfVariables(index_to_node_value_info_.size());
 }
 
 NodesVariablesEEForce::OptIndexMap
-NodesVariablesEEMotion::GetPhaseBasedEEParameterization ()
+NodesVariablesEEMotion::GetPhaseBasedEEParameterization (EE ee)
 {
   OptIndexMap index_map;
 
   int idx = 0; // index in variables set
   for (int node_id=0; node_id<nodes_.size(); ++node_id) {
-	 int phase = GetPhase(node_id);
+	 int phase = GetPhase(node_id, ee);
 
 	 //get orientation OF THE BASE "at this node" or instance (only around z)
 	 //t The current time in the euler angles spline
@@ -262,20 +281,36 @@ NodesVariablesEEMotion::GetPhaseBasedEEParameterization ()
 	 //    Eigen::Matrix3d RotMat_world_base_wrt_zrot = RotMat_base_world_wrt_zrot.inverse();
 
 
-	 //for driving phase (phase 0):
-	 if (phase == 0 or phase == 2){
+	 //for driving phase (phase 0,1,2 for front ee, 3 and 5 for back ee)
+
+
+	 index_map[idx++].push_back(NodeValueInfo(node_id, kPos, X));
+
+	 if (phase == 1 or phase == 2 or phase == 4 or phase == 5){
 	  for (int dim=0; dim<GetDim(); ++dim) {
-		  if (dim == X or dim == Y){
+		  if (dim == Y){
 			  index_map[idx++].push_back(NodeValueInfo(node_id, kPos, dim));
 	      	}
 //	      else
 //	    	  nodes_.at(node_id).at(kPos).z() = 0.0;
 	   }
+	 }
 
+	 index_map[idx++].push_back(NodeValueInfo(node_id, kVel, X));
 	  // attention: X is WORLD x-direction!! so optimize x and y velocity (in case of driving not in x dir)
 //	  only optimize velocity in x-direction:
-	  index_map[idx++].push_back(NodeValueInfo(node_id, kVel, X));
-	  index_map[idx++].push_back(NodeValueInfo(node_id, kVel, Y));
+
+
+	  if (phase != 0 and phase != 3){
+		  index_map[idx++].push_back(NodeValueInfo(node_id, kVel, Y));
+	  }
+
+	  if (phase == 0 or phase == 3){
+	  		  if (ee == 0 or ee == 2)
+	  			  nodes_.at(node_id).at(kPos).y() = 0.2;
+	  		  if (ee == 1 or ee == 3)
+	  			  nodes_.at(node_id).at(kPos).y() = -0.2;
+	  	  	 }
 
 //	  nodes_.at(node_id).at(kVel).y() = 0.0;
 	  nodes_.at(node_id).at(kVel).z() = 0.0;
@@ -292,17 +327,14 @@ NodesVariablesEEMotion::GetPhaseBasedEEParameterization ()
     }
 
 	 //for drifting phase (phase 1):
-	 else if (phase == 1){
-	  for (int dim=0; dim<GetDim(); ++dim) {
-		 if (dim == X or dim == Y){
-			  index_map[idx++].push_back(NodeValueInfo(node_id, kPos, dim));
-		 }
-	  }
-	  // optimize velocity in x and y-direction:
-	  	index_map[idx++].push_back(NodeValueInfo(node_id, kVel, X));
-	  	index_map[idx++].push_back(NodeValueInfo(node_id, kVel, Y));
-	 }
-  }
+//	 else if (phase == 4){
+//	  for (int dim=0; dim<GetDim(); ++dim) {
+//		 if (dim == X or dim == Y){
+//			  index_map[idx++].push_back(NodeValueInfo(node_id, kPos, dim));
+//			  index_map[idx++].push_back(NodeValueInfo(node_id, kVel, dim));
+//		 }
+//	  }
+//	 }
 
   return index_map;
 }
@@ -310,18 +342,20 @@ NodesVariablesEEMotion::GetPhaseBasedEEParameterization ()
 NodesVariablesEEForce::NodesVariablesEEForce(int phase_count,
                                               bool is_in_contact_at_start,
                                               const std::string& name,
-                                              int n_polys_in_changing_phase)
+                                              int n_polys_in_changing_phase,
+											  EE ee)
     :NodesVariablesPhaseBased(phase_count,
                               !is_in_contact_at_start, // contact phase for force is non-constant
                               name,
-                              n_polys_in_changing_phase)
+                              n_polys_in_changing_phase,
+							  ee)
 {
-  index_to_node_value_info_ = GetPhaseBasedEEParameterization();
+  index_to_node_value_info_ = GetPhaseBasedEEParameterization(ee);
   SetNumberOfVariables(index_to_node_value_info_.size());
 }
 
 NodesVariablesEEForce::OptIndexMap
-NodesVariablesEEForce::GetPhaseBasedEEParameterization ()
+NodesVariablesEEForce::GetPhaseBasedEEParameterization (EE ee)
 {
   OptIndexMap index_map;
 
@@ -334,24 +368,26 @@ NodesVariablesEEForce::GetPhaseBasedEEParameterization ()
 //    if (!IsConstantNode(id)) {
 
 	  //forces in drive phase only in x and z-direction! NO, just in first driving phase...
-	  int phase = GetPhase(id);
+	  int phase = GetPhase(id, ee);
 
-	  if (phase == 0 or phase == 2){
+//	  if (phase == 0 or phase == 3){
 //		  nodes_.at(id).at(kPos).y()=0.0; //WORLD Frame y force set to zero...is wrong!
       for (int dim=0; dim<GetDim(); ++dim) {
 //    	if (dim == X or dim == Z){
         index_map[idx++].push_back(NodeValueInfo(id, kPos, dim));
         index_map[idx++].push_back(NodeValueInfo(id, kVel, dim));
 //    	}
-      }
+//      }
+//      nodes_.at(id).at(kPos).y()=0.0;
+//      nodes_.at(id).at(kVel).y()=0.0;
 	  }
 
-      else if (phase == 1){
-    	  for (int dim=0; dim<GetDim(); ++dim) {
-    	        index_map[idx++].push_back(NodeValueInfo(id, kPos, dim));
-    	        index_map[idx++].push_back(NodeValueInfo(id, kVel, dim));
-    	  }
-      }
+//      else if (phase == 1 or phase == 2 or phase == 4 or phase == 5){
+//    	  for (int dim=0; dim<GetDim(); ++dim) {
+//    	        index_map[idx++].push_back(NodeValueInfo(id, kPos, dim));
+//    	        index_map[idx++].push_back(NodeValueInfo(id, kVel, dim));
+//    	  }
+//      }
       }
 //    }
     // swing node (next one will also be swing, so handle that one too)

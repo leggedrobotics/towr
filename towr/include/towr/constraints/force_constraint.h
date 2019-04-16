@@ -40,6 +40,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <towr/variables/spline_holder.h>
 #include <towr/variables/spline.h>
 #include "time_discretization_constraint.h"
+#include <towr/parameters.h>
 
 namespace towr {
 
@@ -85,6 +86,7 @@ public:
   void FillJacobianBlock (std::string var_set, Jacobian&) const override;
 
   EE ee_;                  ///< The endeffector force to be constrained. //NEW!
+  Parameters params_;
 
 private:
   NodesVariablesPhaseBased::Ptr ee_force_;  ///< the current xyz foot forces.
@@ -95,6 +97,7 @@ private:
   double fn_max_;          ///< force limit in normal direction.
   double mu_;              ///< friction coeff between robot feet and terrain.
   int n_constraints_per_node_; ///< number of constraint for each node.
+  int n_constraints_drift_node_;
 //  EE ee_;                  ///< The endeffector force to be constrained.
 
 //  double t_drive_ = 2.4; //new

@@ -51,6 +51,7 @@ public:
   using ContactState  = std::vector<bool>;
   using GaitInfo      = std::pair<VecTimes,std::vector<ContactState>>;
   using EE            = uint;
+  using DriveState 	  = std::vector<bool>;
 
   /**
    * @brief Predefined combinations of different strides.
@@ -67,6 +68,8 @@ public:
                GAIT_COUNT};
 
   std::vector<ContactState> contacts_; //new!
+  std::vector<DriveState> drive_ee; //new!
+
 
   static Ptr MakeGaitGenerator(int leg_count);
 

@@ -139,7 +139,8 @@ NlpFormulation::MakeEndeffectorVariables () const
                                               params_.ee_in_contact_at_start_.at(ee),
 //											  false,
                                               id::EEMotionNodes(ee),
-                                              params_.ee_polynomials_per_swing_phase_);
+                                              params_.ee_polynomials_per_swing_phase_,
+											  ee);
 
     // initialize towards final footholds
     double yaw = final_base_.ang.p().z();
@@ -172,7 +173,8 @@ NlpFormulation::MakeForceVariables () const
                                               params_.GetPhaseCount(ee),
                                               params_.ee_in_contact_at_start_.at(ee),
                                               id::EEForceNodes(ee),
-                                              params_.force_polynomials_per_stance_phase_);
+                                              params_.force_polynomials_per_stance_phase_,
+											  ee);
 
     // initialize with mass of robot distributed equally on all legs
     double m = model_.dynamic_model_->m();
@@ -226,7 +228,8 @@ NlpFormulation::GetConstraint (Parameters::ConstraintName name,
     case Parameters::Terrain:        return MakeTerrainConstraint();
 //    case Parameters::Force:          return MakeForceConstraint();
     case Parameters::Force:          return MakeForceConstraint(s);
-    case Parameters::Swing:          return MakeSwingConstraint();
+//    case Parameters::Swing:          return MakeSwingConstraint();
+    case Parameters::Swing:          return MakeSwingConstraint(s);
     case Parameters::BaseAcc:        return MakeBaseAccConstraint(s);
     default: throw std::runtime_error("constraint not defined!");
   }
@@ -312,12 +315,12 @@ NlpFormulation::MakeForceConstraint (const SplineHolder& s) const
 }
 
 NlpFormulation::ContraintPtrVec
-NlpFormulation::MakeSwingConstraint () const
+NlpFormulation::MakeSwingConstraint (const SplineHolder& s) const
 {
   ContraintPtrVec constraints;
 
   for (int ee=0; ee<params_.GetEECount(); ee++) {
-    auto swing = std::make_shared<SwingConstraint>(id::EEMotionNodes(ee));
+    auto swing = std::make_shared<SwingConstraint>(ee, s);
     constraints.push_back(swing);
   }
 

@@ -31,6 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define TOWR_VARIABLES_PHASE_NODES_H_
 
 #include "nodes_variables.h"
+#include <towr/parameters.h>
 
 //#include <towr/variables/euler_converter.h>
 //#include <towr/variables/state.h>
@@ -68,6 +69,7 @@ public:
   using Ptr         = std::shared_ptr<NodesVariablesPhaseBased>;
   using NodeIds     = std::vector<int>;
   using OptIndexMap = std::map<int, std::vector<NodeValueInfo> >;
+  using EE = uint;
 
   using Vector3d = Eigen::Vector3d;
 
@@ -82,6 +84,9 @@ public:
     PolyInfo(int phase, int poly_in_phase, int n_polys_in_phase, bool is_const);
   };
 
+  Parameters params_;
+//  EE ee_;
+
   /**
    * @brief Constructs a variable set of node variables.
    * @param phase_count  The number of phases (swing, stance) to represent.
@@ -93,7 +98,8 @@ public:
   NodesVariablesPhaseBased (int phase_count,
                             bool first_phase_constant,
                             const std::string& var_name,
-                            int n_polys_in_changing_phase);
+                            int n_polys_in_changing_phase,
+							EE ee);
 
   virtual ~NodesVariablesPhaseBased() = default;
 
@@ -112,7 +118,7 @@ public:
    *
    * Only makes sense if left and right polynomial belong to same phase.
    */
-  int GetPhase(int node_id) const;
+  int GetPhase(int node_id, EE ee) const;
 
   /**
    * @brief node is constant if either left or right polynomial belongs to a
@@ -121,6 +127,8 @@ public:
   virtual bool IsConstantNode(int node_id) const;
 
   NodeIds GetIndicesOfAllNodes() const;
+
+  NodeIds GetIndicesNodesWOFirstAndLast() const;
 
   /**
    * @brief The indices of those nodes that don't belong to a constant phase.
@@ -207,9 +215,10 @@ public:
   NodesVariablesEEMotion(int phase_count,
                          bool is_in_contact_at_start,
                          const std::string& name,
-                         int n_polys_in_changing_phase);
+                         int n_polys_in_changing_phase,
+						 EE ee);
   virtual ~NodesVariablesEEMotion() = default;
-  OptIndexMap GetPhaseBasedEEParameterization ();
+  OptIndexMap GetPhaseBasedEEParameterization (EE ee);
 };
 
 
@@ -223,9 +232,10 @@ public:
   NodesVariablesEEForce(int phase_count,
                          bool is_in_contact_at_start,
                          const std::string& name,
-                         int n_polys_in_changing_phase);
+                         int n_polys_in_changing_phase,
+						 EE ee);
   virtual ~NodesVariablesEEForce() = default;
-  OptIndexMap GetPhaseBasedEEParameterization ();
+  OptIndexMap GetPhaseBasedEEParameterization (EE ee);
 };
 
 } /* namespace towr */

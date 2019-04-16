@@ -121,10 +121,12 @@ GaitGenerator::SetGaits (const std::vector<Gaits>& gaits)
 
     std::vector<double>       t = info.first;
     std::vector<ContactState> c = info.second;
+
     assert(t.size() == c.size()); // make sure every phase has a time
 
     times_.insert      (times_.end(), t.begin(), t.end());
     contacts_.insert(contacts_.end(), c.begin(), c.end());
+//    drive_ee.insert(drive_ee.end(), )
   }
 }
 

@@ -41,10 +41,10 @@ Parameters::Parameters ()
 {
   // constructs optimization variables
   duration_base_polynomial_ = 0.1;
-  force_polynomials_per_stance_phase_ = 15;
-  ee_polynomials_per_swing_phase_ = 15; // so step can at least lift leg
 //  force_polynomials_per_stance_phase_ = 39;
-//    ee_polynomials_per_swing_phase_ = 39;
+//  ee_polynomials_per_swing_phase_ = 39; // so step can at least lift leg
+  force_polynomials_per_stance_phase_ = 1999;
+  ee_polynomials_per_swing_phase_ = 1999;
 
 
   //TODO for drift: 3 phases, but fix timings here!
@@ -66,7 +66,7 @@ Parameters::Parameters ()
   constraints_.push_back(BaseAcc); // so accelerations don't jump between polynomials
   constraints_.push_back(EndeffectorRom); //Ensures that the range of motion is respected at discrete times.
   constraints_.push_back(Force); // ensures unilateral forces and inside the friction cone.
-//  constraints_.push_back(Swing); // only positive x-velocity allowed
+//  constraints_.push_back(Swing); // only smooth velocities allowed
 
   // optional costs to e.g penalize endeffector forces
   // costs_.push_back({ForcesCostID, 1.0}); weighed by 1.0 relative to other costs
