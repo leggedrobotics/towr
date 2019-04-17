@@ -62,7 +62,13 @@ towr::SwingConstraint::InitVariableDependedQuantities (const VariablesPtr& x)
   // constrain xy position and velocity of every swing node
 //  int constraint_count =  pure_swing_node_ids_.size()*Node::n_derivatives*1;
 //  int constraint_count =  pure_swing_node_ids_.size()*k2D;
-  int constraint_count =  pure_swing_node_ids_.size()*1;
+
+  int constraint_count =  0; //noch anpassen! (0,3,4 phase keine constraints)
+
+//  if (phase == 1 or phase == 2 or phase == 5){
+//	  constraint_count = pure_swing_node_ids_.size()*2;
+//  }
+
 
   //only constrain drive nodes!:
 //  int constraint_count =  16*Node::n_derivatives*k2D;
@@ -71,8 +77,8 @@ towr::SwingConstraint::InitVariableDependedQuantities (const VariablesPtr& x)
 
   SetRows(constraint_count);
 //  SetRows(0);
-  cout << "number of nodes: " << pure_swing_node_ids_.size() << endl;
-  cout << "swing constraints: " << constraint_count << endl;
+//  cout << "number of nodes: " << pure_swing_node_ids_.size() << endl;
+//  cout << "swing constraints: " << constraint_count << endl;
 }
 
 Eigen::VectorXd
@@ -90,46 +96,64 @@ SwingConstraint::GetValues () const
     int ee_id = ee_;
     //    	cout << "ee_id: " << ee_id << endl;
 
-    //get times of different phases and for different ee
-        	double time_3nodes = 0.0;
-        	double t = 0.0; //get time from the current node!
-        	if (phase == 0){
-        		if (node_id > 7 and node_id < 15 and (ee_id == 0 or ee_id == 1)){ //and add condition that this is only valid for front feet!
-        			t = 1.0 + (node_id - 7)*0.125;
-        			time_3nodes = 0.375;
-        		}
-    //    		t = (node_id+1)*0.0625;
-        		else if (node_id > 15 and (ee_id == 0 or ee_id == 1)){
-        			t = 2.0;
-        			time_3nodes = 0.375;
-        		}
-        		else if (ee_id == 2 or ee_id == 3){
-        			time_3nodes = 0.15;
-        		}
-        	}
-        	else if (phase == 2){
-    //    		t = (node_id-78)*0.0128 + 2;
-        		t = 2.0;
-        		time_3nodes = 0.075;
-        	}
-        	else if (phase == 1){
-        		time_3nodes = 0.15;
-        		t = 1 + (node_id - 19)*0.05;
-        	}
+//    //get times of different phases and for different ee
+////        	double time_3nodes = 2.5/params_.ee_polynomials_per_swing_phase_*3; //2.5 is total time!
+//        	double t = 0.0; //get time from the current node!
+//        	double t_per_node = 2.5/pure_swing_node_ids_.size();
+//
+//        	//TODO anpassen fuer allgemeinen Fall!!
+//        	if (phase == 0 or phase == 3){
+//        		t = 0.0;
+//        	}
+//        	if (phase == 1){
+//        		t = (node_id+1)*t_per_node;
+//        	}
+//        	if (phase == 2 or phase == 5){
+//        		t = 2.0;
+//        	}
+//        	//phase 4 doesnt matter!
+//
+//
+//    //    	Spline::GetLocalTime()
+//
+//        	  EulerConverter::MatrixSXd b_C_w = base_angular_.GetRotationMatrixBaseToWorld(t);
+//        	  EulerConverter::MatrixSXd w_C_b = base_angular_.GetRotationMatrixBaseToWorld(t).transpose();
+//
+//        	  Vector3d v_wrt_b = w_C_b*nodes.at(node_id).at(kVel);
+//        	  Vector3d v_b_y = {0, v_wrt_b(1), 0};
+//        	  Vector3d v_b_x = {v_wrt_b(0), 0, 0};
+//        	  Vector3d v_x = b_C_w*v_b_x;
+//        	  Vector3d v_y = b_C_w*v_b_y;
+//
 
-    //    	Spline::GetLocalTime()
+//        	  if (phase == 1 or phase == 2 or phase == 5){
+//        		  g(row++) = v_y(0);	//derivatives not easy!
+//        		  g(row++) = v_y(1);
+//        	  }
 
-        	  EulerConverter::MatrixSXd b_C_w = base_angular_.GetRotationMatrixBaseToWorld(t);
-        	  EulerConverter::MatrixSXd w_C_b = base_angular_.GetRotationMatrixBaseToWorld(t).transpose();
 
-        	  Vector3d v_wrt_b = w_C_b*nodes.at(node_id).at(kVel);
-        	  Vector3d v_b_y = {0, v_wrt_b(1), 0};
-        	  Vector3d v_b_x = {v_wrt_b(0), 0, 0};
-        	  Vector3d v_x = b_C_w*v_b_x;
-        	  Vector3d v_y = b_C_w*v_b_y;
+//        	  if (phase == 0 and (ee_ == 2 or ee_ == 3)){
+        	  //    		g(row++) = nodes.at(f_node_id).v().y();
+        	  //    		g(row++) = 0;
+        	  ////    		g(row++) = nodes.at(f_node_id).v().x();
+        	  //    	}
+        	  //    	else if (f_node_id < 8){
+        	  //    		g(row++) = nodes.at(f_node_id).v().y();
+        	  //    		g(row++) = 0;
+        	  ////    		g(row++) = nodes.at(f_node_id).v().x();
+        	  ////    		g(row++) = 0;
+        	  //    	}
+        	  //    	else {
+        	  //    		g(row++) = 0;
+        	  //    		g(row++) = 0;
+        	  ////    		g(row++) = v_y(0);
+        	  ////    		g(row++) = v_y(1);
+        	  ////    		g(row++) = v_x(0);		//caution, robot cant turn drift more than 90degrees,
+        	  //    								//otherwise it will have to drive in negative x direction
+        	  //    	}
 
         	// add y-motion constraints
-        	  int n_nodes_drive = (params_.ee_polynomials_per_swing_phase_+1)/2.5; //2.5 = total time
+//        	  int n_nodes_drive = (params_.ee_polynomials_per_swing_phase_+1)/2.5; //2.5 = total time
 
         	  //for first drive phase of hind wheels, world y-vel is 0
 

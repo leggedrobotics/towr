@@ -35,6 +35,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <towr/constraints/base_motion_constraint.h>
 #include <towr/variables/cartesian_dimensions.h>
 #include <iostream>
+#include <math.h>
 
 using namespace std;
 
@@ -56,7 +57,7 @@ ForceConstraint::ForceConstraint (const HeightMap::Ptr& terrain,
 //  n_constraints_per_node_ = 1 + 2*k2D + 2; // positive normal force + 4 friction pyramid constraints
 //  n_constraints_per_node_ = 1;
   n_constraints_per_node_ = 1 + 2*k2D;
-  n_constraints_drift_node_ = 3;
+  n_constraints_drift_node_ = 2;
 
   //new: plus pos and vel of every node: Node::n_derivatives*k2D
 //  n_constraints_per_node_ = 1 + 2*k2D + Node::n_derivatives*k2D;
@@ -97,13 +98,6 @@ ForceConstraint::InitVariableDependedQuantities (const VariablesPtr& x)
   	if (ee_ == 2 or ee_ == 3){
   		constraint_count = (2*nodes_per_phase-1)*n_constraints_per_node_ + (nodes_per_phase-1)*n_constraints_drift_node_;
   	}
-//
-//  	if (ee_ == 0 or ee_ == 1){
-//  		int constraint_count = 40*8;
-//  	}
-//  	else if (ee_ == 2 or ee_ == 3){
-//  	int constraint_count = 40*8 + 39*3;
-//  	}
 
   SetRows(constraint_count);
 //  cout << "number of nodes: " << pure_stance_force_node_ids_.size() << endl;
@@ -128,36 +122,6 @@ ForceConstraint::GetValues () const
 //    	int ee_id = ee_;
 ////    	cout << "ee_id: " << ee_id << endl;
 //
-//    	//get times of different phases and for different ee
-//    	double time_3nodes = 0.0;
-//    	double t = 0.0; //get time from the current node!
-
-    	//times designed for 20 nodes!
-//    	if (phase == 0){
-//    		if (f_node_id > 7 and f_node_id < 15 and (ee_id == 0 or ee_id == 1)){ //and add condition that this is only valid for front feet!
-//    			t = 1.0 + (f_node_id - 7)*0.125;
-//    			time_3nodes = 0.375;
-//    		}
-////    		t = (f_node_id+1)*0.0625;
-//    		else if (f_node_id > 15 and (ee_id == 0 or ee_id == 1)){
-//    			t = 2.0;
-//    			time_3nodes = 0.375;
-//    		}
-//    		else if (ee_id == 2 or ee_id == 3){
-//    			time_3nodes = 0.15;
-//    		}
-//    	}
-//    	else if (phase == 2){
-////    		t = (f_node_id-78)*0.0128 + 2;
-//    		t = 2.0;
-//    		time_3nodes = 0.075;
-//    	}
-//    	else if (phase == 1){
-//    		time_3nodes = 0.15;
-//    		t = 1 + (f_node_id - 19)*0.05;
-//    	}
-
-//    	Spline::GetLocalTime()
 
 //    	  EulerConverter::MatrixSXd b_C_w = base_angular_.GetRotationMatrixBaseToWorld(t);
 //    	  EulerConverter::MatrixSXd w_C_b = base_angular_.GetRotationMatrixBaseToWorld(t).transpose();
@@ -195,6 +159,7 @@ ForceConstraint::GetValues () const
 
     Vector3d t1 = terrain_->GetNormalizedBasis(HeightMap::Tangent1, p.x(), p.y());
     Vector3d t2 = terrain_->GetNormalizedBasis(HeightMap::Tangent2, p.x(), p.y());
+
 
     //smooth z-forces
 //    	auto curr = force_nodes.at(f_node_id);
@@ -261,10 +226,14 @@ ForceConstraint::GetValues () const
 //    	}
     }
 
-    else if (phase == 4){
-    	g(row++) = f.transpose() * (t1 - mu_*n); // t1 = mu*n nur in positive x-richtung driften!
+    double f_tang = sqrt(pow(f.transpose()*t1, 2) + pow(f.transpose()*t2, 2));
+
+    if (phase == 4){
+    	g(row++) = f_tang - f.transpose() * (mu_*n);
+
+//    	g(row++) = f.transpose() * (t1 - mu_*n); // t1 = mu*n nur in positive x-richtung driften!
 //    	    g(row++) = f.transpose() * (t1 + mu_*n); // t1 > -mu*n
-    	g(row++) = f.transpose() * (t2 - mu_*n); // t2 = mu*n
+//    	g(row++) = f.transpose() * (t2 - mu_*n); // t2 = mu*n
 //    	g(row++) = f.transpose() * (t2 + mu_*n); // t2 = -mu*n
 //    	g(row++) = f.transpose() * (t1 + mu_*n); // t1 > -mu*n
 //    	g(row++) = 0; //damit Anzahl constraints stimmt.
@@ -320,7 +289,7 @@ ForceConstraint::GetBounds () const
 //    else {
     	bounds.push_back(ifopt::Bounds(0.0, fn_max_)); // unilateral forces
     	bounds.push_back(ifopt::BoundZero); // f_t1 =  mu*n
-    	bounds.push_back(ifopt::BoundZero); // f_t2 =  mu*n
+//    	bounds.push_back(ifopt::BoundZero); // f_t2 =  mu*n
 //    	bounds.push_back(ifopt::BoundZero); //
 //    	bounds.push_back(ifopt::BoundZero); //
 //    	bounds.push_back(ifopt::BoundZero); //
@@ -345,12 +314,15 @@ ForceConstraint::FillJacobianBlock (std::string var_set,
 
         // unilateral force
     	auto nodes = ee_motion_->GetNodes();	//new
+    	auto force_nodes = ee_force_->GetNodes();
     	Vector3d p = nodes.at(f_node_id).p();
         int phase   = ee_force_->GetPhase(f_node_id, ee_);
 //        Vector3d p  = ee_motion_->GetValueAtStartOfPhase(phase); // doesn't change during phase
         Vector3d n  = terrain_->GetNormalizedBasis(HeightMap::Normal,   p.x(), p.y());
         Vector3d t1 = terrain_->GetNormalizedBasis(HeightMap::Tangent1, p.x(), p.y());
         Vector3d t2 = terrain_->GetNormalizedBasis(HeightMap::Tangent2, p.x(), p.y());
+        Vector3d f = force_nodes.at(f_node_id).p();
+//        double f_tang = sqrt(pow(f.transpose()(0), 2) + pow(f.transpose()(1), 2));
 
         for (auto dim : {X,Y,Z}) {
           int idx = ee_force_->GetOptIndex(NodesVariables::NodeValueInfo(f_node_id, kPos, dim));
@@ -367,7 +339,6 @@ ForceConstraint::FillJacobianBlock (std::string var_set,
 //              		jac.coeffRef(row_reset++, idx) = 0;
 
 
-
 //          jac.coeffRef(row_reset++, idx) = 0;
 //          jac.coeffRef(row_reset++, idx) = 0;
 //          jac.coeffRef(row_reset++, idx) = 0; //adjust these!
@@ -375,11 +346,32 @@ ForceConstraint::FillJacobianBlock (std::string var_set,
 
           }
 
+//          double f_tang_x = f.transpose()(dim)*t1(dim);
+//          double f_tang_y = f.transpose()(dim)*t2(dim);
+
+
+//          g(row++) = f_tang - f.transpose() * (mu_*n);
+
           if (phase == 4){
                     jac.coeffRef(row_reset++, idx) = n(dim);              // unilateral force
-                    jac.coeffRef(row_reset++, idx) = t1(dim)-mu_*n(dim);  // f_t1 <  mu*n
+
+                    if (dim == X or dim == Y){
+//                    	jac.coeffRef(row_reset++, idx) = 1 - mu_*n(dim);
+                    	if (f.transpose()(0) == 0 and f.transpose()(1) == 0)
+                    		jac.coeffRef(row_reset++, idx) = 0;
+                    	else
+                    		jac.coeffRef(row_reset++, idx) = f.transpose()(dim)/sqrt(pow(f.transpose()(0),2) + pow(f.transpose()(1),2)) - mu_*n(dim);
+//                    	jac.coeffRef(row_reset++, idx) = f.transpose()(dim)/f_tang;
+                    }
+                    if (dim == Z) {
+                    	jac.coeffRef(row_reset++, idx) = -mu_;
+                    }
+
+//                    jac.coeffRef(row_reset++, idx) = (f.transpose()(dim)*(t1(dim)+t2(dim))/f_tang) - mu_*n(dim);
+
+//                    jac.coeffRef(row_reset++, idx) = t1(dim)-mu_*n(dim);  // f_t1 <  mu*n
 //                    jac.coeffRef(row_reset++, idx) = t1(dim)+mu_*n(dim);  // f_t1 > -mu*n
-                    jac.coeffRef(row_reset++, idx) = t2(dim)-mu_*n(dim);  // f_t2 >  mu*n
+//                    jac.coeffRef(row_reset++, idx) = t2(dim)-mu_*n(dim);  // f_t2 >  mu*n
 //                    jac.coeffRef(row_reset++, idx) = t2(dim)+mu_*n(dim);  // f_t2 > -mu*n
 //                    jac.coeffRef(row_reset++, idx) = 0;
 //                    jac.coeffRef(row_reset++, idx) = 0;
@@ -460,9 +452,14 @@ ForceConstraint::FillJacobianBlock (std::string var_set,
 //        	    }
           }
 
-          else if (phase == 4){
-        	  jac.coeffRef(row_reset++, idx) = f.transpose()*(dt1-mu_*dn);
-        	  jac.coeffRef(row_reset++, idx) = f.transpose()*(dt2-mu_*dn);
+//          double f_tang = sqrt(pow(f_tang_x, 2) + pow(f_tang_y,2));
+
+          if (phase == 4){
+
+//        	  g(row++) = f_tang - f.transpose() * (mu_*n);
+        	  jac.coeffRef(row_reset++, idx) = 0;
+//        	  jac.coeffRef(row_reset++, idx) = f.transpose()*(dt1-mu_*dn);
+//        	  jac.coeffRef(row_reset++, idx) = f.transpose()*(dt2-mu_*dn);
 //        	  jac.coeffRef(row_reset++, idx) = f.transpose()*(dt2+mu_*dn);
 //	          jac.coeffRef(row_reset++, idx) = f.transpose()*(dt1+mu_*dn);
 //        	  jac.coeffRef(row_reset++, idx) = 0;

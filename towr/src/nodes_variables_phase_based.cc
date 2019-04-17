@@ -306,10 +306,11 @@ NodesVariablesEEMotion::GetPhaseBasedEEParameterization (EE ee)
 	  }
 
 	  if (phase == 0 or phase == 3){
+		  nodes_.at(node_id).at(kVel).y() = 0;
 	  		  if (ee == 0 or ee == 2)
-	  			  nodes_.at(node_id).at(kPos).y() = 0.2;
+	  			  nodes_.at(node_id).at(kPos).y() = 0.19;
 	  		  if (ee == 1 or ee == 3)
-	  			  nodes_.at(node_id).at(kPos).y() = -0.2;
+	  			  nodes_.at(node_id).at(kPos).y() = -0.19;
 	  	  	 }
 
 //	  nodes_.at(node_id).at(kVel).y() = 0.0;
