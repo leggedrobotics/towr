@@ -94,8 +94,8 @@ PhaseDurations::SetVariables (const VectorXd& x)
 
   //TODO: add third phase here as well!!!
   durations_.at(0) = 1.5;
-  durations_.at(1) = 1.0;
-  durations_.at(2) = 1.5;
+  durations_.at(1) = 1.5;
+  durations_.at(2) = 0.0;
 
   for (int i=3; i<GetRows(); ++i)
 //    durations_.at(i) = x(i);

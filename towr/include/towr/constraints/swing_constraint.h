@@ -77,6 +77,7 @@ private:
   NodesVariablesPhaseBased::Ptr ee_motion_;
   NodesVariablesPhaseBased::Ptr ee_force_;
   EulerConverter base_angular_; ///< the orientation of the base.
+  BaseState final_base_;
 
   double t_swing_avg_ = 0.3;
   std::string ee_motion_id_;

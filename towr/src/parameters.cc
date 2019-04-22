@@ -74,7 +74,7 @@ Parameters::Parameters ()
   // bounds on final 6DoF base state
   bounds_final_lin_pos_ = {X,Y};
   bounds_final_lin_vel_ = {X,Y,Z};
-//  bounds_final_lin_vel_ = {Y,Z};
+//  bounds_final_lin_vel_ = {Z};
 //  bounds_final_ang_pos_ = {X,Y,Z};
   bounds_final_ang_pos_ = {Z};
   bounds_final_ang_vel_ = {X,Y,Z};
