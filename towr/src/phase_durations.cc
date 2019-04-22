@@ -93,10 +93,11 @@ PhaseDurations::SetVariables (const VectorXd& x)
 //  NEW: Set duration of first phase equal to duration of total phase and the rest 0.
 
   //TODO: add third phase here as well!!!
-  durations_.at(0) = 1.8;
-  durations_.at(1) = 0.6;
+  durations_.at(0) = 1.5;
+  durations_.at(1) = 1.0;
+  durations_.at(2) = 1.5;
 
-  for (int i=2; i<GetRows(); ++i)
+  for (int i=3; i<GetRows(); ++i)
 //    durations_.at(i) = x(i);
 	  durations_.at(i) = 0;
   durations_.back()=0;

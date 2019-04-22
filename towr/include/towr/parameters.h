@@ -167,7 +167,7 @@ public:
   /// Number and initial duration of each foot's swing and stance phases.
 //  std::vector<VecTimes> ee_phase_durations_{{2.4, 1.2}, {2.4, 1.2}, {2.4, 1.2}, {2.4, 1.2}};
 //  std::vector<VecTimes> ee_phase_durations_{{2.5}, {2.5}, {1, 1, 0.5}, {1, 1, 0.5}}; //nur hintere Räder wechseln Phase!
-  std::vector<VecTimes> ee_phase_durations_{{1.5,1,0.5}, {1.5,1,0.5}, {1.5, 1, 0.5}, {1.5, 1, 0.5}};
+  std::vector<VecTimes> ee_phase_durations_{{1.5,1,1.5}, {1.5,1,1.5}, {1.5, 1, 1.5}, {1.5, 1, 1.5}};
 
   //just drive
 //  std::vector<VecTimes> ee_phase_durations_{{2.4,0.0001,0.0001}, {2.4,0.0001,0.0001}, {2.4, 0.0001, 0.0001}, {2.4, 0.0001, 0.0001}};
