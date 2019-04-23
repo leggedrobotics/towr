@@ -65,7 +65,7 @@ TowrUserInterface::TowrUserInterface ()
 
   goal_geom_.lin.p_.setZero();
   goal_geom_.lin.p_ << 1.5, 0.2, 0.0;
-  goal_geom_.ang.p_ << 0.0, 0.0, 0.4; // roll, pitch, yaw angle applied Z->Y'->X''
+  goal_geom_.ang.p_ << 0.0, 0.0, 0.8; // roll, pitch, yaw angle applied Z->Y'->X''
 
   robot_      = RobotModel::Anymal;
   terrain_    = HeightMap::FlatID;

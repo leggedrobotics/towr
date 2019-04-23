@@ -43,8 +43,8 @@ Parameters::Parameters ()
   duration_base_polynomial_ = 0.1;
 //  force_polynomials_per_stance_phase_ = 39;
 //  ee_polynomials_per_swing_phase_ = 39; // so step can at least lift leg
-  force_polynomials_per_stance_phase_ = 9;
-  ee_polynomials_per_swing_phase_ = 9;
+  force_polynomials_per_stance_phase_ = 10;
+  ee_polynomials_per_swing_phase_ = 10;
 
 
   //TODO for drift: 3 phases, but fix timings here!

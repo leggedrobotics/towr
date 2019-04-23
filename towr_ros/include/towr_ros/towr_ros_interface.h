@@ -42,6 +42,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <towr/nlp_formulation.h>
 #include <ifopt/ipopt_solver.h>
+#include <boost/foreach.hpp>
+#include <rosbag/query.h>
+#include <rosbag/view.h>
 
 
 namespace towr {
@@ -109,6 +112,8 @@ private:
   void SaveTrajectoryInRosbag (rosbag::Bag&,
                                const std::vector<xpp::RobotStateCartesian>& traj,
                                const std::string& topic) const;
+
+  void ExtractGeometryMessagesFromTrajectoryBag (const std::string bag_file);
 };
 
 } /* namespace towr */

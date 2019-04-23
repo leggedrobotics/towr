@@ -380,6 +380,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <towr/variables/cartesian_dimensions.h>
 #include <towr/variables/variable_names.h>
 #include <iostream>
+
+//#include <towr_ros/towr_user_interface.h>
 using namespace std;
 
 
@@ -417,7 +419,8 @@ towr::SwingConstraint::InitVariableDependedQuantities (const VariablesPtr& x)
 
 //  if (phase == 1 or phase == 2 or phase == 5){
 //	  int constraint_count = pure_swing_node_ids_.size()*2;
-  	  int constraint_count = params_.ee_polynomials_per_swing_phase_*2*1;
+  	  int constraint_count = params_.ee_polynomials_per_swing_phase_*2;
+
 //  }
 
 
@@ -473,8 +476,9 @@ SwingConstraint::GetValues () const
 //    //    	Spline::GetLocalTime()
 //        	double z_rot = base_angular_->GetPoint(t).p().z();	//in rad?
 //        	double z_rot = base_angular_->GetPoint(t).p().z();
-        	double z_rot = final_base_.ang.p().z();
-
+//        	double z_rot = final_base_.ang.p().z();
+//        	double z_rot = goal_geom_.ang.p_.z();
+        	double z_rot = 0.8;
 
 //        	double z_rot_rad = z_rot*M_PI/180;
 //        	double w_C_b_z[3][3] = {{cos(z_rot), -sin(z_rot), 0 }, {sin(z_rot), cos(z_rot), 0}, {0,0,1}};
@@ -502,10 +506,10 @@ SwingConstraint::GetValues () const
 
 
         	  if (phase == 2 or phase == 5){
-        		  g(row++) = v_wrt_b(1);
 //        		  g(row++) = v_wrt_b(1);
-//        		  g(row++) = v_y(0);	//derivatives not easy!
-//        		  g(row++) = v_y(1);
+//        		  g(row++) = v_wrt_b(1);
+        		  g(row++) = v_y(0);	//derivatives not easy!
+        		  g(row++) = v_y(1);
 //        		  g(row++) = v_y(0);	//derivatives not easy!
 //        		  g(row++) = v_y(1);
         	  }
@@ -660,6 +664,8 @@ SwingConstraint::FillJacobianBlock (std::string var_set,
     for (int node_id : pure_swing_node_ids_) {
     	int phase  = ee_motion_->GetPhase(node_id,ee_);
     	int ee_id = ee_;
+
+
     	    //    	cout << "ee_id: " << ee_id << endl;
 
     	        	//get times of different phases and for different ee
@@ -715,7 +721,8 @@ SwingConstraint::FillJacobianBlock (std::string var_set,
 //    	        	}
 //    	        	double z_rot = base_angular_->GetPoint(t).p().z();	//in rad?
 
-    	        	double z_rot = final_base_.ang.p().z();
+//    	        	double z_rot = final_base_.ang.p().z();
+    	        	double z_rot = 0.8;
 
 //    	        	double w_C_b_z[3][3] = {{cos(z_rot), -sin(z_rot), 0 }, {sin(z_rot), cos(z_rot), 0}, {0,0,1}};
 //
@@ -739,14 +746,24 @@ SwingConstraint::FillJacobianBlock (std::string var_set,
 //    	        	        	  Vector3d v_y = b_C_w*v_b_y;
 
     	for (auto dim : {X,Y}) {
+    		int idx = ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(node_id, kVel, dim));
+    		int row_reset=row;
+
     		if (phase == 2 or phase == 5){
     			if (dim == X){
-    				jac.coeffRef(row++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(node_id,   kVel, dim))) = b_C_w_z(1,2)*w_C_b_z(2,1);
-//    				jac.coeffRef(row++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(node_id,   kVel, dim))) = b_C_w_z(2,2)*w_C_b_z(2,1);
+//    				jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(node_id,   kVel, dim))) = b_C_w_z(1,2)*w_C_b_z(2,1);
+//    				jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(node_id,   kVel, dim))) = b_C_w_z(2,2)*w_C_b_z(2,1);
+    				jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(node_id,   kVel, dim))) = -sin(-0.8)*sin(0.8);
+    				jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(node_id,   kVel, dim))) = cos(-0.8)*sin(0.8);
+//    				jac.coeffRef(row_reset++, idx) = sin(1.2);
     			}
     			else if (dim == Y){
-    				jac.coeffRef(row++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(node_id,   kVel, dim))) = b_C_w_z(2,2)*w_C_b_z(2,1);
-//    				jac.coeffRef(row++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(node_id,   kVel, dim))) = b_C_w_z(2,2)*w_C_b_z(2,2);
+//    				jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(node_id,   kVel, dim))) = b_C_w_z(2,2)*w_C_b_z(2,1);
+//    				jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(node_id,   kVel, dim))) = b_C_w_z(2,2)*w_C_b_z(2,2);
+//
+    				jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(node_id,   kVel, dim))) = cos(-0.8)*sin(0.8);
+    				jac.coeffRef(row_reset++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(node_id,   kVel, dim))) = cos(-0.8)*cos(0.8);
+//    				jac.coeffRef(row_reset++, idx) = cos(1.2);
     			}
 
     	}
@@ -755,6 +772,11 @@ SwingConstraint::FillJacobianBlock (std::string var_set,
 //    			jac.coeffRef(row++, ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(node_id,   kVel, dim))) =  0.0;
 //    		}
     	}
+
+    	if (phase == 2 or phase == 5){
+    		row += 2;
+    	}
+
 
 //    	for (auto dim : {X,Y}) {
 //        // position constraint
