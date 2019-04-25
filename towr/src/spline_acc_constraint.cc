@@ -40,7 +40,14 @@ SplineAccConstraint::SplineAccConstraint (const NodeSpline::Ptr& spline,
 
   n_dim_       = spline->GetPoint(0.0).p().rows();
   n_junctions_ = spline->GetPolynomialCount() - 1;
+
+  //TODO: different poly durations for ee and for base!!
+//  if (node_variable_name == ){
+//	  T_ = durations_.at(0);
+//  }
+
   T_           = spline->GetPolyDurations();
+
 
   SetRows(n_dim_*n_junctions_);
 }
@@ -69,10 +76,10 @@ SplineAccConstraint::FillJacobianBlock (std::string var_set, Jacobian& jac) cons
   if (var_set == node_variables_id_) {
     for (int j=0; j<n_junctions_; ++j) {
       int p_prev = j; // id of previous polynomial
-      Jacobian acc_prev = spline_->GetJacobianWrtNodes(p_prev, T_.at(p_prev), kAcc);
+      Jacobian acc_prev = spline_->GetJacobianWrtNodes(p_prev, T_.at(p_prev), kAcc, false);
 
       int p_next = j+1;
-      Jacobian acc_next = spline_->GetJacobianWrtNodes(p_next, 0.0, kAcc);
+      Jacobian acc_next = spline_->GetJacobianWrtNodes(p_next, 0.0, kAcc, false);
 
       jac.middleRows(j*n_dim_, n_dim_) = acc_prev - acc_next;
     }
@@ -86,4 +93,3 @@ SplineAccConstraint::GetBounds () const
 }
 
 } /* namespace xpp */
-

@@ -40,6 +40,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <towr/constraints/terrain_constraint.h>
 #include <towr/constraints/total_duration_constraint.h>
 #include <towr/constraints/spline_acc_constraint.h>
+#include <towr/constraints/drive_constraint.h>
 
 #include <towr/costs/node_cost.h>
 #include <towr/variables/nodes_variables_all.h>
@@ -231,6 +232,8 @@ NlpFormulation::GetConstraint (Parameters::ConstraintName name,
 //    case Parameters::Swing:          return MakeSwingConstraint();
     case Parameters::Swing:          return MakeSwingConstraint(s);
     case Parameters::BaseAcc:        return MakeBaseAccConstraint(s);
+    case Parameters::Drive:			 return MakeDriveConstraint(s);
+    case Parameters::EEAcc:			 return MakeEEAccConstraint(s);
     default: throw std::runtime_error("constraint not defined!");
   }
 }
@@ -263,6 +266,23 @@ NlpFormulation::MakeRangeOfMotionBoxConstraint (const SplineHolder& s) const
     auto rom = std::make_shared<RangeOfMotionConstraint>(model_.kinematic_model_,
                                                          params_.GetTotalTime(),
                                                          params_.dt_constraint_range_of_motion_,
+                                                         ee,
+                                                         s);
+    c.push_back(rom);
+  }
+
+  return c;
+}
+
+NlpFormulation::ContraintPtrVec
+NlpFormulation::MakeDriveConstraint (const SplineHolder& s) const
+{
+  ContraintPtrVec c;
+
+  for (int ee=0; ee<params_.GetEECount(); ee++) {
+    auto rom = std::make_shared<DriveConstraint>(model_.kinematic_model_,
+                                                         params_.GetTotalTime(),
+                                                         params_.dt_constraint_drive_,
                                                          ee,
                                                          s);
     c.push_back(rom);
@@ -339,6 +359,20 @@ NlpFormulation::MakeBaseAccConstraint (const SplineHolder& s) const
                         (s.base_angular_, id::base_ang_nodes));
 
   return constraints;
+}
+
+NlpFormulation::ContraintPtrVec
+NlpFormulation::MakeEEAccConstraint (const SplineHolder& s) const
+{
+	ContraintPtrVec c;
+
+  for (int ee=0; ee<params_.GetEECount(); ee++) {
+    auto constraint = std::make_shared<SplineAccConstraint>(s.ee_motion_.at(ee), id::EEMotionNodes(ee));
+
+    c.push_back(constraint);
+  }
+
+  return c;
 }
 
 NlpFormulation::ContraintPtrVec

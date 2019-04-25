@@ -78,10 +78,10 @@ BaseMotionConstraint::UpdateJacobianAtInstance (double t, int k,
                                                 Jacobian& jac) const
 {
   if (var_set == id::base_ang_nodes)
-    jac.middleRows(GetRow(k,AX), k3D) = base_angular_->GetJacobianWrtNodes(t, kPos);
+    jac.middleRows(GetRow(k,AX), k3D) = base_angular_->GetJacobianWrtNodes(t, kPos, false);
 
   if (var_set == id::base_lin_nodes)
-    jac.middleRows(GetRow(k,LX), k3D) = base_linear_->GetJacobianWrtNodes(t, kPos);
+    jac.middleRows(GetRow(k,LX), k3D) = base_linear_->GetJacobianWrtNodes(t, kPos, false);
 }
 
 int

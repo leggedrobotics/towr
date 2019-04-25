@@ -73,7 +73,7 @@ public:
    *             p: Number of dimensions of the spline
    *             n: Number of optimized node variables.
    */
-  Jacobian GetJacobianWrtNodes(double t, Dx dxdt) const;
+  Jacobian GetJacobianWrtNodes(double t, Dx dxdt, bool fill_with_zeros) const;
 
   /**
    * @brief How the spline changes when the node values change.
@@ -84,7 +84,7 @@ public:
    *             p: Number of dimensions of the spline
    *             n: Number of optimized node variables.
    */
-  Jacobian GetJacobianWrtNodes(int poly_id, double t_local, Dx dxdt) const;
+  Jacobian GetJacobianWrtNodes(int poly_id, double t_local, Dx dxdt, bool fill_with_zeros) const;
 
   /**
    * @returns The number of node variables being optimized over.

@@ -81,8 +81,8 @@ DynamicConstraint::UpdateJacobianAtInstance(double t, int k, std::string var_set
 
   // sensitivity of dynamic constraint w.r.t base variables.
   if (var_set == id::base_lin_nodes) {
-    Jacobian jac_base_lin_pos = base_linear_->GetJacobianWrtNodes(t,kPos);
-    Jacobian jac_base_lin_acc = base_linear_->GetJacobianWrtNodes(t,kAcc);
+    Jacobian jac_base_lin_pos = base_linear_->GetJacobianWrtNodes(t,kPos, false);
+    Jacobian jac_base_lin_acc = base_linear_->GetJacobianWrtNodes(t,kAcc, false);
 
     jac_model = model_->GetJacobianWrtBaseLin(jac_base_lin_pos,
                                               jac_base_lin_acc);
@@ -95,12 +95,12 @@ DynamicConstraint::UpdateJacobianAtInstance(double t, int k, std::string var_set
   // sensitivity of dynamic constraint w.r.t. endeffector variables
   for (int ee=0; ee<model_->GetEECount(); ++ee) {
     if (var_set == id::EEForceNodes(ee)) {
-      Jacobian jac_ee_force = ee_forces_.at(ee)->GetJacobianWrtNodes(t,kPos);
+      Jacobian jac_ee_force = ee_forces_.at(ee)->GetJacobianWrtNodes(t,kPos, false);
       jac_model = model_->GetJacobianWrtForce(jac_ee_force, ee);
     }
 
     if (var_set == id::EEMotionNodes(ee)) {
-      Jacobian jac_ee_pos = ee_motion_.at(ee)->GetJacobianWrtNodes(t,kPos);
+      Jacobian jac_ee_pos = ee_motion_.at(ee)->GetJacobianWrtNodes(t,kPos, false);
       jac_model = model_->GetJacobianWrtEEPos(jac_ee_pos, ee);
     }
 

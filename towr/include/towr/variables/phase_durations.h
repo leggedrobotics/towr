@@ -33,6 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ifopt/variable_set.h>
 
 #include "phase_durations_observer.h"
+#include <towr/parameters.h>
 
 namespace towr {
 
@@ -122,6 +123,7 @@ private:
 
   double t_total_;
   bool initial_contact_state_; ///< true if first phase in contact
+  Parameters params_;
   ifopt::Bounds phase_duration_bounds_;
 
   std::vector<PhaseDurationsObserver*> observers_;

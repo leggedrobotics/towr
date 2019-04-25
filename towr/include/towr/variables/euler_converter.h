@@ -150,7 +150,7 @@ public:
    * @param inverse  if true, the derivative for M^(-1)*v is evaluated.
    * @returns        3 x n dimensional matrix (n = number of Euler node values).
    */
-  Jacobian DerivOfRotVecMult(double t, const Vector3d& v, bool inverse) const;
+  Jacobian DerivOfRotVecMult(double t, const Vector3d& v, bool inverse, bool fill_zeros) const;
 
   /** @see GetQuaternionBaseToWorld(t)  */
   static Eigen::Quaterniond GetQuaternionBaseToWorld(const EulerAngles& pos);

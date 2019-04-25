@@ -91,7 +91,7 @@ EulerConverter::GetDerivOfAngVelWrtEulerNodes(double t) const
   // convert to sparse, but also regard 0.0 as non-zero element, because
   // could turn nonzero during the course of the program
   JacobianRow vel = ori.v().transpose().sparseView(1.0, -1.0);
-  Jacobian dVel_du  = euler_->GetJacobianWrtNodes(t, kVel);
+  Jacobian dVel_du  = euler_->GetJacobianWrtNodes(t, kVel, false);
 
   for (auto dim : {X,Y,Z}) {
     Jacobian dM_du = GetDerivMwrtNodes(t,dim);
@@ -113,8 +113,8 @@ EulerConverter::GetDerivOfAngAccWrtEulerNodes (double t) const
   JacobianRow vel = ori.v().transpose().sparseView(1.0, -1.0);
   JacobianRow acc = ori.a().transpose().sparseView(1.0, -1.0);
 
-  Jacobian dVel_du  = euler_->GetJacobianWrtNodes(t, kVel);
-  Jacobian dAcc_du  = euler_->GetJacobianWrtNodes(t, kAcc);
+  Jacobian dVel_du  = euler_->GetJacobianWrtNodes(t, kVel, false);
+  Jacobian dAcc_du  = euler_->GetJacobianWrtNodes(t, kAcc, false);
 
 
   for (auto dim : {X,Y,Z}) {
@@ -221,7 +221,7 @@ EulerConverter::GetRotationMatrixBaseToWorld (const EulerAngles& xyz)
 }
 
 EulerConverter::Jacobian
-EulerConverter::DerivOfRotVecMult (double t, const Vector3d& v, bool inverse) const
+EulerConverter::DerivOfRotVecMult (double t, const Vector3d& v, bool inverse, bool fill_zeros) const
 {
   JacRowMatrix Rd = GetDerivativeOfRotationMatrixWrtNodes(t);
   Jacobian jac = jac_wrt_nodes_structure_;
@@ -231,7 +231,13 @@ EulerConverter::DerivOfRotVecMult (double t, const Vector3d& v, bool inverse) co
       // since for every rotation matrix R^(-1) = R^T, just swap rows and
       // columns for calculation of derivative of inverse rotation matrix
       JacobianRow jac_row = inverse? Rd.at(col).at(row) : Rd.at(row).at(col);
-      jac.row(row) += v(col)*jac_row;
+      if (fill_zeros){
+    	  jac.row(row) += 0.0*jac_row;
+      }
+      else {
+    	  jac.row(row) += v(col)*jac_row;
+      }
+
     }
   }
 
@@ -306,7 +312,7 @@ EulerConverter::GetDerivMdotwrtNodes (double t, Dim3D ang_acc_dim) const
 EulerConverter::JacobianRow
 EulerConverter::GetJac (double t, Dx deriv, Dim3D dim) const
 {
-  return euler_->GetJacobianWrtNodes(t, deriv).row(dim);
+  return euler_->GetJacobianWrtNodes(t, deriv, false).row(dim);
 }
 
 } /* namespace towr */

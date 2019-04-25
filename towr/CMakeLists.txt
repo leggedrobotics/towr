@@ -32,6 +32,7 @@ add_library(${PROJECT_NAME} SHARED
   # constraints
   src/time_discretization_constraint.cc
   src/base_motion_constraint.cc
+  src/drive_constraint.cc
   src/terrain_constraint.cc
   src/swing_constraint.cc
   src/force_constraint.cc
@@ -62,11 +63,11 @@ add_library(${PROJECT_NAME} SHARED
   src/euler_converter.cc
   src/phase_durations_observer.cc
 )
-target_link_libraries(${PROJECT_NAME} 
-  PUBLIC 
+target_link_libraries(${PROJECT_NAME}
+  PUBLIC
     ifopt::ifopt_core
 )
-target_include_directories(${PROJECT_NAME} 
+target_include_directories(${PROJECT_NAME}
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
@@ -78,12 +79,12 @@ target_include_directories(${PROJECT_NAME}
 #############
 enable_testing()
 # example problem solved with IPOPT
-add_executable(${PROJECT_NAME}-example 
+add_executable(${PROJECT_NAME}-example
   test/hopper_example.cc
 )
-target_link_libraries(${PROJECT_NAME}-example  
+target_link_libraries(${PROJECT_NAME}-example
   PRIVATE
-    ${PROJECT_NAME} 
+    ${PROJECT_NAME}
     ifopt::ifopt_ipopt
 )
 add_test(${PROJECT_NAME}-example ${PROJECT_NAME}-example)
@@ -111,7 +112,7 @@ endif()
 include(GNUInstallDirs) # for correct libraries locations across platforms
 set(config_package_location "share/${PROJECT_NAME}/cmake") # for .cmake find-scripts installs
 install(
-  TARGETS ${PROJECT_NAME} ${PROJECT_NAME}-example 
+  TARGETS ${PROJECT_NAME} ${PROJECT_NAME}-example
   EXPORT ${PROJECT_NAME}-targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -139,7 +140,7 @@ write_basic_package_version_file(
 )
 # install the two files in a place where cmake looks for them
 install(
-  FILES 
+  FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/towr-config.cmake"   # self-written
     ${version_file}                                         # generated
   DESTINATION ${config_package_location}

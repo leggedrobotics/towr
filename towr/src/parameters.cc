@@ -43,8 +43,13 @@ Parameters::Parameters ()
   duration_base_polynomial_ = 0.1;
 //  force_polynomials_per_stance_phase_ = 39;
 //  ee_polynomials_per_swing_phase_ = 39; // so step can at least lift leg
-  force_polynomials_per_stance_phase_ = 10;
-  ee_polynomials_per_swing_phase_ = 10;
+
+//  phase_durations = 1.5;
+//  ee_phase_durations_{{1.0,1.0,1.0}, {1.0,1.0,1.0}, {1.0,1.0,1.0}, {1.0,1.0,1.0}};
+
+  //one node each 0.1 seconds
+  force_polynomials_per_stance_phase_ = phase_durations/0.1;
+  ee_polynomials_per_swing_phase_ = phase_durations/0.1;
 
 
   //TODO for drift: 3 phases, but fix timings here!
@@ -56,6 +61,7 @@ Parameters::Parameters ()
   // parameters related to specific constraints (only used when it is added as well)
   force_limit_in_normal_direction_ = 1000;
   dt_constraint_range_of_motion_ = 0.08;
+  dt_constraint_drive_ = 0.1;
   dt_constraint_dynamic_ = 0.1;
   dt_constraint_base_motion_ = duration_base_polynomial_/4.; // only for base RoM constraint
   bound_phase_duration_ = std::make_pair(0.2, 10);  // used only when optimizing phase durations, so gait
@@ -66,6 +72,8 @@ Parameters::Parameters ()
   constraints_.push_back(BaseAcc); // so accelerations don't jump between polynomials
   constraints_.push_back(EndeffectorRom); //Ensures that the range of motion is respected at discrete times.
   constraints_.push_back(Force); // ensures unilateral forces and inside the friction cone.
+  constraints_.push_back(Drive);
+  constraints_.push_back(EEAcc);
 //  constraints_.push_back(Swing); // only smooth velocities allowed
 
   // optional costs to e.g penalize endeffector forces
@@ -73,8 +81,8 @@ Parameters::Parameters ()
 
   // bounds on final 6DoF base state
   bounds_final_lin_pos_ = {X,Y};
-//  bounds_final_lin_vel_ = {X,Y,Z};
-  bounds_final_lin_vel_ = {Z};
+  bounds_final_lin_vel_ = {X,Y,Z};
+//  bounds_final_lin_vel_ = {Z};
 //  bounds_final_ang_pos_ = {X,Y,Z};
   bounds_final_ang_pos_ = {Z};
   bounds_final_ang_vel_ = {X,Y,Z};

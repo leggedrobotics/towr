@@ -116,12 +116,14 @@ private:
                                 const SplineHolder& splines) const;
   ContraintPtrVec MakeDynamicConstraint(const SplineHolder& s) const;
   ContraintPtrVec MakeRangeOfMotionBoxConstraint(const SplineHolder& s) const;
+  ContraintPtrVec MakeDriveConstraint(const SplineHolder& s) const;
   ContraintPtrVec MakeTotalTimeConstraint() const;
   ContraintPtrVec MakeTerrainConstraint() const;
   ContraintPtrVec MakeForceConstraint(const SplineHolder& s) const;
   ContraintPtrVec MakeSwingConstraint(const SplineHolder& s) const;
   ContraintPtrVec MakeBaseRangeOfMotionConstraint(const SplineHolder& s) const;
   ContraintPtrVec MakeBaseAccConstraint(const SplineHolder& s) const;
+  ContraintPtrVec MakeEEAccConstraint (const SplineHolder& s) const;
 
   // costs
   CostPtrVec GetCost(const Parameters::CostName& id, double weight) const;

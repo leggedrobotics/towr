@@ -129,10 +129,10 @@ SingleRigidBodyDynamics::GetJacobianWrtBaseAng (const EulerConverter& base_euler
   // Derivative of R*I_b*R^T * wd
   // 1st term of product rule (derivative of R)
   Vector3d v11 = I_b*w_R_b_.transpose()*omega_dot_;
-  Jac jac11 = base_euler.DerivOfRotVecMult(t, v11, false);
+  Jac jac11 = base_euler.DerivOfRotVecMult(t, v11, false, false);
 
   // 2nd term of product rule (derivative of R^T)
-  Jac jac12 = w_R_b_.sparseView()*I_b*base_euler.DerivOfRotVecMult(t, omega_dot_, true);
+  Jac jac12 = w_R_b_.sparseView()*I_b*base_euler.DerivOfRotVecMult(t, omega_dot_, true, false);
 
   // 3rd term of product rule (derivative of wd)
   Jac jac_ang_acc = base_euler.GetDerivOfAngAccWrtEulerNodes(t);
@@ -144,10 +144,10 @@ SingleRigidBodyDynamics::GetJacobianWrtBaseAng (const EulerConverter& base_euler
   // w x d_dn(R*I_b*R^T*w) -(I*w x d_dnw)
   // right derivative same as above, just with velocity instead acceleration
   Vector3d v21 = I_b*w_R_b_.transpose()*omega_;
-  Jac jac21 = base_euler.DerivOfRotVecMult(t, v21, false);
+  Jac jac21 = base_euler.DerivOfRotVecMult(t, v21, false, false);
 
   // 2nd term of product rule (derivative of R^T)
-  Jac jac22 = w_R_b_.sparseView()*I_b*base_euler.DerivOfRotVecMult(t, omega_, true);
+  Jac jac22 = w_R_b_.sparseView()*I_b*base_euler.DerivOfRotVecMult(t, omega_, true, false);
 
   // 3rd term of product rule (derivative of omega)
   Jac jac_ang_vel = base_euler.GetDerivOfAngVelWrtEulerNodes(t);

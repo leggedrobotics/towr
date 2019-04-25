@@ -143,7 +143,9 @@ public:
                         Force,          ///< sets ForceConstraint
                         Swing,          ///< sets SwingConstraint
                         BaseRom,        ///< sets BaseMotionConstraint
-                        BaseAcc         ///< sets SplineAccConstraint
+                        BaseAcc,         ///< sets SplineAccConstraint
+						Drive,
+						EEAcc
   };
   /**
    *  @brief Indentifiers to be used to add certain costs to the optimization
@@ -167,7 +169,21 @@ public:
   /// Number and initial duration of each foot's swing and stance phases.
 //  std::vector<VecTimes> ee_phase_durations_{{2.4, 1.2}, {2.4, 1.2}, {2.4, 1.2}, {2.4, 1.2}};
 //  std::vector<VecTimes> ee_phase_durations_{{2.5}, {2.5}, {1, 1, 0.5}, {1, 1, 0.5}}; //nur hintere Räder wechseln Phase!
-  std::vector<VecTimes> ee_phase_durations_{{1.5,1.5,0.0}, {1.5,1.5,0.0}, {1.5, 1.5, 0.0}, {1.5, 1.5, 0.0}};
+
+  double phase_durations = 1.5;
+  // 3 phases:
+  std::vector<VecTimes> ee_phase_durations_{{phase_durations,phase_durations,phase_durations},
+	  	  	  	  	  	  	  	  	  	  	  {phase_durations,phase_durations,phase_durations},
+											  {phase_durations,phase_durations,phase_durations},
+											  {phase_durations,phase_durations,phase_durations}};
+
+  //2 phases:
+//  std::vector<VecTimes> ee_phase_durations_{{phase_durations,phase_durations},
+//  	  	  	  	  	  	  	  	  	  	  	  {phase_durations,phase_durations},
+//  											  {phase_durations,phase_durations},
+//  											  {phase_durations,phase_durations}};
+
+
 //  std::vector<VecTimes> ee_phase_durations_{{1.0,1.0,1.0}, {1.0,1.0,1.0}, {1.0,1.0,1.0}, {1.0,1.0,1.0}};
 
   //just drive
@@ -192,6 +208,8 @@ public:
 
   /// Interval at which the base motion constraint is enforced.
   double dt_constraint_base_motion_;
+
+  double dt_constraint_drive_;
 
   /// Fixed duration of each cubic polynomial describing the base motion.
   double duration_base_polynomial_;

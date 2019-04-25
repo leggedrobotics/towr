@@ -289,7 +289,7 @@ NodesVariablesEEMotion::GetPhaseBasedEEParameterization (EE ee)
 	 if (phase == 1 or phase == 2 or phase == 4 or phase == 5){
 	  for (int dim=0; dim<GetDim(); ++dim) {
 		  if (dim == Y){
-			  index_map[idx++].push_back(NodeValueInfo(node_id, kPos, dim));
+			  index_map[idx++].push_back(NodeValueInfo(node_id, kPos, Y));
 	      	}
 //	      else
 //	    	  nodes_.at(node_id).at(kPos).z() = 0.0;

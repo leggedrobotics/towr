@@ -89,18 +89,18 @@ RangeOfMotionConstraint::UpdateJacobianAtInstance (double t, int k,
   int row_start = GetRow(k,X);
 
   if (var_set == id::base_lin_nodes) {
-    jac.middleRows(row_start, k3D) = -1*b_R_w*base_linear_->GetJacobianWrtNodes(t, kPos);
+    jac.middleRows(row_start, k3D) = -1*b_R_w*base_linear_->GetJacobianWrtNodes(t, kPos, false);
   }
 
   if (var_set == id::base_ang_nodes) {
     Vector3d base_W   = base_linear_->GetPoint(t).p();
     Vector3d ee_pos_W = ee_motion_->GetPoint(t).p();
     Vector3d r_W = ee_pos_W - base_W;
-    jac.middleRows(row_start, k3D) = base_angular_.DerivOfRotVecMult(t,r_W, true);
+    jac.middleRows(row_start, k3D) = base_angular_.DerivOfRotVecMult(t,r_W, true, false);
   }
 
   if (var_set == id::EEMotionNodes(ee_)) {
-    jac.middleRows(row_start, k3D) = b_R_w*ee_motion_->GetJacobianWrtNodes(t,kPos);
+    jac.middleRows(row_start, k3D) = b_R_w*ee_motion_->GetJacobianWrtNodes(t,kPos, false);
   }
 
   if (var_set == id::EESchedule(ee_)) {
@@ -109,4 +109,3 @@ RangeOfMotionConstraint::UpdateJacobianAtInstance (double t, int k,
 }
 
 } /* namespace xpp */
-

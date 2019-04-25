@@ -60,19 +60,19 @@ NodeSpline::GetNodeVariablesCount() const
 }
 
 NodeSpline::Jacobian
-NodeSpline::GetJacobianWrtNodes (double t_global, Dx dxdt) const
+NodeSpline::GetJacobianWrtNodes (double t_global, Dx dxdt, bool fill_with_zeros) const
 {
   int id; double t_local;
   std::tie(id, t_local) = GetLocalTime(t_global, GetPolyDurations());
 
-  return GetJacobianWrtNodes(id, t_local, dxdt);
+  return GetJacobianWrtNodes(id, t_local, dxdt, fill_with_zeros);
 }
 
 NodeSpline::Jacobian
-NodeSpline::GetJacobianWrtNodes (int id, double t_local, Dx dxdt) const
+NodeSpline::GetJacobianWrtNodes (int id, double t_local, Dx dxdt, bool fill_with_zeros) const
 {
   Jacobian jac = jac_wrt_nodes_structure_;
-  FillJacobianWrtNodes(id, t_local, dxdt, jac, false);
+  FillJacobianWrtNodes(id, t_local, dxdt, jac, fill_with_zeros);
 
   // needed to avoid Eigen::assert failure "wrong storage order" triggered
   // in dynamic_constraint.cc
