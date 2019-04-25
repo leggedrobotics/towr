@@ -172,7 +172,7 @@ public:
 
   //just drive
 //  std::vector<VecTimes> ee_phase_durations_{{2.4,0.0001,0.0001}, {2.4,0.0001,0.0001}, {2.4, 0.0001, 0.0001}, {2.4, 0.0001, 0.0001}};
-//  std::vector<VecTimes> ee_phase_durations_{{2.5,0,0}, {2.5,0,0}, {2.5,0,0}, {2.5,0,0}};
+//  	std::vector<VecTimes> ee_phase_durations_{{3,0,0}, {3,0,0}, {3,0,0}, {3,0,0}};
 
 
   /// True if the foot is initially in contact with the terrain.
