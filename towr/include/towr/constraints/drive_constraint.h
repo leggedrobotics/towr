@@ -57,7 +57,9 @@ private:
   Parameters params_;
 
   int n_constraints_per_node_;
+
   EE ee_;
+  std::vector<double> T_;
 
   // see TimeDiscretizationConstraint for documentation
   void UpdateConstraintAtInstance (double t, int k, VectorXd& g) const override;

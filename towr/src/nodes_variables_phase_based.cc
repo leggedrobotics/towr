@@ -286,32 +286,32 @@ NodesVariablesEEMotion::GetPhaseBasedEEParameterization (EE ee)
 
 	 index_map[idx++].push_back(NodeValueInfo(node_id, kPos, X));
 
-	 if (phase == 1 or phase == 2 or phase == 4 or phase == 5){
-	  for (int dim=0; dim<GetDim(); ++dim) {
-		  if (dim == Y){
+//	 if (phase == 1 or phase == 2 or phase == 4 or phase == 5){
+//	  for (int dim=0; dim<GetDim(); ++dim) {
+//		  if (dim == Y){
 			  index_map[idx++].push_back(NodeValueInfo(node_id, kPos, Y));
-	      	}
+//	      	}
 //	      else
 //	    	  nodes_.at(node_id).at(kPos).z() = 0.0;
-	   }
-	 }
+//	   }
+//	 }
 
 	 index_map[idx++].push_back(NodeValueInfo(node_id, kVel, X));
 	  // attention: X is WORLD x-direction!! so optimize x and y velocity (in case of driving not in x dir)
 //	  only optimize velocity in x-direction:
 
 
-	  if (phase != 0 and phase != 3){
+//	  if (phase != 0 and phase != 3){
 		  index_map[idx++].push_back(NodeValueInfo(node_id, kVel, Y));
-	  }
+//	  }
 
-	  if (phase == 0 or phase == 3){
-		  nodes_.at(node_id).at(kVel).y() = 0;
-	  		  if (ee == 0 or ee == 2)
-	  			  nodes_.at(node_id).at(kPos).y() = 0.19;
-	  		  if (ee == 1 or ee == 3)
-	  			  nodes_.at(node_id).at(kPos).y() = -0.19;
-	  	  	 }
+//	  if (phase == 0 or phase == 3){
+//		  nodes_.at(node_id).at(kVel).y() = 0;
+//	  		  if (ee == 0 or ee == 2)
+//	  			  nodes_.at(node_id).at(kPos).y() = 0.19;
+//	  		  if (ee == 1 or ee == 3)
+//	  			  nodes_.at(node_id).at(kPos).y() = -0.19;
+//	  	  	 }
 
 //	  nodes_.at(node_id).at(kVel).y() = 0.0;
 	  nodes_.at(node_id).at(kVel).z() = 0.0;

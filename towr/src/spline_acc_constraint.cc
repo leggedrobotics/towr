@@ -46,7 +46,7 @@ SplineAccConstraint::SplineAccConstraint (const NodeSpline::Ptr& spline,
 //	  T_ = durations_.at(0);
 //  }
 
-  T_           = spline->GetPolyDurations();
+  T_ = spline->GetPolyDurations();
 
 
   SetRows(n_dim_*n_junctions_);
