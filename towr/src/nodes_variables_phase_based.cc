@@ -167,6 +167,10 @@ NodesVariablesPhaseBased::GetPhase (int node_id, EE ee) const
 //  return polynomial_info_.at(poly_id).phase_;
 	int n_nodes_per_phase = params_.force_polynomials_per_stance_phase_ + 1;
 
+	if (params_.just_drive_){
+		return 0;
+	}
+	else {
 	if (node_id < n_nodes_per_phase){
 		if (ee == 0 or ee == 1)
 			return 0;
@@ -184,6 +188,7 @@ NodesVariablesPhaseBased::GetPhase (int node_id, EE ee) const
 					return 1;
 		if (ee == 2 or ee == 3)
 					return 4;
+	}
 	}
 }
 

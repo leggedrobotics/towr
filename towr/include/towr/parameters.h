@@ -177,11 +177,17 @@ public:
 											  {phase_durations,phase_durations,phase_durations},
 											  {phase_durations,phase_durations,phase_durations}};
 
-  //2 phases:
-//  std::vector<VecTimes> ee_phase_durations_{{phase_durations,phase_durations},
-//  	  	  	  	  	  	  	  	  	  	  	  {phase_durations,phase_durations},
-//  											  {phase_durations,phase_durations},
-//  											  {phase_durations,phase_durations}};
+//  2 phases:
+//  std::vector<VecTimes> ee_phase_durations_{{phase_durations,phase_durations, 0},
+//  	  	  	  	  	  	  	  	  	  	  	  {phase_durations,phase_durations, 0},
+//  											  {phase_durations,phase_durations, 0},
+//  											  {phase_durations,phase_durations, 0}};
+
+  //  1 phase:	need to take out ee acc constraint (cannot handle 0 durations)!
+//    std::vector<VecTimes> ee_phase_durations_{{phase_durations,0.01,0.01},
+//    	  	  	  	  	  	  	  	  	  	  	  {phase_durations,0.01,0.01},
+//    											  {phase_durations,0.01,0.01},
+//    											  {phase_durations,0.01,0.01}};
 
 
 //  std::vector<VecTimes> ee_phase_durations_{{1.0,1.0,1.0}, {1.0,1.0,1.0}, {1.0,1.0,1.0}, {1.0,1.0,1.0}};
@@ -219,6 +225,9 @@ public:
 
   /// Number of polynomials to parameterize each contact force during stance phase.
   int force_polynomials_per_stance_phase_;
+
+  //if we just want to drive, no drift
+  bool just_drive_;
 
   /// The maximum allowable force [N] in normal direction
   double force_limit_in_normal_direction_;

@@ -33,6 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ifopt/constraint_set.h>
 
 #include <towr/variables/node_spline.h>
+#include <towr/parameters.h>
 
 namespace towr {
 
@@ -61,6 +62,7 @@ private:
   int n_junctions_;       ///< number of junctions between polynomials in spline.
   int n_dim_;             ///< dimensions that this polynomial represents (e.g. x,y).
   std::vector<double> T_; ///< Duration of each polynomial in spline.
+  Parameters params_;
 };
 
 } /* namespace towr */

@@ -90,7 +90,6 @@ PhaseDurations::SetVariables (const VectorXd& x)
   // but I'm leaving this in here to show that this is undefined behavior and a clean
   // implementation is still required. PR desired ;)
   assert(t_total_>x.sum());
-//  NEW: Set duration of first phase equal to duration of total phase and the rest 0.
 
   //TODO: add third phase here as well!!!
   durations_.at(0) = params_.ee_phase_durations_[0][0];

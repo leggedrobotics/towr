@@ -52,19 +52,17 @@ Parameters::Parameters ()
   ee_polynomials_per_swing_phase_ = phase_durations/0.1;
 
 
-  //TODO for drift: 3 phases, but fix timings here!
-//  std::vector<double> phase_n_and_t{2.8};
-//  ee_phase_durations_.push_back(phase_n_and_t);
-//  ee_phase_durations_({2.8});
+  just_drive_ = false;	//true if no drift phase at all wanted
 
 
   // parameters related to specific constraints (only used when it is added as well)
   force_limit_in_normal_direction_ = 1000;
   dt_constraint_range_of_motion_ = 0.08;
-  dt_constraint_drive_ = 0.1;
+//  dt_constraint_drive_ = 0.1;		//needs also acc = 0 constraint
+  dt_constraint_drive_ = 0.03;		//needs no acc constraint?
   dt_constraint_dynamic_ = 0.1;
   dt_constraint_base_motion_ = duration_base_polynomial_/4.; // only for base RoM constraint
-  bound_phase_duration_ = std::make_pair(0.2, 10);  // used only when optimizing phase durations, so gait
+  bound_phase_duration_ = std::make_pair(0.0, 10);  // used only when optimizing phase durations, so gait
 
   // a minimal set of basic constraints
 //  constraints_.push_back(Terrain);

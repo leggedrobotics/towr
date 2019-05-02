@@ -23,7 +23,9 @@ DriveConstraint::DriveConstraint (const KinematicModel::Ptr& model,
   ee_motion_    = spline_holder.ee_motion_.at(ee);
 
   ee_ = ee;
-  n_constraints_per_node_ = 2; // 2: y-vel. and y-acc
+
+  // set 2 if y-vel. and y-acc constraint, 1 if only y-vel constraint
+  n_constraints_per_node_ = 1; // 2: if y-vel. and y-acc constraint
 
 	  SetRows(GetNumberOfNodes()*n_constraints_per_node_);
 
@@ -50,15 +52,14 @@ DriveConstraint::UpdateConstraintAtInstance (double t, int k, VectorXd& g) const
   Vector3d a_wrt_b = w_C_b*ee_motion_->GetPoint(poly_id, T_.at(poly_id)).a(); //k is not poly id!
   Vector3d v_b_y = {0, v_wrt_b(1), 0};
   Vector3d a_b_y = {0, a_wrt_b(1), 0};
-//  Vector3d v_b_x = {v_wrt_b(0), 0, 0};
-//  Vector3d v_x = b_C_w*v_b_x;
+
 //  Vector3d v_y = b_C_w*v_b_y;
 
   int row = k*n_constraints_per_node_;
 
   g(row++) = v_b_y(Y);
-  g(row++) = a_b_y(Y);
-
+  if (n_constraints_per_node_ == 2)
+	  g(row++) = a_b_y(Y);
 }
 
 void
@@ -66,20 +67,32 @@ DriveConstraint::UpdateBoundsAtInstance (double t, int k, VecBound& bounds) cons
 {
 	int row = k*n_constraints_per_node_;
 
-	if (ee_ == 0 or ee_ == 1){
+	if (params_.just_drive_){
 		bounds.at(row++) = ifopt::BoundZero;
-		bounds.at(row++) = ifopt::BoundZero;
-	  }
-	  else if (ee_ == 2 or ee_ == 3){
-		  if ((t <= params_.ee_phase_durations_[0][0]) or (t > (params_.ee_phase_durations_[0][0]+params_.ee_phase_durations_[0][1]))){
-			  bounds.at(row++) = ifopt::BoundZero;
-			  bounds.at(row++) = ifopt::BoundZero;
-		  }
-		  else {
-			  bounds.at(row++) = ifopt::NoBound;
-		  	  bounds.at(row++) = ifopt::NoBound;
-		  }
-		  }
+		if (n_constraints_per_node_ == 2)
+			bounds.at(row++) = ifopt::BoundZero;
+	}
+	else {
+		if (ee_ == 0 or ee_ == 1){
+				bounds.at(row++) = ifopt::BoundZero;
+				if (n_constraints_per_node_ == 2)
+					bounds.at(row++) = ifopt::BoundZero;
+			  }
+			  else if (ee_ == 2 or ee_ == 3){
+				  if ((t <= params_.ee_phase_durations_[0][0]) or (t > (params_.ee_phase_durations_[0][0]+params_.ee_phase_durations_[0][1]))){
+					  bounds.at(row++) = ifopt::BoundZero;
+					  if (n_constraints_per_node_ == 2)
+						  bounds.at(row++) = ifopt::BoundZero;
+				  }
+				  else {
+					  bounds.at(row++) = ifopt::NoBound;
+					  if (n_constraints_per_node_ == 2)
+						  bounds.at(row++) = ifopt::NoBound;
+				  }
+				  }
+	}
+
+
 }
 
 void
@@ -92,37 +105,16 @@ DriveConstraint::UpdateJacobianAtInstance (double t, int k,
 
   int row = k*n_constraints_per_node_;
 
-//  if (var_set == id::base_lin_nodes) {
-//
-//		  jac.row(row++) = -1*(b_R_w*base_linear_->GetJacobianWrtNodes(t, kVel, false)).row(Y); //kPos bec only pos of base is of interest!
-//		  jac.row(row++) = -1*(b_R_w*base_linear_->GetJacobianWrtNodes(t, kAcc, false)).row(Y);
-//
-//  }
-
   if (var_set == id::base_ang_nodes) {
 
-//    Vector3d base_W   = base_linear_->GetPoint(t).p();
-//    Vector3d ee_pos_W = ee_motion_->GetPoint(t).p();
-//    Vector3d r_W = ee_pos_W - base_W;
-//
-//    Vector3d v_base_W   = base_linear_->GetPoint(t).v();
-//    Vector3d ee_v_W = ee_motion_->GetPoint(t).v();
-////    Vector3d ee_v_W = ee_motion_->GetPoint(poly_id, T_.at(poly_id)).v();
-//    Vector3d v_W = ee_v_W - v_base_W;
-//
     int poly_id = ee_motion_->GetSegmentID(t, T_);
-//    Vector3d a_base_W   = base_linear_->GetPoint(t).a();
-//    Vector3d ee_a_W = ee_motion_->GetPoint(poly_id, T_.at(poly_id)).a();
-//    Vector3d a_W = ee_a_W - a_base_W;
 
     Vector3d v_W = ee_motion_->GetPoint(t).v();
     Vector3d a_W = ee_motion_->GetPoint(poly_id, T_.at(poly_id)).a(); //k is not poly id!
 
     	jac.row(row++) = base_angular_.DerivOfRotVecMult(t, v_W, true, false).row(Y);
-    	jac.row(row++) = base_angular_.DerivOfRotVecMult(t, a_W, true, false).row(Y);
-
-//    	jac.row(row++) = base_angular_.DerivOfRotVecMult(t, r_W, true, false).row(Y); //do I need v_W?
-//    	jac.row(row++) = base_angular_.DerivOfRotVecMult(t, r_W, true, false).row(Y); //do I need a_W?
+    	if (n_constraints_per_node_ == 2)
+    		jac.row(row++) = base_angular_.DerivOfRotVecMult(t, a_W, true, false).row(Y);
 
   }
 
@@ -130,16 +122,10 @@ DriveConstraint::UpdateJacobianAtInstance (double t, int k,
 	  int poly_id = ee_motion_->GetSegmentID(t, T_);
 
 		  jac.row(row++) = (b_R_w*ee_motion_->GetJacobianWrtNodes(t, kVel, false)).row(Y);
-		  jac.row(row++) = (b_R_w*ee_motion_->GetJacobianWrtNodes(poly_id, T_.at(poly_id), kAcc, false)).row(Y);
+		  if (n_constraints_per_node_ == 2)
+			  jac.row(row++) = (b_R_w*ee_motion_->GetJacobianWrtNodes(poly_id, T_.at(poly_id), kAcc, false)).row(Y);
 
 	  }
-
-//  if (var_set == id::EESchedule(ee_)) {
-//
-//		  jac.row(row++) = b_R_w*ee_motion_->GetJacobianOfPosWrtDurations(t);
-//		  jac.row(row++) = b_R_w*ee_motion_->GetJacobianOfPosWrtDurations(t);
-//
-//  }
 }
 
 } /* namespace xpp */

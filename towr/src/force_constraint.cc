@@ -92,12 +92,19 @@ ForceConstraint::InitVariableDependedQuantities (const VariablesPtr& x)
 //  		int constraint_count = (1*nodes_per_phase+4*(nodes_per_phase-1))*n_constraints_per_node_ + (nodes_per_phase-1)*n_constraints_drift_node_;
 
   	int constraint_count = 0;
-  	if (ee_ == 0 or ee_ == 1){
+
+  	if (params_.just_drive_){
   		constraint_count = pure_stance_force_node_ids_.size()*n_constraints_per_node_;
+  		}
+  	else {
+  		if (ee_ == 0 or ee_ == 1){
+  		  		constraint_count = pure_stance_force_node_ids_.size()*n_constraints_per_node_;
+  		  	}
+  		  	if (ee_ == 2 or ee_ == 3){
+  		  		constraint_count = (2*nodes_per_phase-1)*n_constraints_per_node_ + (nodes_per_phase-1)*n_constraints_drift_node_;
+  		  	}
   	}
-  	if (ee_ == 2 or ee_ == 3){
-  		constraint_count = (2*nodes_per_phase-1)*n_constraints_per_node_ + (nodes_per_phase-1)*n_constraints_drift_node_;
-  	}
+
 
   SetRows(constraint_count);
 //  cout << "number of nodes: " << pure_stance_force_node_ids_.size() << endl;

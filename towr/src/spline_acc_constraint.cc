@@ -42,8 +42,9 @@ SplineAccConstraint::SplineAccConstraint (const NodeSpline::Ptr& spline,
   n_junctions_ = spline->GetPolynomialCount() - 1;
 
   //TODO: different poly durations for ee and for base!!
-//  if (node_variable_name == ){
-//	  T_ = durations_.at(0);
+//  if (node_variable_name == "ee-motion_0" or node_variable_name == "ee-motion_1" or node_variable_name == "ee-motion_2" or node_variable_name == "ee-motion_3"){
+//	  T_ = params_.ee_phase_durations_[0][0]/params_.force_polynomials_per_stance_phase_;
+//	  //polyduration is time between two nodes!
 //  }
 
   T_ = spline->GetPolyDurations();

@@ -45,6 +45,11 @@ public:
   {
     const double x_nominal_b = 0.34;
     const double y_nominal_b = 0.19;
+
+	  //x and y changed
+//	  const double x_nominal_b = 0.19;
+//	      const double y_nominal_b = 0.34;
+
     const double z_nominal_b = -0.42;
 
     nominal_stance_.at(LF) <<  x_nominal_b,   y_nominal_b, z_nominal_b;
@@ -52,6 +57,12 @@ public:
     nominal_stance_.at(LH) << -x_nominal_b,   y_nominal_b, z_nominal_b;
     nominal_stance_.at(RH) << -x_nominal_b,  -y_nominal_b, z_nominal_b;
 
+//    nominal_stance_.at(LF) <<  y_nominal_b,   x_nominal_b, z_nominal_b;
+//        nominal_stance_.at(RF) <<  y_nominal_b,  -x_nominal_b, z_nominal_b;
+//        nominal_stance_.at(LH) << -y_nominal_b,   x_nominal_b, z_nominal_b;
+//        nominal_stance_.at(RH) << -y_nominal_b,  -x_nominal_b, z_nominal_b;
+
+//    max_dev_from_nominal_ << 0.15, 0.1, 0.10;
     max_dev_from_nominal_ << 0.15, 0.1, 0.10;
   }
 };
@@ -62,9 +73,15 @@ public:
 class AnymalDynamicModel : public SingleRigidBodyDynamics {
 public:
   AnymalDynamicModel()
-  : SingleRigidBodyDynamics(29.5,
-                    0.946438, 1.94478, 2.01835, 0.000938112, -0.00595386, -0.00146328,
-                    4) {}
+//  : SingleRigidBodyDynamics(29.5,
+//                    0.946438, 1.94478, 2.01835, 0.000938112, -0.00595386, -0.00146328,
+//                    4) {}
+
+//new values of new anymal on wheels:
+  : SingleRigidBodyDynamics(19.642,
+		  0.248057547486776, 0.650151658461464, 0.620944203624185, 0.001097838800893, -0.003945011648535, -0.002135691054868,
+                      4) {}
+
 };
 
 } // namespace towr
