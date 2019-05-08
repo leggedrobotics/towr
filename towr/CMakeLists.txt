@@ -33,6 +33,7 @@ add_library(${PROJECT_NAME} SHARED
   src/time_discretization_constraint.cc
   src/base_motion_constraint.cc
   src/drive_constraint.cc
+  src/drift_constraint.cc
   src/terrain_constraint.cc
   src/swing_constraint.cc
   src/force_constraint.cc

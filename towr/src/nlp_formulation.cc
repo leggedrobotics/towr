@@ -41,6 +41,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <towr/constraints/total_duration_constraint.h>
 #include <towr/constraints/spline_acc_constraint.h>
 #include <towr/constraints/drive_constraint.h>
+#include <towr/constraints/drift_constraint.h>
 
 #include <towr/costs/node_cost.h>
 #include <towr/variables/nodes_variables_all.h>
@@ -233,6 +234,7 @@ NlpFormulation::GetConstraint (Parameters::ConstraintName name,
     case Parameters::Swing:          return MakeSwingConstraint(s);
     case Parameters::BaseAcc:        return MakeBaseAccConstraint(s);
     case Parameters::Drive:			 return MakeDriveConstraint(s);
+    case Parameters::Drift:			 return MakeDriftConstraint(s);
     case Parameters::EEAcc:			 return MakeEEAccConstraint(s);
     default: throw std::runtime_error("constraint not defined!");
   }
@@ -283,6 +285,23 @@ NlpFormulation::MakeDriveConstraint (const SplineHolder& s) const
     auto rom = std::make_shared<DriveConstraint>(model_.kinematic_model_,
                                                          params_.GetTotalTime(),
                                                          params_.dt_constraint_drive_,
+                                                         ee,
+                                                         s);
+    c.push_back(rom);
+  }
+
+  return c;
+}
+
+NlpFormulation::ContraintPtrVec
+NlpFormulation::MakeDriftConstraint (const SplineHolder& s) const
+{
+  ContraintPtrVec c;
+
+  for (int ee=0; ee<params_.GetEECount(); ee++) {
+    auto rom = std::make_shared<DriftConstraint>(model_.kinematic_model_,
+                                                         params_.GetTotalTime(),
+                                                         params_.dt_constraint_drift_,
                                                          ee,
                                                          s);
     c.push_back(rom);

@@ -117,6 +117,7 @@ private:
   ContraintPtrVec MakeDynamicConstraint(const SplineHolder& s) const;
   ContraintPtrVec MakeRangeOfMotionBoxConstraint(const SplineHolder& s) const;
   ContraintPtrVec MakeDriveConstraint(const SplineHolder& s) const;
+  ContraintPtrVec MakeDriftConstraint(const SplineHolder& s) const;
   ContraintPtrVec MakeTotalTimeConstraint() const;
   ContraintPtrVec MakeTerrainConstraint() const;
   ContraintPtrVec MakeForceConstraint(const SplineHolder& s) const;

@@ -145,6 +145,7 @@ public:
                         BaseRom,        ///< sets BaseMotionConstraint
                         BaseAcc,         ///< sets SplineAccConstraint
 						Drive,
+						Drift,
 						EEAcc
   };
   /**
@@ -170,7 +171,7 @@ public:
 //  std::vector<VecTimes> ee_phase_durations_{{2.4, 1.2}, {2.4, 1.2}, {2.4, 1.2}, {2.4, 1.2}};
 //  std::vector<VecTimes> ee_phase_durations_{{2.5}, {2.5}, {1, 1, 0.5}, {1, 1, 0.5}}; //nur hintere Räder wechseln Phase!
 
-  double phase_durations = 1.5;
+  double phase_durations = 0.1;
   // 3 phases:
   std::vector<VecTimes> ee_phase_durations_{{phase_durations,phase_durations,phase_durations},
 	  	  	  	  	  	  	  	  	  	  	  {phase_durations,phase_durations,phase_durations},
@@ -206,6 +207,8 @@ public:
   /// Which costs should be used in the optimiation problem.
   CostWeights costs_;
 
+  double vx_wheel_during_drift_;
+
   /// Interval at which the dynamic constraint is enforced.
   double dt_constraint_dynamic_;
 
@@ -216,6 +219,8 @@ public:
   double dt_constraint_base_motion_;
 
   double dt_constraint_drive_;
+
+  double dt_constraint_drift_;
 
   /// Fixed duration of each cubic polynomial describing the base motion.
   double duration_base_polynomial_;
