@@ -60,12 +60,11 @@ private:
   NodeSpline::Ptr ee_force_;		///< forces at the endeffectors
   Parameters params_;
 
-  double mu_;              			  ///< friction coeff between robot feet and terrain.
-
   int n_constraints_per_node_;
 
+  Vector3d NormDerivative (const Vector3d& v) const;
+
   EE ee_;
-  std::vector<double> T_;
 
   // see TimeDiscretizationConstraint for documentation
   void UpdateConstraintAtInstance (double t, int k, VectorXd& g) const override;

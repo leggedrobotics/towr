@@ -206,31 +206,9 @@ ForceConstraint::GetValues () const
     if (phase == 0 or phase == 1 or phase == 2 or phase == 3 or phase == 5){
     	g(row++) = f.transpose() * (t1 - mu_*n); // t1 < mu*n
     	g(row++) = f.transpose() * (t1 + mu_*n); // t1 > -mu*n
-//    	g(row++) = f.transpose() * (t1 - mu_*n); // t1 < mu*n
-//    	g(row++) = f.transpose() * (t1 + mu_*n); // t1 > -mu*n
     	g(row++) = f.transpose() * (t2 - mu_*n); // t2 < mu*n
     	g(row++) = f.transpose() * (t2 + mu_*n); // t2 > -mu*n
-//    	g(row++) = nodes.at(f_node_id).v().y(); // keine y geschw. der vorderen Füsse!
 
-//    	if (phase == 0 and (ee_ == 2 or ee_ == 3)){
-//    		g(row++) = nodes.at(f_node_id).v().y();
-//    		g(row++) = 0;
-////    		g(row++) = nodes.at(f_node_id).v().x();
-//    	}
-//    	else if (f_node_id < 8){
-//    		g(row++) = nodes.at(f_node_id).v().y();
-//    		g(row++) = 0;
-////    		g(row++) = nodes.at(f_node_id).v().x();
-////    		g(row++) = 0;
-//    	}
-//    	else {
-//    		g(row++) = 0;
-//    		g(row++) = 0;
-////    		g(row++) = v_y(0);
-////    		g(row++) = v_y(1);
-////    		g(row++) = v_x(0);		//caution, robot cant turn drift more than 90degrees,
-//    								//otherwise it will have to drive in negative x direction
-//    	}
     }
 
     double f_tang = sqrt(pow(f.transpose()*t1, 2) + pow(f.transpose()*t2, 2));
@@ -238,30 +216,7 @@ ForceConstraint::GetValues () const
     if (phase == 4){
     	g(row++) = f_tang - f.transpose() * (mu_*n);
 
-//    	g(row++) = f.transpose() * (t1 - mu_*n); // t1 = mu*n nur in positive x-richtung driften!
-//    	    g(row++) = f.transpose() * (t1 + mu_*n); // t1 > -mu*n
-//    	g(row++) = f.transpose() * (t2 - mu_*n); // t2 = mu*n
-//    	g(row++) = f.transpose() * (t2 + mu_*n); // t2 = -mu*n
-//    	g(row++) = f.transpose() * (t1 + mu_*n); // t1 > -mu*n
-//    	g(row++) = 0; //damit Anzahl constraints stimmt.
-//    	g(row++) = 0; //damit Anzahl constraints stimmt.
-//    	g(row++) = 0; //damit Anzahl constraints stimmt.
-//    	g(row++) = 0; //damit Anzahl constraints stimmt.
-//    	g(row++) = 0;
-//    	g(row++) = 0;
     }
-
-////    for (auto dim : {X,Y,Z}) {
-//    for (auto dim : {Z}) {
-////    	if (f_node_id > 0 and f_node_id < (pure_stance_force_node_ids_.size()-1)){
-//      g(row++) = curr.p()(dim) - xyz_center(dim);
-////      g(row++) = curr.v()(dim) - des_force_change(dim);
-////    	}
-////    	else {
-////    		g(row++) = 0;
-////    		g(row++) = 0;
-////    	}
-//    }
 
   }
 
@@ -282,27 +237,12 @@ ForceConstraint::GetBounds () const
     bounds.push_back(ifopt::BoundGreaterZero); // f_t1 < -mu*n
     bounds.push_back(ifopt::BoundSmallerZero); // f_t2 <  mu*n
     bounds.push_back(ifopt::BoundGreaterZero); // f_t2 > -mu*n
-//    bounds.push_back(ifopt::BoundGreaterZero); //nur geschwindigkeit in pos. x-rtg!
-//    bounds.push_back(ifopt::BoundZero); //no y-velocity
-//    bounds.push_back(ifopt::BoundZero); //no y-velocity
-//    bounds.push_back(ifopt::BoundGreaterZero);
-//    bounds.push_back(ifopt::BoundGreaterZero);
-//    bounds.push_back(ifopt::BoundZero);
-//    bounds.push_back(ifopt::BoundZero);
 
     }
 
     else if (phase == 4) {
-//    else {
     	bounds.push_back(ifopt::Bounds(0.0, fn_max_)); // unilateral forces
     	bounds.push_back(ifopt::BoundZero); // f_t1 =  mu*n
-//    	bounds.push_back(ifopt::BoundZero); // f_t2 =  mu*n
-//    	bounds.push_back(ifopt::BoundZero); //
-//    	bounds.push_back(ifopt::BoundZero); //
-//    	bounds.push_back(ifopt::BoundZero); //
-//    	bounds.push_back(ifopt::BoundZero); //
-//    	bounds.push_back(ifopt::BoundZero); //
-//    	bounds.push_back(ifopt::BoundZero);
     }
   }
 
@@ -373,19 +313,6 @@ ForceConstraint::FillJacobianBlock (std::string var_set,
                     if (dim == Z) {
                     	jac.coeffRef(row_reset++, idx) = -mu_;
                     }
-
-//                    jac.coeffRef(row_reset++, idx) = (f.transpose()(dim)*(t1(dim)+t2(dim))/f_tang) - mu_*n(dim);
-
-//                    jac.coeffRef(row_reset++, idx) = t1(dim)-mu_*n(dim);  // f_t1 <  mu*n
-//                    jac.coeffRef(row_reset++, idx) = t1(dim)+mu_*n(dim);  // f_t1 > -mu*n
-//                    jac.coeffRef(row_reset++, idx) = t2(dim)-mu_*n(dim);  // f_t2 >  mu*n
-//                    jac.coeffRef(row_reset++, idx) = t2(dim)+mu_*n(dim);  // f_t2 > -mu*n
-//                    jac.coeffRef(row_reset++, idx) = 0;
-//                    jac.coeffRef(row_reset++, idx) = 0;
-//                    jac.coeffRef(row_reset++, idx) = 0;
-//                    jac.coeffRef(row_reset++, idx) = 0;
-//                    jac.coeffRef(row_reset++, idx) = 0; //adjust these!
-//                              jac.coeffRef(row_reset++, idx) = 0;
            }
         }
 

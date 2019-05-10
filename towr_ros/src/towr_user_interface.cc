@@ -64,13 +64,13 @@ TowrUserInterface::TowrUserInterface ()
   user_command_pub_ = n.advertise<towr_ros::TowrCommand>(towr_msgs::user_command, 1);
 
   goal_geom_.lin.p_.setZero();
-  goal_geom_.lin.p_ << 1.6, 0.8, 0.0;
-  goal_geom_.ang.p_ << 0.0, 0.0, 1.8; // roll, pitch, yaw angle applied Z->Y'->X''
+  goal_geom_.lin.p_ << 0.1, 0.0, 0.0;
+  goal_geom_.ang.p_ << 0.0, 0.0, 0.25; // roll, pitch, yaw angle applied Z->Y'->X''
 
   robot_      = RobotModel::Anymal;
   terrain_    = HeightMap::FlatID;
   gait_combo_ = GaitGenerator::C6;
-  total_duration_ = 2.4;
+  total_duration_ = 1.5;
   visualize_trajectory_ = false;
   plot_trajectory_ = false;
   replay_speed_ = 1.0; // realtime
