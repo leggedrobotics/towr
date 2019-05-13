@@ -32,6 +32,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <towr/variables/spline.h>
 #include <towr/variables/spline_holder.h>
+#include <towr/variables/spline_holder_drive.h>
 #include <towr/variables/euler_converter.h>
 
 #include <towr/models/kinematic_model.h>
@@ -69,6 +70,12 @@ public:
                           double T, double dt,
                           const EE& ee,
                           const SplineHolder& spline_holder);
+
+  // Allows this constraint to receive a SplineHolderDrive as parameter (for driving motions)
+  RangeOfMotionConstraint(const KinematicModel::Ptr& robot_model,
+                          double T, double dt,
+                          const EE& ee,
+                          const SplineHolderDrive& spline_holder);
   virtual ~RangeOfMotionConstraint() = default;
 
 private:

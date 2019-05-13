@@ -26,7 +26,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************/
-
+#include <iostream>
 #include <towr/constraints/range_of_motion_constraint.h>
 #include <towr/variables/variable_names.h>
 
@@ -41,6 +41,23 @@ RangeOfMotionConstraint::RangeOfMotionConstraint (const KinematicModel::Ptr& mod
   base_linear_  = spline_holder.base_linear_;
   base_angular_ = EulerConverter(spline_holder.base_angular_);
   ee_motion_    = spline_holder.ee_motion_.at(ee);
+
+  max_deviation_from_nominal_ = model->GetMaximumDeviationFromNominal();
+  nominal_ee_pos_B_           = model->GetNominalStanceInBase().at(ee);
+  ee_ = ee;
+
+  SetRows(GetNumberOfNodes()*k3D);
+}
+
+RangeOfMotionConstraint::RangeOfMotionConstraint (const KinematicModel::Ptr& model,
+                                                  double T, double dt,
+                                                  const EE& ee,
+                                                  const SplineHolderDrive& spline_holder)
+    :TimeDiscretizationConstraint(T, dt, "rangeofmotion-" + std::to_string(ee))
+{
+  base_linear_  = spline_holder.base_linear_;
+  base_angular_ = EulerConverter(spline_holder.base_angular_);
+  ee_motion_    = spline_holder.ee_wheels_motion_.at(ee);
 
   max_deviation_from_nominal_ = model->GetMaximumDeviationFromNominal();
   nominal_ee_pos_B_           = model->GetNominalStanceInBase().at(ee);
@@ -99,7 +116,7 @@ RangeOfMotionConstraint::UpdateJacobianAtInstance (double t, int k,
     jac.middleRows(row_start, k3D) = base_angular_.DerivOfRotVecMult(t,r_W, true);
   }
 
-  if (var_set == id::EEMotionNodes(ee_)) {
+  if (var_set == id::EEMotionNodes(ee_) || var_set == id::EEWheelsMotionNodes(ee_)) {
     jac.middleRows(row_start, k3D) = b_R_w*ee_motion_->GetJacobianWrtNodes(t,kPos);
   }
 

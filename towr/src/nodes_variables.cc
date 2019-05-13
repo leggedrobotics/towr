@@ -27,6 +27,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************/
 
+#include <iostream>
 #include <towr/variables/nodes_variables.h>
 
 namespace towr {
@@ -165,6 +166,20 @@ NodesVariables::AddBound (const NodeValueInfo& nvi_des, double val)
     for (auto nvi : GetNodeValuesInfo(idx))
       if (nvi == nvi_des)
         bounds_.at(idx) = ifopt::Bounds(val, val);
+}
+
+void
+NodesVariables::AddAllNodesBounds (Dx d, const std::vector<int>& dimensions,
+								   const VectorXd& val_min, const VectorXd& val_max)
+{
+  for (auto dim : dimensions) {
+	for (int idx=0; idx<GetRows(); ++idx) {
+	  for (auto nvi : GetNodeValuesInfo(idx)) {
+	    if (nvi.deriv_ == d && nvi.dim_ == dim)
+		  bounds_.at(idx) = ifopt::Bounds(val_min(dim), val_max(dim));
+	  }
+	}
+  }
 }
 
 void

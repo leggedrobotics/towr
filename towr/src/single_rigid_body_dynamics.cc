@@ -28,6 +28,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************/
 
 #include <towr/models/single_rigid_body_dynamics.h>
+#include <towr/models/endeffector_mappings.h>
+
 #include <towr/variables/cartesian_dimensions.h>
 
 namespace towr {
@@ -102,7 +104,7 @@ SingleRigidBodyDynamics::GetDynamicViolation () const
 
 SingleRigidBodyDynamics::Jac
 SingleRigidBodyDynamics::GetJacobianWrtBaseLin (const Jac& jac_pos_base_lin,
-                                        const Jac& jac_acc_base_lin) const
+                                        		const Jac& jac_acc_base_lin) const
 {
   // build the com jacobian
   int n = jac_pos_base_lin.cols();
@@ -122,7 +124,7 @@ SingleRigidBodyDynamics::GetJacobianWrtBaseLin (const Jac& jac_pos_base_lin,
 
 SingleRigidBodyDynamics::Jac
 SingleRigidBodyDynamics::GetJacobianWrtBaseAng (const EulerConverter& base_euler,
-                                        double t) const
+                                        		double t) const
 {
   Jac I_w = w_R_b_.sparseView() * I_b * w_R_b_.transpose().sparseView();
 
@@ -189,6 +191,200 @@ SingleRigidBodyDynamics::GetJacobianWrtEEPos (const Jac& jac_ee_pos, EE ee) cons
 
   // linear dynamics don't depend on endeffector position.
   return jac;
+}
+
+// right now this method only works for quadrupedal robots
+//std::vector<double>
+std::pair<int, double>
+SingleRigidBodyDynamics::GetStabilityMeasure () const
+{
+  // https://en.wikipedia.org/wiki/Newton%E2%80%93Euler_equations
+
+  int n_ee = ee_pos_.size();
+
+  EEPos ee_pos_cw (n_ee+1); // re-ordered clockwise from above
+  ee_pos_cw.at(0) = ee_pos_.at(LF);
+  ee_pos_cw.at(1) = ee_pos_.at(RF);
+  ee_pos_cw.at(2) = ee_pos_.at(RH);
+  ee_pos_cw.at(3) = ee_pos_.at(LH);
+  ee_pos_cw.at(4) = ee_pos_.at(LF);
+
+  Jac I_w = w_R_b_.sparseView() * I_b * w_R_b_.transpose().sparseView();
+
+  // compute tipover axes
+  std::vector<double> theta(n_ee);  // tipover angles
+  std::vector<double> beta(n_ee);   // force-angle stability measure
+
+  for (int ee=0; ee<n_ee; ++ee)
+  {
+	Vector3d a = (ee_pos_cw.at(ee+1) - ee_pos_cw.at(ee));
+
+	Matrix3d proj_a = Matrix3d::Identity() - a.normalized() * a.normalized().transpose();
+	Vector3d l = proj_a * (ee_pos_cw.at(ee+1) - com_pos_);
+	Vector3d l_n = l.normalized();
+
+    Vector3d f = proj_a * (m()*com_acc_ + Vector3d(0.0, 0.0, -m()*g()));
+
+    Vector3d n = (Matrix3d::Identity() - proj_a) * (I_w*omega_dot_ + Cross(omega_)*(I_w*omega_));
+
+    // I am neglecting the contributions from angular loads because they considerable small and would make defining
+    // the Jacobian analytically far more difficult!
+    Vector3d ft = f; //+ l_n.cross(n)/l.norm();
+    Vector3d ft_n = ft.normalized();
+
+    Vector3d d = -l + (l.transpose()*ft_n)*ft_n;
+
+    double tmp = ft_n.cross(l_n).transpose() * a.normalized();
+    int sgn = tmp > 0 ? 1 : -1;
+    theta.at(ee) = sgn * std::acos(ft_n.transpose()*l_n);
+    beta.at(ee) = theta.at(ee) * d.norm() * ft.norm();
+  }
+
+  auto it = std::min_element(std::begin(theta), std::end(theta));
+  auto min_idx = std::distance(std::begin(theta), it);
+
+  return std::make_pair((int) min_idx, *it);
+
+  //return theta;
+}
+
+SingleRigidBodyDynamics::Vector3d
+SingleRigidBodyDynamics::GetStabilityDerivativeWrtBaseLinPos () const
+{
+  std::pair<int, double> stab = GetStabilityMeasure();
+  int tipover_axis = stab.first;
+  double measure = stab.second;
+  std::vector<int> ee = GetEndEffectorsAdjacentTo(tipover_axis);
+
+  Vector3d a = ee_pos_.at(ee.at(1)) - ee_pos_.at(ee.at(0));
+  Matrix3d proj_a = Matrix3d::Identity() - a.normalized() * a.normalized().transpose();
+  Vector3d l = proj_a * (ee_pos_.at(ee.at(1)) - com_pos_);
+  Vector3d f = proj_a * (m()*com_acc_ + Vector3d(0.0, 0.0, -m()*g()));
+  double arg = f.normalized().transpose()*l.normalized();
+  int sgn = measure > 0 ? 1 : -1;
+  double acos_deriv = GetDerivativeOfAcos(arg);
+
+  Matrix3d diff_lnorm_pos = GetDerivativeOfNormalizedVector(l) * (-proj_a);
+  Vector3d d_stab_pos = sgn*acos_deriv * ( f.normalized().transpose()*diff_lnorm_pos ).transpose() + Vector3d::Constant(1e-10);
+
+  return d_stab_pos;
+}
+
+SingleRigidBodyDynamics::Vector3d
+SingleRigidBodyDynamics::GetStabilityDerivativeWrtBaseLinAcc () const
+{
+  std::pair<int, double> stab = GetStabilityMeasure();
+  int tipover_axis = stab.first;
+  double measure = stab.second;
+  std::vector<int> ee = GetEndEffectorsAdjacentTo(tipover_axis);
+
+  Vector3d a = ee_pos_.at(ee.at(1)) - ee_pos_.at(ee.at(0));
+  Matrix3d proj_a = Matrix3d::Identity() - a.normalized() * a.normalized().transpose();
+  Vector3d l = proj_a * (ee_pos_.at(ee.at(1)) - com_pos_);
+  Vector3d f = proj_a * (m()*com_acc_ + Vector3d(0.0, 0.0, -m()*g()));
+  double arg = f.normalized().transpose()*l.normalized();
+  int sgn = measure > 0 ? 1 : -1;
+  double acos_deriv = GetDerivativeOfAcos(arg);
+
+  Matrix3d diff_fnorm_acc = GetDerivativeOfNormalizedVector(f) * (m()*proj_a);
+
+  Vector3d d_stab_acc = sgn*acos_deriv * ( diff_fnorm_acc.transpose()*l.normalized() ) + Vector3d::Constant(1e-10);
+
+  return d_stab_acc;
+}
+
+SingleRigidBodyDynamics::MatrixXd
+SingleRigidBodyDynamics::GetStabilityDerivativeWrtEEPos () const
+{
+  std::pair<int, double> stab = GetStabilityMeasure();
+  int tipover_axis = stab.first;
+  double measure = stab.second;
+  std::vector<int> ee = GetEndEffectorsAdjacentTo(tipover_axis);
+
+  Vector3d a = ee_pos_.at(ee.at(1)) - ee_pos_.at(ee.at(0));
+  Matrix3d proj_a = Matrix3d::Identity() - a.normalized() * a.normalized().transpose();
+  Vector3d l = proj_a * (ee_pos_.at(ee.at(1)) - com_pos_);
+  Vector3d f = proj_a * (m()*com_acc_ + Vector3d(0.0, 0.0, -m()*g()));
+  double arg = f.normalized().transpose()*l.normalized();
+  int sgn = measure > 0 ? 1 : -1;
+  double acos_deriv = GetDerivativeOfAcos(arg);
+
+  // derivative wrt ee_pos_
+  Vector3d diff_ee0;
+  Vector3d diff_ee1;
+  for (int dim : {X, Y, Z})
+  {
+	Vector3d diff_fnorm_eepos = GetDerivativeOfNormalizedVector(f) *
+								GetDerivativeOfProjectionMatrixWrtVector(a,-Vector3d::Unit(dim)) *
+								(m()*com_acc_ + Vector3d(0.0, 0.0, -m()*g()));
+
+	Vector3d diff_lnorm_eepos = GetDerivativeOfNormalizedVector(l) *
+								GetDerivativeOfProjectionMatrixWrtVector(a,-Vector3d::Unit(dim)) *
+								(ee_pos_.at(ee.at(1)) - com_pos_);
+
+	double d1 = diff_fnorm_eepos.transpose()*l.normalized();
+	double d2 = f.normalized().transpose()*diff_lnorm_eepos;
+	diff_ee0(dim) = d1 + d2;
+
+	diff_fnorm_eepos = GetDerivativeOfNormalizedVector(f) *
+					   GetDerivativeOfProjectionMatrixWrtVector(a,Vector3d::Unit(dim)) *
+					   (m()*com_acc_ + Vector3d(0.0, 0.0, -m()*g()));
+
+	diff_lnorm_eepos = GetDerivativeOfNormalizedVector(l) *
+					   ( GetDerivativeOfProjectionMatrixWrtVector(a,Vector3d::Unit(dim))*(ee_pos_.at(ee.at(1))-com_pos_) +
+					   proj_a*Vector3d::Unit(dim) );
+
+	d1 = diff_fnorm_eepos.transpose()*l.normalized();
+	d2 = f.normalized().transpose()*diff_lnorm_eepos;
+	diff_ee1(dim) = d1 + d2;
+
+  }
+
+  MatrixXd d_stab_ee = MatrixXd::Zero(3,4);
+  d_stab_ee.col(ee.at(0)) = sgn*acos_deriv*diff_ee0 + Vector3d::Constant(1e-10);
+  d_stab_ee.col(ee.at(1)) = sgn*acos_deriv*diff_ee1 + Vector3d::Constant(1e-10);
+
+  return d_stab_ee;
+}
+
+SingleRigidBodyDynamics::Matrix3d
+SingleRigidBodyDynamics::GetDerivativeOfProjectionMatrixWrtVector (const Vector3d& v, const Vector3d& dv) const
+{
+  Matrix3d dP = (dv*v.transpose() + v*dv.transpose())*v.squaredNorm() -
+		        (v*v.transpose())*2*(v.transpose()*dv);
+
+  return -dP/(v.squaredNorm()*v.squaredNorm());
+}
+
+std::vector<int>
+SingleRigidBodyDynamics::GetEndEffectorsAdjacentTo (int tipover_axis) const
+{
+  std::vector<int> ee;
+
+  switch (tipover_axis) {
+	case 0: ee = {0, 1}; break;
+	case 1: ee = {1, 3}; break;
+	case 2: ee = {3, 2}; break;
+	case 3: ee = {2, 0}; break;
+	default: assert(false); break;
+  }
+
+  return ee;
+}
+
+double
+SingleRigidBodyDynamics::GetDerivativeOfAcos (const double x) const
+{
+  return -1.0/(sqrt(1-pow(x,2)));
+}
+
+SingleRigidBodyDynamics::Matrix3d
+SingleRigidBodyDynamics::GetDerivativeOfNormalizedVector (const Vector3d& v) const
+{
+  // see http://blog.mmacklin.com/2012/05/
+  double aux = 1/v.squaredNorm();
+
+  return aux * (v.norm() * Matrix3d::Identity() - v*(v.normalized().transpose()));
 }
 
 } /* namespace towr */

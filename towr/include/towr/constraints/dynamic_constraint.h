@@ -32,6 +32,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <towr/variables/spline.h>
 #include <towr/variables/spline_holder.h>
+#include <towr/variables/spline_holder_drive.h>
 #include <towr/variables/euler_converter.h>
 
 #include <towr/models/dynamic_model.h>
@@ -68,12 +69,17 @@ public:
    * @brief  Construct a Dynamic constraint
    * @param model  The system dynamics to enforce (e.g. centroidal, LIP, ...)
    * @param T   The total duration of the optimization.
-   * @param dt  the discretization intervall at which to enforce constraints.
+   * @param dt  the discretization interval at which to enforce constraints.
    * @param spline_holder  A pointer to the current optimization variables.
    */
   DynamicConstraint (const DynamicModel::Ptr& model,
                      double T, double dt,
                      const SplineHolder& spline_holder);
+
+  // Allows this constraint to receive a SplineHolderDrive as parameter (for driving motions)
+  DynamicConstraint (const DynamicModel::Ptr& model,
+                     double T, double dt,
+                     const SplineHolderDrive& spline_holder);
   virtual ~DynamicConstraint () = default;
 
 private:

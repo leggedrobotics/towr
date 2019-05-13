@@ -72,6 +72,7 @@ class HeightMap {
 public:
   using Ptr      = std::shared_ptr<HeightMap>;
   using Vector3d = Eigen::Vector3d;
+  using Matrix3d = Eigen::Matrix3d;
 
   /**
    * @brief Terrains IDs corresponding for factory method.
@@ -83,6 +84,13 @@ public:
                    SlopeID,
                    ChimneyID,
                    ChimneyLRID,
+				   SlopePlatID,
+				   MultipleSlopesID,
+				   StepID,
+				   TwoStepID,
+				   SineLowFreqID,
+				   SineHighFreqID,
+				   RoughID,
                    TERRAIN_COUNT };
 
   static HeightMap::Ptr MakeTerrain(TerrainID type);
@@ -159,6 +167,8 @@ private:
   Vector3d GetDerivativeOfNormalizedVectorWrtNonNormalizedIndex(
       const Vector3d& non_normalized, int index) const;
 
+  Matrix3d GetDerivativeOfNormalizedVector (const Vector3d& v) const;
+
   // first derivatives that must be implemented by the user
   virtual double GetHeightDerivWrtX(double x, double y) const { return 0.0; };
   virtual double GetHeightDerivWrtY(double x, double y) const { return 0.0; };
@@ -173,13 +183,20 @@ private:
 
 const static std::map<HeightMap::TerrainID, std::string> terrain_names =
 {
-  {HeightMap::FlatID,        "Flat"       },
-  {HeightMap::BlockID,       "Block"      },
-  {HeightMap::StairsID,      "Stairs"     },
-  {HeightMap::GapID,         "Gap"        },
-  {HeightMap::SlopeID,       "Slope"      },
-  {HeightMap::ChimneyID,     "Chimney"    },
-  {HeightMap::ChimneyLRID,   "ChimenyLR"  }
+  {HeightMap::FlatID,         	"Flat"           },
+  {HeightMap::BlockID,        	"Block"          },
+  {HeightMap::StairsID,       	"Stairs"         },
+  {HeightMap::GapID,          	"Gap"            },
+  {HeightMap::SlopeID,        	"Slope"          },
+  {HeightMap::ChimneyID,      	"Chimney"        },
+  {HeightMap::ChimneyLRID,    	"ChimenyLR"      },
+  {HeightMap::SlopePlatID,    	"SlopePlat"      },
+  {HeightMap::MultipleSlopesID, "MultipleSlopes" },
+  {HeightMap::StepID,         	"Step"           },
+  {HeightMap::TwoStepID,      	"TwoStep"        },
+  {HeightMap::SineLowFreqID,  	"SineLowFreq"    },
+  {HeightMap::SineHighFreqID, 	"SineHighFreq"   },
+  {HeightMap::RoughID,        	"Rough"      	 }
 };
 
 } /* namespace towr */

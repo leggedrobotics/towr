@@ -38,13 +38,20 @@ HeightMap::Ptr
 HeightMap::MakeTerrain (TerrainID type)
 {
   switch (type) {
-    case FlatID:      return std::make_shared<FlatGround>(); break;
-    case BlockID:     return std::make_shared<Block>(); break;
-    case StairsID:    return std::make_shared<Stairs>(); break;
-    case GapID:       return std::make_shared<Gap>(); break;
-    case SlopeID:     return std::make_shared<Slope>(); break;
-    case ChimneyID:   return std::make_shared<Chimney>(); break;
-    case ChimneyLRID: return std::make_shared<ChimneyLR>(); break;
+    case FlatID:      	   return std::make_shared<FlatGround>(); break;
+    case BlockID:     	   return std::make_shared<Block>(); break;
+    case StairsID:    	   return std::make_shared<Stairs>(); break;
+    case GapID:       	   return std::make_shared<Gap>(); break;
+    case SlopeID:     	   return std::make_shared<Slope>(); break;
+    case ChimneyID:   	   return std::make_shared<Chimney>(); break;
+    case ChimneyLRID: 	   return std::make_shared<ChimneyLR>(); break;
+    case SlopePlatID:  	   return std::make_shared<SlopePlat>(); break;
+    case MultipleSlopesID: return std::make_shared<MultipleSlopes>(); break;
+    case StepID:		   return std::make_shared<Step>(); break;
+    case TwoStepID:		   return std::make_shared<TwoStep>(); break;
+    case SineLowFreqID:	   return std::make_shared<SineLowFreq>(); break;
+    case SineHighFreqID:   return std::make_shared<SineHighFreq>(); break;
+    case RoughID:		   return std::make_shared<Rough>(); break;
     default: assert(false); break;
   }
 }
@@ -67,7 +74,7 @@ HeightMap::GetNormalizedBasis (Direction basis, double x, double y) const
 
 HeightMap::Vector3d
 HeightMap::GetBasis (Direction basis, double x, double y,
-                                  const DimDerivs& deriv) const
+                     const DimDerivs& deriv) const
 {
   switch (basis) {
     case Normal:   return GetNormal(x,y, deriv);
@@ -86,8 +93,12 @@ HeightMap::GetDerivativeOfNormalizedBasisWrt (Direction basis, Dim2D dim,
 
   // outer derivative
   Vector3d v = GetBasis(basis, x,y, {});
-  Vector3d dn_norm_wrt_n = GetDerivativeOfNormalizedVectorWrtNonNormalizedIndex(v, dim);
-  return dn_norm_wrt_n.cwiseProduct(dv_wrt_dim);
+
+  Matrix3d dn_norm = GetDerivativeOfNormalizedVector(v);
+  return dn_norm * dv_wrt_dim;
+
+//  Vector3d dn_norm_wrt_n = GetDerivativeOfNormalizedVectorWrtNonNormalizedIndex(v, dim);
+//  return dn_norm_wrt_n.cwiseProduct(dv_wrt_dim);
 }
 
 HeightMap::Vector3d
@@ -145,6 +156,16 @@ HeightMap::GetDerivativeOfNormalizedVectorWrtNonNormalizedIndex (
   // see notebook or
   // http://blog.mmacklin.com/2012/05/
   return 1/v.squaredNorm()*(v.norm() * Vector3d::Unit(idx) - v(idx)*v.normalized());
+}
+
+HeightMap::Matrix3d
+HeightMap::GetDerivativeOfNormalizedVector (const Vector3d& v) const
+{
+  // see notebook or
+  // http://blog.mmacklin.com/2012/05/
+  double aux = 1/v.squaredNorm();
+
+  return aux * (v.norm() * Matrix3d::Identity() - v*(v.normalized().transpose()));
 }
 
 double

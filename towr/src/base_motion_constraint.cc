@@ -57,6 +57,28 @@ BaseMotionConstraint::BaseMotionConstraint (double T, double dt,
   SetRows(GetNumberOfNodes()*n_constraints_per_node);
 }
 
+BaseMotionConstraint::BaseMotionConstraint (double T, double dt,
+                                            const SplineHolderDrive& spline_holder)
+    :TimeDiscretizationConstraint(T, dt, "baseMotion")
+{
+  base_linear_  = spline_holder.base_linear_;
+  base_angular_ = spline_holder.base_angular_;
+
+  double dev_rad = 0.05;
+  node_bounds_.resize(k6D);
+  node_bounds_.at(AX) = Bounds(-dev_rad, dev_rad);
+  node_bounds_.at(AY) = Bounds(-dev_rad, dev_rad);
+  node_bounds_.at(AZ) = ifopt::NoBound;//Bounds(-dev_rad, dev_rad);
+
+  double z_init = base_linear_->GetPoint(0.0).p().z();
+  node_bounds_.at(LX) = ifopt::NoBound;
+  node_bounds_.at(LY) = ifopt::NoBound;//Bounds(-0.05, 0.05);
+  node_bounds_.at(LZ) = Bounds(z_init-0.02, z_init+0.1); // allow to move dev_z cm up and down
+
+  int n_constraints_per_node = node_bounds_.size();
+  SetRows(GetNumberOfNodes()*n_constraints_per_node);
+}
+
 void
 BaseMotionConstraint::UpdateConstraintAtInstance (double t, int k,
                                                   VectorXd& g) const

@@ -49,6 +49,7 @@ class KinematicModel {
 public:
   using Ptr      = std::shared_ptr<KinematicModel>;
   using EEPos    = std::vector<Eigen::Vector3d>;
+  using HipsPos  = std::vector<Eigen::Vector3d>;
   using Vector3d = Eigen::Vector3d;
 
   /**
@@ -58,6 +59,7 @@ public:
   KinematicModel (int n_ee)
   {
     nominal_stance_.resize(n_ee);
+    hip_pos_wrt_base_.resize(n_ee);
     max_dev_from_nominal_.setZero();
   }
 
@@ -74,7 +76,7 @@ public:
 
   /**
    * @brief How far each foot can deviate from its nominal position.
-   * @return The deviation [m] expresed in the base frame.
+   * @return The deviation [m] expressed in the base frame.
    */
   virtual Vector3d GetMaximumDeviationFromNominal() const
   {
@@ -89,8 +91,19 @@ public:
     return nominal_stance_.size();
   }
 
+  /**
+   * @returns the position of the robot's hips in the base frame.
+   * It is used to constrain the maximum and minimum leg extension.
+   * It should not be necessary, since the RangeOfMotionConstraint has the same effect!!
+   */
+  virtual HipsPos GetHipPositionInBaseFrame ()
+  {
+	return hip_pos_wrt_base_;
+  }
+
 protected:
   EEPos nominal_stance_;
+  HipsPos hip_pos_wrt_base_;  // for constraints in leg extension
   Vector3d max_dev_from_nominal_;
 };
 

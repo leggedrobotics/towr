@@ -50,6 +50,22 @@ DynamicConstraint::DynamicConstraint (const DynamicModel::Ptr& m,
   SetRows(GetNumberOfNodes()*k6D);
 }
 
+DynamicConstraint::DynamicConstraint (const DynamicModel::Ptr& m,
+                                      double T, double dt,
+                                      const SplineHolderDrive& spline_holder)
+    :TimeDiscretizationConstraint(T, dt, "dynamic")
+{
+  model_ = m;
+
+  // link with up-to-date spline variables
+  base_linear_  = spline_holder.base_linear_;
+  base_angular_ = EulerConverter(spline_holder.base_angular_);
+  ee_forces_    = spline_holder.ee_wheels_force_;
+  ee_motion_    = spline_holder.ee_wheels_motion_;
+
+  SetRows(GetNumberOfNodes()*k6D);
+}
+
 int
 DynamicConstraint::GetRow (int k, Dim6D dimension) const
 {
@@ -94,12 +110,12 @@ DynamicConstraint::UpdateJacobianAtInstance(double t, int k, std::string var_set
 
   // sensitivity of dynamic constraint w.r.t. endeffector variables
   for (int ee=0; ee<model_->GetEECount(); ++ee) {
-    if (var_set == id::EEForceNodes(ee)) {
+    if (var_set == id::EEForceNodes(ee) || var_set == id::EEWheelsForceNodes(ee)) {
       Jacobian jac_ee_force = ee_forces_.at(ee)->GetJacobianWrtNodes(t,kPos);
       jac_model = model_->GetJacobianWrtForce(jac_ee_force, ee);
     }
 
-    if (var_set == id::EEMotionNodes(ee)) {
+    if (var_set == id::EEMotionNodes(ee) || var_set == id::EEWheelsMotionNodes(ee)) {
       Jacobian jac_ee_pos = ee_motion_.at(ee)->GetJacobianWrtNodes(t,kPos);
       jac_model = model_->GetJacobianWrtEEPos(jac_ee_pos, ee);
     }

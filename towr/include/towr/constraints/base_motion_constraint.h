@@ -31,6 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define TOWR_CONSTRAINTS_BASE_MOTION_CONSTRAINT_H_
 
 #include <towr/variables/spline_holder.h>
+#include <towr/variables/spline_holder_drive.h>
 #include <towr/variables/spline.h>
 
 #include "time_discretization_constraint.h"
@@ -54,6 +55,9 @@ public:
    * @param spline_holder  Holds pointers to the base variables.
    */
   BaseMotionConstraint (double T, double dt, const SplineHolder& spline_holder);
+
+  // Allows this constraint to receive a SplineHolderDrive as parameter (for driving motions)
+  BaseMotionConstraint (double T, double dt, const SplineHolderDrive& spline_holder);
   virtual ~BaseMotionConstraint () = default;
 
   void UpdateConstraintAtInstance (double t, int k, VectorXd& g) const override;

@@ -17,6 +17,17 @@ set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 
 # The motion-planning problem formulated through variables and constraints
 add_library(${PROJECT_NAME} SHARED
+  # driving formulation
+  src/parameters_drive.cc
+  src/nodes_variables_ee_wheels.cc
+  src/spline_holder_drive.cc
+  src/terrain_wheels_constraint.cc
+  src/force_wheels_constraint.cc
+  src/wheels_acc_limits_constraint.cc
+  src/base_acc_limits_constraint.cc
+  src/wheels_motion_constraint.cc
+  src/nlp_formulation_drive.cc
+  src/stability_constraint.cc
   # sample formulation usage
   src/nlp_formulation.cc
   src/parameters.cc
@@ -104,6 +115,23 @@ if (TARGET GTest::GTest) # only build when modern targets exists
   add_test(${PROJECT_NAME}-test ${PROJECT_NAME}-test)
 endif()
 
+add_executable(anymal_wheels_example 
+  test/anymal_wheels_example.cc
+)
+target_link_libraries(anymal_wheels_example
+  ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+  ifopt::ifopt_ipopt
+)
+
+add_executable(anymal_example 
+  test/anymal_example.cc
+)
+target_link_libraries(anymal_example
+  ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+  ifopt::ifopt_ipopt
+)
 
 #############
 ## Install ##

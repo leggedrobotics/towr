@@ -78,6 +78,7 @@ public:
 
   virtual ~SingleRigidBodyDynamics () = default;
 
+  // Dynamics
   BaseAcc GetDynamicViolation() const override;
 
   Jac GetJacobianWrtBaseLin(const Jac& jac_base_lin_pos,
@@ -88,11 +89,23 @@ public:
 
   Jac GetJacobianWrtEEPos(const Jac& jac_ee_pos, EE) const override;
 
+  // Stability
+  // TODO: move the stability related methods to a specific class.
+  std::pair<int, double> GetStabilityMeasure() const override;
+  Vector3d GetStabilityDerivativeWrtBaseLinAcc () const override;
+  Vector3d GetStabilityDerivativeWrtBaseLinPos () const override;
+  MatrixXd GetStabilityDerivativeWrtEEPos () const override;
+
 private:
   /** Inertia of entire robot around the CoM expressed in a frame anchored
    *  in the base.
    */
   Eigen::SparseMatrix<double, Eigen::RowMajor> I_b;
+
+  Matrix3d GetDerivativeOfProjectionMatrixWrtVector (const Vector3d& v, const Vector3d& dv) const;
+  Matrix3d GetDerivativeOfNormalizedVector (const Vector3d& v) const;
+  double GetDerivativeOfAcos (const double x) const;
+  std::vector<int> GetEndEffectorsAdjacentTo (int tipover_axis) const;
 };
 
 

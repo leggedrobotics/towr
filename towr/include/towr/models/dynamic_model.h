@@ -68,6 +68,7 @@ public:
   using Ptr      = std::shared_ptr<DynamicModel>;
   using Vector3d = Eigen::Vector3d;
   using Matrix3d = Eigen::Matrix3d;
+  using MatrixXd = Eigen::MatrixXd;
   using ComPos   = Eigen::Vector3d;
   using AngVel   = Eigen::Vector3d;
   using BaseAcc  = Eigen::Matrix<double,6,1>;
@@ -152,6 +153,15 @@ public:
    * @brief the number of endeffectors that this robot has.
    */
   int GetEECount() const { return ee_pos_.size(); };
+
+  /**
+   * @brief returns the currently probable tipover axis and the Force-Angle stability measure.
+   */
+  // TODO: separate the stability methods in a different class!
+  virtual std::pair<int, double> GetStabilityMeasure() const    { return std::make_pair(0, 0.0);  };
+  virtual Vector3d GetStabilityDerivativeWrtBaseLinAcc () const { return Vector3d(0.0, 0.0, 0.0); };
+  virtual Vector3d GetStabilityDerivativeWrtBaseLinPos () const { return Vector3d(0.0, 0.0, 0.0); };
+  virtual MatrixXd GetStabilityDerivativeWrtEEPos () const 		{ return MatrixXd::Zero(3, GetEECount()); };
 
 protected:
   ComPos com_pos_;   ///< x-y-z position of the Center-of-Mass.

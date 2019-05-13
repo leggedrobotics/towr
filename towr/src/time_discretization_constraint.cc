@@ -29,6 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <towr/constraints/time_discretization_constraint.h>
 
+//#include <iostream>
 #include <cmath>
 
 namespace towr {
@@ -46,7 +47,14 @@ TimeDiscretizationConstraint::TimeDiscretizationConstraint (double T, double dt,
     dts_.push_back(t);
   }
 
+  // it repeats the last node if T is multiple of dt
+  // TODO: fix this..
   dts_.push_back(T); // also ensure constraints at very last node/time.
+
+//  for (int i = 0; i < dts_.size(); ++i) {
+//    std::cout << dts_.at(i) << " ";
+//  }
+//  std::cout << std::endl;
 }
 
 TimeDiscretizationConstraint::TimeDiscretizationConstraint (const VecTimes& times,
