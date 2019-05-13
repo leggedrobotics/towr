@@ -56,12 +56,12 @@ Parameters::Parameters ()
 
 
   // parameters related to specific constraints (only used when it is added as well)
-  vx_wheel_during_drift_ = 1.0; //choose between 1 and 4 m/s
+  vx_wheel_during_drift_ = 2.0; //choose between 1 and 4 m/s
   force_limit_in_normal_direction_ = 1000;
   dt_constraint_range_of_motion_ = 0.08;
 //  dt_constraint_drive_ = 0.1;		//needs also acc = 0 constraint
-  dt_constraint_drive_ = 0.1;		//needs no acc constraint?
-  dt_constraint_drift_ = 0.1;
+  dt_constraint_drive_ = 0.05;		//needs no acc constraint?
+  dt_constraint_drift_ = 0.05;
   dt_constraint_dynamic_ = 0.1;
   dt_constraint_base_motion_ = duration_base_polynomial_/4.; // only for base RoM constraint
   bound_phase_duration_ = std::make_pair(0.0, 10);  // used only when optimizing phase durations, so gait
@@ -75,7 +75,6 @@ Parameters::Parameters ()
   constraints_.push_back(Drive);
   constraints_.push_back(Drift);
   constraints_.push_back(EEAcc);
-//  constraints_.push_back(Swing); // only smooth velocities allowed
 
   // optional costs to e.g penalize endeffector forces
   // costs_.push_back({ForcesCostID, 1.0}); weighed by 1.0 relative to other costs

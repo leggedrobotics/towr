@@ -171,7 +171,7 @@ public:
 //  std::vector<VecTimes> ee_phase_durations_{{2.4, 1.2}, {2.4, 1.2}, {2.4, 1.2}, {2.4, 1.2}};
 //  std::vector<VecTimes> ee_phase_durations_{{2.5}, {2.5}, {1, 1, 0.5}, {1, 1, 0.5}}; //nur hintere Räder wechseln Phase!
 
-  double phase_durations = 0.1;
+  double phase_durations = 1.5;
   // 3 phases:
   std::vector<VecTimes> ee_phase_durations_{{phase_durations,phase_durations,phase_durations},
 	  	  	  	  	  	  	  	  	  	  	  {phase_durations,phase_durations,phase_durations},
