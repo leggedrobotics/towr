@@ -168,35 +168,13 @@ public:
   virtual ~Parameters() = default;
 
   /// Number and initial duration of each foot's swing and stance phases.
-//  std::vector<VecTimes> ee_phase_durations_{{2.4, 1.2}, {2.4, 1.2}, {2.4, 1.2}, {2.4, 1.2}};
-//  std::vector<VecTimes> ee_phase_durations_{{2.5}, {2.5}, {1, 1, 0.5}, {1, 1, 0.5}}; //nur hintere Räder wechseln Phase!
 
-  double phase_durations = 1.5;
+  double phase_duration_drive_1;
+  double phase_duration_drive_2;
+  double phase_duration_drift;
+
   // 3 phases:
-  std::vector<VecTimes> ee_phase_durations_{{phase_durations,phase_durations,phase_durations},
-	  	  	  	  	  	  	  	  	  	  	  {phase_durations,phase_durations,phase_durations},
-											  {phase_durations,phase_durations,phase_durations},
-											  {phase_durations,phase_durations,phase_durations}};
-
-//  2 phases:
-//  std::vector<VecTimes> ee_phase_durations_{{phase_durations,phase_durations, 0},
-//  	  	  	  	  	  	  	  	  	  	  	  {phase_durations,phase_durations, 0},
-//  											  {phase_durations,phase_durations, 0},
-//  											  {phase_durations,phase_durations, 0}};
-
-  //  1 phase:	need to take out ee acc constraint (cannot handle 0 durations)!
-//    std::vector<VecTimes> ee_phase_durations_{{phase_durations,0.01,0.01},
-//    	  	  	  	  	  	  	  	  	  	  	  {phase_durations,0.01,0.01},
-//    											  {phase_durations,0.01,0.01},
-//    											  {phase_durations,0.01,0.01}};
-
-
-//  std::vector<VecTimes> ee_phase_durations_{{1.0,1.0,1.0}, {1.0,1.0,1.0}, {1.0,1.0,1.0}, {1.0,1.0,1.0}};
-
-  //just drive
-//  std::vector<VecTimes> ee_phase_durations_{{2.4,0.0001,0.0001}, {2.4,0.0001,0.0001}, {2.4, 0.0001, 0.0001}, {2.4, 0.0001, 0.0001}};
-//  	std::vector<VecTimes> ee_phase_durations_{{3,0,0}, {3,0,0}, {3,0,0}, {3,0,0}};
-
+  std::vector<VecTimes> ee_phase_durations_;
 
   /// True if the foot is initially in contact with the terrain.
   std::vector<bool> ee_in_contact_at_start_;
@@ -224,12 +202,17 @@ public:
 
   /// Fixed duration of each cubic polynomial describing the base motion.
   double duration_base_polynomial_;
+  double duration_node_polynomial_;
 
   /// Number of polynomials to parameterize foot movement during swing phases.
-  int ee_polynomials_per_swing_phase_;
+//  int ee_polynomials_per_swing_phase_;
 
   /// Number of polynomials to parameterize each contact force during stance phase.
-  int force_polynomials_per_stance_phase_;
+//  int force_polynomials_per_stance_phase_;
+
+  int polynomials_in_first_drive_phase_;
+  int polynomials_in_second_drive_phase_;
+  int polynomials_in_drift_phase_;
 
   //if we just want to drive, no drift
   bool just_drive_;

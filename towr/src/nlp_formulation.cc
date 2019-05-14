@@ -141,7 +141,9 @@ NlpFormulation::MakeEndeffectorVariables () const
                                               params_.ee_in_contact_at_start_.at(ee),
 //											  false,
                                               id::EEMotionNodes(ee),
-                                              params_.ee_polynomials_per_swing_phase_,
+											  params_.polynomials_in_first_drive_phase_,
+											  params_.polynomials_in_drift_phase_,
+											  params_.polynomials_in_second_drive_phase_,
 											  ee);
 
     // initialize towards final footholds
@@ -175,7 +177,9 @@ NlpFormulation::MakeForceVariables () const
                                               params_.GetPhaseCount(ee),
                                               params_.ee_in_contact_at_start_.at(ee),
                                               id::EEForceNodes(ee),
-                                              params_.force_polynomials_per_stance_phase_,
+											  params_.polynomials_in_first_drive_phase_,
+											  params_.polynomials_in_drift_phase_,
+											  params_.polynomials_in_second_drive_phase_,
 											  ee);
 
     // initialize with mass of robot distributed equally on all legs
@@ -228,9 +232,7 @@ NlpFormulation::GetConstraint (Parameters::ConstraintName name,
     case Parameters::BaseRom:        return MakeBaseRangeOfMotionConstraint(s);
     case Parameters::TotalTime:      return MakeTotalTimeConstraint();
     case Parameters::Terrain:        return MakeTerrainConstraint();
-//    case Parameters::Force:          return MakeForceConstraint();
     case Parameters::Force:          return MakeForceConstraint(s);
-//    case Parameters::Swing:          return MakeSwingConstraint();
     case Parameters::Swing:          return MakeSwingConstraint(s);
     case Parameters::BaseAcc:        return MakeBaseAccConstraint(s);
     case Parameters::Drive:			 return MakeDriveConstraint(s);
@@ -386,9 +388,12 @@ NlpFormulation::MakeEEAccConstraint (const SplineHolder& s) const
 	ContraintPtrVec c;
 
   for (int ee=0; ee<params_.GetEECount(); ee++) {
-    auto constraint = std::make_shared<SplineAccConstraint>(s.ee_motion_.at(ee), id::EEMotionNodes(ee));
+    auto constraint_motion = std::make_shared<SplineAccConstraint>(s.ee_motion_.at(ee), id::EEMotionNodes(ee));
+    auto constraint_force = std::make_shared<SplineAccConstraint>(s.ee_force_.at(ee), id::EEForceNodes(ee));
 
-    c.push_back(constraint);
+    c.push_back(constraint_motion);
+    c.push_back(constraint_force);
+
   }
 
   return c;

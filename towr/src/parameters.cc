@@ -41,40 +41,45 @@ Parameters::Parameters ()
 {
   // constructs optimization variables
   duration_base_polynomial_ = 0.1;
-//  force_polynomials_per_stance_phase_ = 39;
-//  ee_polynomials_per_swing_phase_ = 39; // so step can at least lift leg
+  duration_node_polynomial_ = 0.1;
 
-//  phase_durations = 1.5;
-//  ee_phase_durations_{{1.0,1.0,1.0}, {1.0,1.0,1.0}, {1.0,1.0,1.0}, {1.0,1.0,1.0}};
+  //set to true if no drift phase at all wanted,
+  //all 3 phases will be drive phases
+  just_drive_ = false;
 
-  //one node each 0.1 seconds
-  force_polynomials_per_stance_phase_ = phase_durations/0.1;
-  ee_polynomials_per_swing_phase_ = phase_durations/0.1;
+  phase_duration_drive_1 = 1.0;
+  phase_duration_drive_2 = 1.0;
+  phase_duration_drift 	 = 1.0;
 
+  ee_phase_durations_ = {{phase_duration_drive_1,phase_duration_drift,phase_duration_drive_2},
+  	  	  	  	  	  	 {phase_duration_drive_1,phase_duration_drift,phase_duration_drive_2},
+						 {phase_duration_drive_1,phase_duration_drift,phase_duration_drive_2},
+						 {phase_duration_drive_1,phase_duration_drift,phase_duration_drive_2}};
 
-  just_drive_ = false;	//true if no drift phase at all wanted
+  polynomials_in_first_drive_phase_ = phase_duration_drive_1/duration_node_polynomial_;
+  polynomials_in_drift_phase_ = phase_duration_drift/duration_node_polynomial_;
+  polynomials_in_second_drive_phase_ = phase_duration_drive_2/duration_node_polynomial_;
 
 
   // parameters related to specific constraints (only used when it is added as well)
   vx_wheel_during_drift_ = 2.0; //choose between 1 and 4 m/s
   force_limit_in_normal_direction_ = 1000;
   dt_constraint_range_of_motion_ = 0.08;
-//  dt_constraint_drive_ = 0.1;		//needs also acc = 0 constraint
-  dt_constraint_drive_ = 0.05;		//needs no acc constraint?
-  dt_constraint_drift_ = 0.05;
+  dt_constraint_drive_ = 0.1;
+  dt_constraint_drift_ = 0.1;
   dt_constraint_dynamic_ = 0.1;
   dt_constraint_base_motion_ = duration_base_polynomial_/4.; // only for base RoM constraint
   bound_phase_duration_ = std::make_pair(0.0, 10);  // used only when optimizing phase durations, so gait
 
   // a minimal set of basic constraints
-//  constraints_.push_back(Terrain);
-  constraints_.push_back(Dynamic); //Ensures that the dynamic model is fullfilled at discrete times.
+//  constraints_.push_back(Terrain); //not needed because only flat terrain and z-pos/vel/acc always set to zero.
+  constraints_.push_back(Dynamic); // Ensures that the dynamic model is fullfilled at discrete times.
   constraints_.push_back(BaseAcc); // so accelerations don't jump between polynomials
   constraints_.push_back(EndeffectorRom); //Ensures that the range of motion is respected at discrete times.
-  constraints_.push_back(Force); // ensures unilateral forces and inside the friction cone.
-  constraints_.push_back(Drive);
-  constraints_.push_back(Drift);
-  constraints_.push_back(EEAcc);
+  constraints_.push_back(Force); // ensures unilateral forces and inside the friction cone, or at the boundary of the friction cone for drift.
+  constraints_.push_back(Drive); // no y-vel in base frame during drive phases
+  constraints_.push_back(Drift); // friction forces during drift are aligned with the total velocity
+  constraints_.push_back(EEAcc); // so endeffector motion and force "accelerations" don't jump between polynomials
 
   // optional costs to e.g penalize endeffector forces
   // costs_.push_back({ForcesCostID, 1.0}); weighed by 1.0 relative to other costs
@@ -82,11 +87,9 @@ Parameters::Parameters ()
   // bounds on final 6DoF base state
   bounds_final_lin_pos_ = {X,Y};
   bounds_final_lin_vel_ = {X,Y,Z};
-//  bounds_final_lin_vel_ = {Z};
-//  bounds_final_ang_pos_ = {X,Y,Z};
   bounds_final_ang_pos_ = {Z};
   bounds_final_ang_vel_ = {X,Y,Z};
-//  bounds_final_ang_vel_ = {Z};
+
 
   // additional restrictions are set directly on the variables in nlp_factory,
   // such as e.g. initial and endeffector,...
@@ -133,15 +136,16 @@ Parameters::GetEECount() const
 double
 Parameters::GetTotalTime () const
 {
-  std::vector<double> T_feet;
-
-  for (const auto& v : ee_phase_durations_)
-    T_feet.push_back(std::accumulate(v.begin(), v.end(), 0.0));
-
-  // safety check that all feet durations sum to same value
-  double T = T_feet.empty()? 0.0 : T_feet.front(); // take first foot as reference
-  for (double Tf : T_feet)
-    assert(fabs(Tf - T) < 1e-6);
+//  std::vector<double> T_feet;
+//
+//  for (const auto& v : ee_phase_durations_)
+//    T_feet.push_back(std::accumulate(v.begin(), v.end(), 0.0));
+//
+//  // safety check that all feet durations sum to same value
+//  double T = T_feet.empty()? 0.0 : T_feet.front(); // take first foot as reference
+//  for (double Tf : T_feet)
+//    assert(fabs(Tf - T) < 1e-6);
+	double T = phase_duration_drive_1 + phase_duration_drive_2 + phase_duration_drift;
 
   return T;
 }

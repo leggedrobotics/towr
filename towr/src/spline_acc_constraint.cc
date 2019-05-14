@@ -39,15 +39,22 @@ SplineAccConstraint::SplineAccConstraint (const NodeSpline::Ptr& spline,
   node_variables_id_ = node_variable_name;
 
   n_dim_       = spline->GetPoint(0.0).p().rows();
-  n_junctions_ = spline->GetPolynomialCount() - 1;
+
 
   //TODO: different poly durations for ee and for base!!
-//  if (node_variable_name == "ee-motion_0" or node_variable_name == "ee-motion_1" or node_variable_name == "ee-motion_2" or node_variable_name == "ee-motion_3"){
-//	  T_ = params_.ee_phase_durations_[0][0]/params_.force_polynomials_per_stance_phase_;
-//	  //polyduration is time between two nodes!
-//  }
 
-  T_ = spline->GetPolyDurations();
+  if (node_variables_id_ == "base-lin" or node_variables_id_ == "base-ang"){
+  	  T_ = spline->GetPolyDurations();
+  	  n_junctions_ = spline->GetPolynomialCount() - 1;
+  }
+
+  else {
+	  n_junctions_ = params_.polynomials_in_first_drive_phase_ + params_.polynomials_in_drift_phase_ + params_.polynomials_in_second_drive_phase_ - 1;
+
+	  for (int i = 0; i < (n_junctions_ + 1); i++){
+		  T_.push_back(params_.duration_node_polynomial_);
+	  }
+	    }
 
 
   SetRows(n_dim_*n_junctions_);
@@ -58,6 +65,20 @@ SplineAccConstraint::GetValues () const
 {
   VectorXd g(GetRows());
 
+  //for forces, "velocity" needs to be constraint:
+  if (node_variables_id_ == "ee-force_0" or node_variables_id_ == "ee-force_1" or node_variables_id_ == "ee-force_2" or node_variables_id_ == "ee-force_3"){
+	  for (int j=0; j<n_junctions_; ++j) {
+	      int p_prev = j; // id of previous polynomial
+	      VectorXd vel_prev = spline_->GetPoint(p_prev, T_.at(p_prev)).v();
+
+	      int p_next = j+1;
+	      VectorXd vel_next = spline_->GetPoint(p_next, 0.0).v();
+
+	      g.segment(j*n_dim_, n_dim_) = vel_prev - vel_next;
+	    }
+  }
+
+  else {
   for (int j=0; j<n_junctions_; ++j) {
     int p_prev = j; // id of previous polynomial
     VectorXd acc_prev = spline_->GetPoint(p_prev, T_.at(p_prev)).a();
@@ -67,6 +88,7 @@ SplineAccConstraint::GetValues () const
 
     g.segment(j*n_dim_, n_dim_) = acc_prev - acc_next;
   }
+  }
 
   return g;
 }
@@ -75,6 +97,18 @@ void
 SplineAccConstraint::FillJacobianBlock (std::string var_set, Jacobian& jac) const
 {
   if (var_set == node_variables_id_) {
+	  if (node_variables_id_ == "ee-force_0" or node_variables_id_ == "ee-force_1" or node_variables_id_ == "ee-force_2" or node_variables_id_ == "ee-force_3"){
+		  for (int j=0; j<n_junctions_; ++j) {
+		        int p_prev = j; // id of previous polynomial
+		        Jacobian vel_prev = spline_->GetJacobianWrtNodes(p_prev, T_.at(p_prev), kVel, false);
+
+		        int p_next = j+1;
+		        Jacobian vel_next = spline_->GetJacobianWrtNodes(p_next, 0.0, kVel, false);
+
+		        jac.middleRows(j*n_dim_, n_dim_) = vel_prev - vel_next;
+	  }
+	  }
+	else {
     for (int j=0; j<n_junctions_; ++j) {
       int p_prev = j; // id of previous polynomial
       Jacobian acc_prev = spline_->GetJacobianWrtNodes(p_prev, T_.at(p_prev), kAcc, false);
@@ -84,6 +118,7 @@ SplineAccConstraint::FillJacobianBlock (std::string var_set, Jacobian& jac) cons
 
       jac.middleRows(j*n_dim_, n_dim_) = acc_prev - acc_next;
     }
+	}
   }
 }
 

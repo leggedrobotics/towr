@@ -24,8 +24,8 @@ DriveConstraint::DriveConstraint (const KinematicModel::Ptr& model,
 
   ee_ = ee;
 
-  // set 2 if y-vel. and y-acc constraint, 1 if only y-vel constraint
-  n_constraints_per_node_ = 1; // 2: if y-vel. and y-acc constraint
+  // set 3 if y-vel. and y-acc constraint, 2 if only y-vel constraint (and pos x vel)
+  n_constraints_per_node_ = 2; // 3: if y-vel. and y-acc constraint
 
 	  SetRows(GetNumberOfNodes()*n_constraints_per_node_);
 
@@ -57,8 +57,9 @@ DriveConstraint::UpdateConstraintAtInstance (double t, int k, VectorXd& g) const
 
   int row = k*n_constraints_per_node_;
 
-  g(row++) = v_b_y(Y);
-  if (n_constraints_per_node_ == 2)
+  g(row++) = v_wrt_b(X);
+  g(row++) = v_wrt_b(Y);
+  if (n_constraints_per_node_ == 3)
 	  g(row++) = a_b_y(Y);
 }
 
@@ -68,25 +69,29 @@ DriveConstraint::UpdateBoundsAtInstance (double t, int k, VecBound& bounds) cons
 	int row = k*n_constraints_per_node_;
 
 	if (params_.just_drive_){
+		bounds.at(row++) = ifopt::BoundGreaterZero;
 		bounds.at(row++) = ifopt::BoundZero;
-		if (n_constraints_per_node_ == 2)
+		if (n_constraints_per_node_ == 3)
 			bounds.at(row++) = ifopt::BoundZero;
 	}
 	else {
 		if (ee_ == 0 or ee_ == 1){
+				bounds.at(row++) = ifopt::BoundGreaterZero;
 				bounds.at(row++) = ifopt::BoundZero;
-				if (n_constraints_per_node_ == 2)
+				if (n_constraints_per_node_ == 3)
 					bounds.at(row++) = ifopt::BoundZero;
 			  }
 			  else if (ee_ == 2 or ee_ == 3){
 				  if ((t <= params_.ee_phase_durations_[0][0]) or (t > (params_.ee_phase_durations_[0][0]+params_.ee_phase_durations_[0][1]))){
+					  bounds.at(row++) = ifopt::BoundGreaterZero;
 					  bounds.at(row++) = ifopt::BoundZero;
-					  if (n_constraints_per_node_ == 2)
+					  if (n_constraints_per_node_ == 3)
 						  bounds.at(row++) = ifopt::BoundZero;
 				  }
 				  else {
+					  bounds.at(row++) = ifopt::BoundGreaterZero; //during drift also just in positive x dir
 					  bounds.at(row++) = ifopt::NoBound;
-					  if (n_constraints_per_node_ == 2)
+					  if (n_constraints_per_node_ == 3)
 						  bounds.at(row++) = ifopt::NoBound;
 				  }
 				  }
@@ -112,17 +117,18 @@ DriveConstraint::UpdateJacobianAtInstance (double t, int k,
     Vector3d v_W = ee_motion_->GetPoint(t).v();
     Vector3d a_W = ee_motion_->GetPoint(poly_id, T_.at(poly_id)).a(); //k is not poly id!
 
+    	jac.row(row++) = base_angular_.DerivOfRotVecMult(t, v_W, true, false).row(X);
     	jac.row(row++) = base_angular_.DerivOfRotVecMult(t, v_W, true, false).row(Y);
-    	if (n_constraints_per_node_ == 2)
+    	if (n_constraints_per_node_ == 3)
     		jac.row(row++) = base_angular_.DerivOfRotVecMult(t, a_W, true, false).row(Y);
 
   }
 
   if (var_set == id::EEMotionNodes(ee_)) {
 	  int poly_id = ee_motion_->GetSegmentID(t, T_);
-
+	  	  jac.row(row++) = (b_R_w*ee_motion_->GetJacobianWrtNodes(t, kVel, false)).row(X);
 		  jac.row(row++) = (b_R_w*ee_motion_->GetJacobianWrtNodes(t, kVel, false)).row(Y);
-		  if (n_constraints_per_node_ == 2)
+		  if (n_constraints_per_node_ == 3)
 			  jac.row(row++) = (b_R_w*ee_motion_->GetJacobianWrtNodes(poly_id, T_.at(poly_id), kAcc, false)).row(Y);
 
 	  }

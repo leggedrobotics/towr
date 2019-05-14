@@ -62,6 +62,7 @@ DriftConstraint::UpdateConstraintAtInstance (double t, int k, VectorXd& g) const
   double des_v_x_wheel = params_.vx_wheel_during_drift_;
   double pitch_angle = base_angular_for_angles_->GetPoint(t).p()(Y);
   Vector3d v_x_wheel(-des_v_x_wheel, 0.0, 0.0); //in base frame!!
+//  Vector3d v_x_wheel(-des_v_x_wheel/cos(pitch_angle), 0.0, 0.0); //in base frame!!
   Vector3d v_x_wheel_world_with_z = b_C_w*v_x_wheel;
   Vector3d v_x_wheel_world(v_x_wheel_world_with_z(X), v_x_wheel_world_with_z(Y), 0.0);
 
@@ -122,6 +123,7 @@ DriftConstraint::UpdateJacobianAtInstance (double t, int k,
     double pitch_angle = base_angular_for_angles_->GetPoint(t).p()(Y);
 
     double des_v_x_wheel = params_.vx_wheel_during_drift_;
+//    Vector3d v_x_wheel(-des_v_x_wheel/cos(pitch_angle), 0.0, 0.0); //in base frame!!!
     Vector3d v_x_wheel(-des_v_x_wheel, 0.0, 0.0); //in base frame!!!
     Vector3d v_x_wheel_world_with_z = b_C_w*v_x_wheel;
     Vector3d v_x_wheel_world(v_x_wheel_world_with_z(X), v_x_wheel_world_with_z(Y), 0.0);
@@ -143,9 +145,9 @@ DriftConstraint::UpdateJacobianAtInstance (double t, int k,
 
 	  Vector3d tt_base = (f_tang_world + f_tang_abs_value * Dg);
 	  Jacobian ttt_base = tt_base.transpose().sparseView();
-//	  Vector3d d_vtot(0.0, 0.0, 0.0);
+//	  Vector3d d_vtot(0.0, -des_v_x_wheel*sin(pitch_angle)/(cos(pitch_angle)*cos(pitch_angle)), 0.0);
 //	  d_vtot = d_vtot + Vector3d::Constant(1e-10);
-//	  Jacobian d_vtot_jac = b_C_w*d_vtot; //sparseView()?
+//	  Jacobian d_vtot_jac = (b_C_w*d_vtot).transpose().sparseView();
 
 	  //only v_x_wheel is rotated (or v_x_wheel_base?)
 	  jac.row(row++) = ttt_base * base_angular_.DerivOfRotVecMult(t, v_x_wheel, false, false);

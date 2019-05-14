@@ -80,7 +80,7 @@ public:
     int phase_; ///< The phase ID this polynomial represents.
     int poly_in_phase_; ///< is this the 1st, 2nd, ... polynomial or this phase.
     int n_polys_in_phase_; ///< the number of polynomials used for this phase.
-    bool is_constant_; ///<  is_constant now says if it is drive or drift! (need to implement this!)
+    bool is_constant_;	//no constant phases!
     PolyInfo(int phase, int poly_in_phase, int n_polys_in_phase, bool is_const);
   };
 
@@ -98,7 +98,9 @@ public:
   NodesVariablesPhaseBased (int phase_count,
                             bool first_phase_constant,
                             const std::string& var_name,
-                            int n_polys_in_changing_phase,
+	                         int n_polys_in_first_drive_phase,
+							 int n_polys_in_drift_phase,
+							 int n_polys_in_second_drive_phase,
 							EE ee);
 
   virtual ~NodesVariablesPhaseBased() = default;
@@ -215,7 +217,9 @@ public:
   NodesVariablesEEMotion(int phase_count,
                          bool is_in_contact_at_start,
                          const std::string& name,
-                         int n_polys_in_changing_phase,
+                         int n_polys_in_first_drive_phase,
+						 int n_polys_in_drift_phase,
+						 int n_polys_in_second_drive_phase,
 						 EE ee);
   virtual ~NodesVariablesEEMotion() = default;
   OptIndexMap GetPhaseBasedEEParameterization (EE ee);
@@ -232,7 +236,9 @@ public:
   NodesVariablesEEForce(int phase_count,
                          bool is_in_contact_at_start,
                          const std::string& name,
-                         int n_polys_in_changing_phase,
+                         int n_polys_in_first_drive_phase,
+						 int n_polys_in_drift_phase,
+						 int n_polys_in_second_drive_phase,
 						 EE ee);
   virtual ~NodesVariablesEEForce() = default;
   OptIndexMap GetPhaseBasedEEParameterization (EE ee);
