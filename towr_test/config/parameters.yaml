@@ -30,7 +30,7 @@ Step:
   use_wheels_motion_constraint: false
   traction_limit: 300.0 #10.0
 
-TwoStep:
+TwoSlope:
   initial_pose:
     x: 0.0
     y: 0.0
@@ -44,6 +44,21 @@ TwoStep:
   total_time: 6.0 #4.0
   use_wheels_motion_constraint: false
   traction_limit: 300.0 #300.0
+
+TwoStep:
+  initial_pose:
+    x: 0.0
+    y: 0.0
+    z: 0.5
+   
+  final_pose: 
+    x: 2.2
+    y: 0.0
+    z: 0.9
+
+  total_time: 4.1 #4.0
+  use_wheels_motion_constraint: false
+  traction_limit: 400.0 #300.0
 
 Gap:
   initial_pose:
@@ -86,7 +101,7 @@ MultipleSlopes:
     y: 0.0
     z: 0.5
 
-  total_time: 4.0
+  total_time: 6.0
   use_wheels_motion_constraint: false
   traction_limit: 400.0
 
@@ -101,7 +116,7 @@ SineLowFreq:
     y: 0.0
     z: 0.6
 
-  total_time: 8.0
+  total_time: 4.0
   use_wheels_motion_constraint: false
   traction_limit: 30.0
 

@@ -171,7 +171,7 @@ private:
 /** @}*/
 
 /**
- * @brief Sample terrain with a step in height with a cubic transition.
+ * @brief Sample terrain with a step in height with a linear transition.
  */
 class Step : public HeightMap {
 public:
@@ -186,13 +186,30 @@ private:
 
   double slope = 2;
 
-  Eigen::Vector4d coeff {-400, 1260, -1320, 460}; // block from 1.0 to 1.1
+//  Eigen::Vector4d coeff {-400, 1260, -1320, 460}; // block from 1.0 to 1.1
 };
 
 /**
- * @brief Sample terrain with two steps in height with a cubic transition.
+ * @brief Sample terrain with two steps in height with a linear transition.
  */
 class TwoStep : public HeightMap {
+public:
+  double GetHeight(double x, double y) const override;
+  double GetHeightDerivWrtX(double x, double y) const override;
+
+private:
+  double step_start = 1.0;
+  double step_end   = 1.1;
+  double height     = 0.2;
+
+  double dist_steps	= 0.5;
+  double slope = 2;
+};
+
+/**
+ * @brief Sample terrain with one small slope on the left and another on the right.
+ */
+class TwoSlope : public HeightMap {
 public:
   double GetHeight(double x, double y) const override;
   double GetHeightDerivWrtX(double x, double y) const override;

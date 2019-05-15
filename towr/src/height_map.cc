@@ -48,7 +48,8 @@ HeightMap::MakeTerrain (TerrainID type)
     case SlopePlatID:  	   return std::make_shared<SlopePlat>(); break;
     case MultipleSlopesID: return std::make_shared<MultipleSlopes>(); break;
     case StepID:		   return std::make_shared<Step>(); break;
-    case TwoStepID:		   return std::make_shared<TwoStep>(); break;
+    case TwoSlopeID:	   return std::make_shared<TwoSlope>(); break;
+    case TwoStepID:  	   return std::make_shared<TwoStep>(); break;
     case SineLowFreqID:	   return std::make_shared<SineLowFreq>(); break;
     case SineHighFreqID:   return std::make_shared<SineHighFreq>(); break;
     case RoughID:		   return std::make_shared<Rough>(); break;

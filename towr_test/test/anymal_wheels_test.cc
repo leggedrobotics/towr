@@ -67,12 +67,7 @@ bool SetTowrParameters(NlpFormulationDrive *formulation, const std::string& file
 //  formulation->initial_ee_W_.at(RF) -= pos_phase;
 //  formulation->initial_ee_W_.at(RH) -= pos_phase;
 
-//  formulation->initial_ee_W_ = nominal_stance_B;
-//  std::for_each(formulation->initial_ee_W_.begin(), formulation->initial_ee_W_.end(),
-//				[&](Eigen::Vector3d& p){ p.z() = 0.0; } // feet at 0 height
-//  );
-
-  // Time duration of the motion.
+  // Time duration of the motion
   double total_duration = basenode[terrain]["total_time"].as<double>();
   formulation->params_drive_.total_time_ = total_duration;
 
@@ -97,7 +92,7 @@ int main(int argc, char **argv)
   NlpFormulationDrive formulation;
 
   // terrain
-  HeightMap::TerrainID terrain_id = HeightMap::RoughID;
+  HeightMap::TerrainID terrain_id = HeightMap::StepID;
   formulation.terrain_ = HeightMap::MakeTerrain(terrain_id);
 
   // Robot Model

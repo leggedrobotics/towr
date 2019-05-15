@@ -78,6 +78,7 @@ ts_force_RH  = timeseries(bag_force);
 %% define the plotting range and other additional quantities
 t = ts_base_pos.Time; 
 dyn_con_idx = rem(t,0.1) < 1e-5;
+kyn_con_idx = rem(t,0.08) < 1e-5;
 
 % base motion
 base_pos  = [ts_base_pos.Data(:,1), ts_base_pos.Data(:,2), ts_base_pos.Data(:,3)];
@@ -269,6 +270,17 @@ subplot(3,4,8); plot(t,pos_RH(:,2)); grid on;
 xlabel('t [s]'); ylabel('p_y [m]'); %ylim([-0.2 -0.18]);
 subplot(3,4,12); plot(t,pos_RH(:,3)); grid on;
 xlabel('t [s]'); ylabel('p_z [m]')
+
+h = figure();
+set(h, 'Name', 'Wheels position (X x Z)');
+subplot(4,1,1); plot(pos_LF(:,1),pos_LF(:,3)); grid on; axis equal;
+xlabel('p_x [m]'); ylabel('p_z [m]'); title('LF')
+subplot(4,1,2); plot(pos_RF(:,1),pos_RF(:,3)); grid on; axis equal;
+xlabel('p_x [m]'); ylabel('p_z [m]'); title('RF')
+subplot(4,1,3); plot(pos_LH(:,1),pos_LH(:,3)); grid on; axis equal;
+xlabel('p_x [m]'); ylabel('p_z [m]'); title('LH')
+subplot(4,1,4); plot(pos_RH(:,1),pos_RH(:,3)); grid on; axis equal;
+xlabel('p_x [m]'); ylabel('p_z [m]'); title('RH')
 
 % foot velocity
 h = figure();

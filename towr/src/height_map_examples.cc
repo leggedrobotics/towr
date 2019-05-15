@@ -232,7 +232,6 @@ Step::GetHeightDerivWrtX(double x, double y) const
   double dhdx = 0.0;
 
   if (step_start <= x && x <= step_end)
-//    dhdx = 3*coeff(0)*pow(x,2)+2*coeff(1)*x+coeff(2);
     dhdx = slope;
 
   return dhdx;
@@ -244,10 +243,88 @@ Step::GetHeightDerivWrtXX(double x, double y) const
   double Dhdx = 0.0;
 
   if (step_start <= x && x <= step_end)
-//    Dhdx = 6*coeff(0)*x+2*coeff(1);
     Dhdx = 0.0;
 
   return Dhdx;
+}
+
+// TWO SLOPE
+double
+TwoSlope::GetHeight(double x, double y) const
+{
+  double h = 0.0;
+
+  if (y >= 0) {
+	if (x >= step_up_start)
+	  h = slope*(x-step_up_start);
+
+	if (x >= step_up_end)
+	  h = height;
+
+	if (x >= step_down_start)
+	  h = height - slope*(x-step_down_start);
+
+	if (x >= step_down_end)
+	  h = 0.0;
+  }
+
+  if (y < 0) {
+	if (x >= (step_up_start + dist_steps))
+	  h = slope*(x-(step_up_start+dist_steps));
+
+	if (x >= (step_up_end + dist_steps))
+	  h = height;
+
+	if (x >= (step_down_start + dist_steps))
+	  h = height - slope*(x-(step_down_start+dist_steps));
+
+	if (x >= (step_down_end + dist_steps))
+	  h = 0.0;
+  }
+
+  return h;
+}
+
+double
+TwoSlope::GetHeightDerivWrtX(double x, double y) const
+{
+  double dhdx = 0.0;
+
+  if (y >= 0) {
+    if (x >= step_up_start)
+      dhdx = slope;
+
+    if (x >= step_up_end)
+	  dhdx = 0.0;
+
+    if (x >= step_down_start)
+      dhdx = -slope;
+
+    if (x >= step_down_end)
+	  dhdx = 0.0;
+  }
+
+  if (y < 0) {
+	if (x >= (step_up_start + dist_steps))
+	  dhdx = slope;
+
+	if (x >= (step_up_end + dist_steps))
+	  dhdx = 0.0;
+
+	if (x >= (step_down_start + dist_steps))
+	  dhdx = -slope;
+
+	if (x >= (step_down_end + dist_steps))
+	  dhdx = 0.0;
+  }
+
+  return dhdx;
+}
+
+double
+TwoSlope::GetHeightDerivWrtXX(double x, double y) const
+{
+  return 0.0;
 }
 
 // TWO STEP
@@ -256,35 +333,17 @@ TwoStep::GetHeight(double x, double y) const
 {
   double h = 0.0;
 
-  if (y >= 0) {
-	if (x >= step_up_start)
-//	  h = coeff(0)*pow(x-step_up_start,3)+coeff(1)*pow(x-step_up_start,2)+coeff(2)*(x-step_up_start)+coeff(3) - dh;
-	  h = slope*(x-step_up_start);
+  if (x >= step_start)
+	h = slope*(x-step_start);
 
-	if (x >= step_up_end)
-	  h = height;
+  if (x >= step_end)
+	h = height;
 
-	if (x >= step_down_start)
-//	  h = height - coeff(0)*pow(x-step_down_start,3)-coeff(1)*pow(x-step_down_start,2)-coeff(2)*(x-step_down_start)-coeff(3);
-	  h = height - slope*(x-step_down_start);
+  if (x >= (step_start+dist_steps))
+	h = height + slope*(x-(step_start+dist_steps));
 
-	if (x >= step_down_end)
-	  h = 0.0;
-  }
-
-  if (y < 0) {
-	if (x >= step_up_start + dist_steps)
-	  h = slope*(x-(step_up_start+dist_steps));
-
-	if (x >= step_up_end + dist_steps)
-	  h = height;
-
-	if (x >= step_down_start + dist_steps)
-	  h = height - slope*(x-(step_down_start+dist_steps));
-
-	if (x >= step_down_end + dist_steps)
-	  h = 0.0;
-  }
+  if (x >= (step_end+dist_steps))
+	h = 2*height;
 
   return h;
 }
@@ -294,59 +353,19 @@ TwoStep::GetHeightDerivWrtX(double x, double y) const
 {
   double dhdx = 0.0;
 
-  if (y >= 0) {
-    if (x >= step_up_start)
-//	  dhdx = 3*coeff(0)*pow(x-step_up_start,2)+2*coeff(1)*(x-step_up_start)+coeff(2);
-      dhdx = slope;
+  if (x >= step_start)
+	dhdx = slope;
 
-    if (x >= step_up_end)
-	  dhdx = 0.0;
+  if (x >= step_end)
+    dhdx = 0.0;
 
-    if (x >= step_down_start)
-//	  dhdx = -3*coeff(0)*pow(x-step_down_start,2)-2*coeff(1)*(x-step_down_start)-coeff(2);
-      dhdx = -slope;
+  if (x >= (step_start+dist_steps))
+	dhdx = slope;
 
-    if (x >= step_down_end)
-	  dhdx = 0.0;
-  }
-
-  if (y < 0) {
-	if (x >= step_up_start + dist_steps)
-	  dhdx = slope;
-
-	if (x >= step_up_end + dist_steps)
-	  dhdx = height;
-
-	if (x >= step_down_start + dist_steps)
-	  dhdx = -slope;
-
-	if (x >= step_down_end + dist_steps)
-	  dhdx = 0.0;
-  }
+  if (x >= (step_end+dist_steps))
+	dhdx = 0.0;
 
   return dhdx;
-}
-
-double
-TwoStep::GetHeightDerivWrtXX(double x, double y) const
-{
-  double Dhdx = 0.0;
-
-//  if (y >= 0) {
-//	if (x >= step_up_start+dx)
-//	  Dhdx = 6*coeff(0)*(x-step_up_start)+2*coeff(1);
-//
-//	if (x >= step_up_end)
-//	  Dhdx = 0.0;
-//
-//	if (x >= step_down_start)
-//	  Dhdx = -6*coeff(0)*(x-step_down_start)-2*coeff(1);
-//
-//	if (x >= step_down_end)
-//	  Dhdx = 0.0;
-//  }
-
-  return Dhdx;
 }
 
 // SLOPE PLAT

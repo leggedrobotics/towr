@@ -15,6 +15,8 @@ WheelsNonHolonomicConstraint::WheelsNonHolonomicConstraint (double T, double dt,
 	:TimeDiscretizationConstraint(T, dt, "wheels-nhc-" + std::to_string(ee))
 {
   ee_      = ee;
+  base_linear_  = spline_holder.base_linear_;
+  base_angular_ = EulerConverter(spline_holder.base_angular_);
   ee_wheels_motion_ = spline_holder.ee_wheels_motion_.at(ee_);
 
   SetRows(GetNumberOfNodes());  // one constraint per node
@@ -23,6 +25,8 @@ WheelsNonHolonomicConstraint::WheelsNonHolonomicConstraint (double T, double dt,
 void
 WheelsNonHolonomicConstraint::UpdateConstraintAtInstance (double t, int k, VectorXd& g) const
 {
+  // This constraint would only work if the initial position of the base is not rotated in relation to the fixed frame.
+  // TODO: use the base frame to define the non-holonomic constraint
   g(k) = ee_wheels_motion_->GetPoint(t).v()(Y);
 }
 

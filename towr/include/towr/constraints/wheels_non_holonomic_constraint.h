@@ -11,6 +11,7 @@
 #include <towr/variables/spline.h>
 #include <towr/variables/spline_holder_drive.h>
 #include <towr/variables/cartesian_dimensions.h>
+#include <towr/variables/euler_converter.h>
 
 #include "time_discretization_constraint.h"
 
@@ -27,7 +28,9 @@ public:
   virtual ~WheelsNonHolonomicConstraint () = default;
 
 private:
-  NodeSpline::Ptr ee_wheels_motion_; ///< endeffector position in world frame.
+  NodeSpline::Ptr base_linear_;     ///< the linear position of the base.
+  EulerConverter base_angular_; 	///< the orientation of the base.
+  NodeSpline::Ptr ee_wheels_motion_;       ///< the linear position of the wheels.
   EE ee_;
 
   void UpdateConstraintAtInstance(double t, int k, VectorXd& g) const override;
