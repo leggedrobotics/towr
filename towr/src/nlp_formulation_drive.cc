@@ -23,6 +23,7 @@
 #include <towr/constraints/base_acc_limits_constraint.h>
 #include <towr/constraints/wheels_motion_constraint.h>
 #include <towr/constraints/stability_constraint.h>
+#include <towr/constraints/wheels_non_holonomic_constraint.h>
 
 namespace towr {
 
@@ -94,7 +95,6 @@ NlpFormulationDrive::MakeEEWheelsMotionVariables () const
   std::vector<NodesVariables::Ptr> vars;
 
   int n_nodes = params_drive_.GetEEWheelsPolyDurations().size() + 1;
-  //std::cout << n_nodes << std::endl;
 
   // Endeffector Motions
   double T = params_drive_.GetTotalTime();
@@ -115,8 +115,10 @@ NlpFormulationDrive::MakeEEWheelsMotionVariables () const
 //    nodes->AddStartBound(kVel, {X,Y,Z}, Vector3d(0.0, 0.0, 0.0));  // wheels vel zero at the beginning
 //    nodes->AddFinalBound(kVel, {X,Y,Z}, Vector3d(0.0, 0.0, 0.0));  // wheels vel zero at the end
 
-    // wheels non-holonomic constraint (v_y = 0) -> IMPORTANT!
+    // initial wheel's y-position
     nodes->AddStartBound(kPos, {Y}, initial_ee_W_.at(ee));
+
+    // wheels non-holonomic constraint (v_y = 0) -> IMPORTANT!
     nodes->AddAllNodesBounds(kVel, {Y}, Vector3d(0.0, 0.0, 0.0), Vector3d(0.0, 0.0, 0.0));
 
     vars.push_back(nodes);
@@ -172,6 +174,7 @@ NlpFormulationDrive::GetConstraint (Parameters::ConstraintName name,
     case Parameters::WheelsAccLimits:  		return MakeWheelsAccLimitsConstraint(s);
     case Parameters::WheelsMotion: 			return MakeWheelsMotionConstraint(s);
     case Parameters::Stability: 			return MakeStabilityConstraint(s);
+    case Parameters::WheelsNonHolonomic:	return MakeWheelsNonHolonomicConstraint(s);
     default: throw std::runtime_error("constraint not defined!");
   }
 }
@@ -316,6 +319,20 @@ NlpFormulationDrive::MakeStabilityConstraint (const SplineHolderDrive& s) const
 														params_drive_.dt_constraint_dynamic_,
                                                         s);
   return {constraint};
+}
+
+NlpFormulationDrive::ConstraintPtrVec
+NlpFormulationDrive::MakeWheelsNonHolonomicConstraint (const SplineHolderDrive& s) const
+{
+  ContraintPtrVec c;
+
+  for (int ee=0; ee<params_drive_.GetEECount(); ee++) {
+	auto constraint = std::make_shared<WheelsNonHolonomicConstraint>(params_drive_.GetTotalTime(),
+																	 params_drive_.dt_constraint_dynamic_, ee, s);
+    c.push_back(constraint);
+  }
+
+  return c;
 }
 
 void

@@ -26,7 +26,7 @@ Step:
     y: 0.0
     z: 0.7
 
-  total_time: 4.0 #5.0
+  total_time: 4.0 #4.0 for two legs at the same time, 5.2 for one leg at a time
   use_wheels_motion_constraint: false
   traction_limit: 300.0 #10.0
 
@@ -54,9 +54,9 @@ TwoStep:
   final_pose: 
     x: 2.2
     y: 0.0
-    z: 0.9
+    z: 0.8
 
-  total_time: 4.1 #4.0
+  total_time: 3.8 #3.6 #4.1 #4.0
   use_wheels_motion_constraint: false
   traction_limit: 400.0 #300.0
 
@@ -86,7 +86,7 @@ SlopePlat:
     y: 0.0
     z: 0.4
 
-  total_time: 4.0
+  total_time: 3.0
   use_wheels_motion_constraint: false
   traction_limit: 400.0
 

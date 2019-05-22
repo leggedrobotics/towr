@@ -28,9 +28,10 @@ public:
   virtual ~WheelsNonHolonomicConstraint () = default;
 
 private:
-  NodeSpline::Ptr base_linear_;     ///< the linear position of the base.
-  EulerConverter base_angular_; 	///< the orientation of the base.
-  NodeSpline::Ptr ee_wheels_motion_;       ///< the linear position of the wheels.
+  NodeSpline::Ptr base_linear_;     	///< the linear position of the base.
+  EulerConverter base_angular_; 		///< the orientation of the base.
+  NodeSpline::Ptr ee_wheels_motion_;    ///< the linear position of the wheels.
+  int n_constraints_per_node_; 		  	///< number of constraint for each node.
   EE ee_;
 
   void UpdateConstraintAtInstance(double t, int k, VectorXd& g) const override;

@@ -152,6 +152,7 @@ public:
 						ForceWheels,
 						WheelsMotion,
 						Stability,
+						WheelsNonHolonomic
   };
 
   /**

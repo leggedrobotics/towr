@@ -28,6 +28,7 @@ add_library(${PROJECT_NAME} SHARED
   src/wheels_motion_constraint.cc
   src/nlp_formulation_drive.cc
   src/stability_constraint.cc
+  src/wheels_non_holonomic_constraint.cc
   # sample formulation usage
   src/nlp_formulation.cc
   src/parameters.cc

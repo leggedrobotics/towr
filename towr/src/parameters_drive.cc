@@ -25,14 +25,15 @@ ParametersDrive::ParametersDrive()
   DeleteAllConstraints();  // clear the constraints initialized in the base class
 
   // constraints for driving motions
-  constraints_.push_back(TerrainWheels);   // ensures terrain contact during the entire motion
-  constraints_.push_back(DynamicWheels);   // ensures that the dynamic model is fullfilled at discrete times.
-  constraints_.push_back(BaseAcc); 		   // so accelerations don't jump between polynomials
-  constraints_.push_back(EndeffectorAcc);  // so accelerations don't jump between polynomial
-  constraints_.push_back(ForceWheels); 	   //  ensures unilateral forces and inside the friction cone
-  constraints_.push_back(WheelsAccLimits); // constrain the acceleration on the wheels
-  constraints_.push_back(BaseAccLimits);   // constrain the acceleration of the base
-  constraints_.push_back(Stability);       // ensure stability margin (weird roll angles)
+  constraints_.push_back(TerrainWheels);   		// ensures terrain contact during the entire motion
+  constraints_.push_back(DynamicWheels);   		// ensures that the dynamic model is fullfilled at discrete times.
+  constraints_.push_back(BaseAcc); 		   		// so accelerations don't jump between polynomials
+  constraints_.push_back(EndeffectorAcc);  		// so accelerations don't jump between polynomials
+  constraints_.push_back(ForceWheels); 	   		// ensures unilateral forces and inside the friction cone
+  constraints_.push_back(WheelsAccLimits); 		// constrain the acceleration on the wheels
+  constraints_.push_back(BaseAccLimits);   		// constrain the acceleration of the base
+  constraints_.push_back(Stability);       		// ensure stability margin (weird roll angles)
+//  constraints_.push_back(WheelsNonHolonomic);  	// non-holonomic driving constraint
 
   // only one of these constraints are defined according to the config file
 //  constraints_.push_back(WheelsMotion);    // constrain minimum and maximum legs extension

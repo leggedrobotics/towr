@@ -60,7 +60,7 @@ bool SetTowrParameters(NlpFormulationDrive *formulation, const std::string& file
 	  Eigen::Vector3d ee_pos = formulation->initial_ee_W_.at(ee);
 	  formulation->initial_ee_W_.at(ee)(Z) = formulation->terrain_->GetHeight(ee_pos.x(), ee_pos.y());
   }
-  // hack to initialize right foot ahead of the left
+  // hack to initialize the left foot ahead of the right
 //  Eigen::Vector3d pos_phase (0.15, 0.0, 0.0);
 //  formulation->initial_ee_W_.at(LF) += pos_phase;
 //  formulation->initial_ee_W_.at(LH) += pos_phase;
@@ -115,7 +115,7 @@ int main(int argc, char **argv)
     nlp.AddCostSet(c);
 
   auto solver = std::make_shared<ifopt::IpoptSolver>();
-  solver->SetOption("linear_solver", "ma97"); // ma27, ma57, ma77, ma97
+  solver->SetOption("linear_solver", "ma97"); // ma27, ma57, ma77, ma86, ma97
   solver->SetOption("jacobian_approximation", "exact"); // "finite difference-values"
   solver->SetOption("max_cpu_time", 180.0); // 3 min
   solver->SetOption("print_level", 5);
