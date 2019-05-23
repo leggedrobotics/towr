@@ -95,6 +95,7 @@ NlpFormulationDrive::MakeEEWheelsMotionVariables () const
   std::vector<NodesVariables::Ptr> vars;
 
   int n_nodes = params_drive_.GetEEWheelsPolyDurations().size() + 1;
+//  std::cout<< n_nodes << std::endl;
 
   // Endeffector Motions
   double T = params_drive_.GetTotalTime();

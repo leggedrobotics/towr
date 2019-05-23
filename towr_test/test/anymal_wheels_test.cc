@@ -19,6 +19,8 @@
 #include <towr/nlp_formulation_drive.h>
 #include <ifopt/ipopt_solver.h>
 
+#include <xpp_msgs/TerrainInfo.h>
+
 #include "towr_ros/helpers_towr.h"
 
 using namespace towr;
@@ -91,8 +93,8 @@ int main(int argc, char **argv)
   // NLP formulation
   NlpFormulationDrive formulation;
 
-  // terrain
-  HeightMap::TerrainID terrain_id = HeightMap::StepID;
+  // Terrain
+  HeightMap::TerrainID terrain_id = HeightMap::RoughID;
   formulation.terrain_ = HeightMap::MakeTerrain(terrain_id);
 
   // Robot Model
@@ -136,10 +138,10 @@ int main(int argc, char **argv)
   nlp.PrintCurrent();
 //  formulation.PrintSolution(solution, 0.5);
 
-  // save entire trajectory (to send to the controller)
+  // save trajectory (to send to the controller)
 //  std::string bag_file = ros::package::getPath("towr_test") + "/bags/anymal_wheels_traj.bag";
   std::string bag_file = ros::package::getPath("anymal_wheels_ctrl_track_ros") + "/data/anymal_wheels_traj.bag";
-  SaveDrivingTrajectoryInRosbag (solution, bag_file);
+  SaveDrivingMotionTerrainInRosbag (solution, terrain_id, bag_file);
 
   // save trajectory as collection of states (for plots)
   bag_file = ros::package::getPath("towr_test") + "/bags/anymal_wheels_states.bag";
@@ -148,9 +150,9 @@ int main(int argc, char **argv)
   // Create a new bag with geometry messages to plot in MATLAB
   ExtractGeometryMessagesFromTrajectoryBag(bag_file);
 
-  // Create a map of terrain normals in a txt file
-  std::string filename = ros::package::getPath("anymal_wheels_ctrl_track") + "/data/terrain_normals.txt";
-  SaveTerrainNormalsInFile(solution, terrain_id, filename);
+  // Create a map of terrain normals in a txt file (not necessary for the controller anymore!!)
+//  std::string filename = ros::package::getPath("anymal_wheels_ctrl_track") + "/data/terrain_normals.txt";
+//  SaveTerrainNormalsInFile(solution, terrain_id, filename);
 
   return 0;
 }

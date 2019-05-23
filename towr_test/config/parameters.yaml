@@ -4,16 +4,16 @@ Flat:
   initial_pose:
     x: 0.0
     y: 0.0
-    z: 0.4
+    z: 0.5
    
   final_pose: 
-    x: 4.0
+    x: 8.0
     y: 0.0
-    z: 0.4
+    z: 0.5
 
-  total_time: 4.0
+  total_time: 3.0
   use_wheels_motion_constraint: false
-  traction_limit: 30.0
+  traction_limit: 300.0
 
 Step:
   initial_pose:
@@ -26,7 +26,7 @@ Step:
     y: 0.0
     z: 0.7
 
-  total_time: 4.0 #4.0 for two legs at the same time, 5.2 for one leg at a time
+  total_time: 4.8 #4.0 for two legs at the same time, 5.2 or 4.8 for one leg at a time
   use_wheels_motion_constraint: false
   traction_limit: 300.0 #10.0
 
@@ -86,7 +86,7 @@ SlopePlat:
     y: 0.0
     z: 0.4
 
-  total_time: 3.0
+  total_time: 4.0
   use_wheels_motion_constraint: false
   traction_limit: 400.0
 
@@ -101,7 +101,7 @@ MultipleSlopes:
     y: 0.0
     z: 0.5
 
-  total_time: 6.0
+  total_time: 4.0 #6.0
   use_wheels_motion_constraint: false
   traction_limit: 400.0
 

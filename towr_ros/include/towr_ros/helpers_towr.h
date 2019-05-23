@@ -33,6 +33,10 @@ std::vector<xpp::RobotStateCartesian> GetDrivingTrajectoryFromSolution (const Sp
 void SaveTrajectoryInRosbag (const SplineHolder& solution, const std::string &bag_file);
 void SaveDrivingTrajectoryInRosbag (const SplineHolderDrive& solution, const std::string &bag_file);
 void SaveDrivingTrajectoryStatesInRosbag (const SplineHolderDrive& solution, const std::string &bag_file);
+void SaveDrivingMotionTerrainInRosbag (const SplineHolderDrive& solution, int terrain, const std::string &bag_file);
+
+// method to check if the bag was created correctly
+void getDataFromBag (std::string bagname);
 
 void SaveTerrainNormalsInFile (const SplineHolderDrive& solution, int terrain_id, const std::string &bag_file);
 

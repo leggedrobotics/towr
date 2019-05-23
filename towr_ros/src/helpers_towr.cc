@@ -7,6 +7,9 @@
 
 #include "towr_ros/helpers_towr.h"
 
+#include <xpp_msgs/TerrainInfo.h>
+
+
 namespace towr {
 
 std::vector<xpp::RobotStateCartesian> GetTrajectoryFromSolution (const SplineHolder& solution)
@@ -106,6 +109,87 @@ void SaveDrivingTrajectoryInRosbag (const SplineHolderDrive& solution, const std
 
   std::cout << "Successfully created bag  " << bag.getFileName() << std::endl;
   bag.close();
+}
+
+void SaveDrivingMotionTerrainInRosbag (const SplineHolderDrive& solution, int terrain, const std::string &bag_file)
+{
+  rosbag::Bag bag;
+  bag.open(bag_file, rosbag::bagmode::Write);
+
+  std::vector<xpp::RobotStateCartesian> traj = GetDrivingTrajectoryFromSolution(solution);
+
+  auto terrain_id = static_cast<HeightMap::TerrainID>(terrain);
+  auto terrain_ = HeightMap::MakeTerrain(terrain_id);
+
+  for (const auto state : traj) {
+	auto timestamp = ::ros::Time(state.t_global_ + 1e-6); // t=0.0 throws ROS exception
+
+	xpp_msgs::RobotStateCartesian msg;
+	msg = xpp::Convert::ToRos(state);
+	bag.write(xpp_msgs::robot_state_desired, timestamp, msg);
+
+    xpp_msgs::TerrainInfo terrain_msg;
+    for (auto ee : state.ee_motion_.ToImpl()) {
+      Eigen::Vector3d n = terrain_->GetNormalizedBasis(HeightMap::Normal, ee.p_.x(), ee.p_.y());
+      terrain_msg.surface_normals.push_back(xpp::Convert::ToRos<geometry_msgs::Vector3>(n));
+      terrain_msg.friction_coeff = terrain_->GetFrictionCoeff();
+    }
+
+    bag.write(xpp_msgs::terrain_info, timestamp, terrain_msg);
+  }
+
+  std::cout << "Successfully created bag  " << bag.getFileName() << std::endl;
+  bag.close();
+}
+
+void getDataFromBag (std::string bagname)
+{
+  std::vector<xpp_msgs::RobotStateCartesian> desiredStates_;
+  std::map<double,std::vector<Eigen::Vector3d>> terrainNormalMap_;
+
+  rosbag::Bag bag;
+  bag.open(bagname, rosbag::bagmode::Read);
+
+  std::vector<std::string> topics;
+  topics.push_back(xpp_msgs::robot_state_desired);
+  topics.push_back(xpp_msgs::terrain_info);
+
+  rosbag::View view(bag, rosbag::TopicQuery(topics));
+
+  double t = 0.0;
+  for (rosbag::MessageInstance const m: view) //rosbag::View(bag, rosbag::TopicQuery(xpp_msgs::robot_state_desired)) )
+  {
+	t = m.getTime().toSec();
+	xpp_msgs::RobotStateCartesianPtr traj_msg = m.instantiate<xpp_msgs::RobotStateCartesian>();
+	if (traj_msg != NULL) {
+	  desiredStates_.push_back(*traj_msg);
+	}
+
+    std::cout << std::fixed;
+    std::cout << std::setprecision(5);
+	std::cout << t << std::endl;
+
+	xpp_msgs::TerrainInfoPtr terrain_msg = m.instantiate<xpp_msgs::TerrainInfo>();
+	if (terrain_msg != NULL) {
+	  auto n = xpp::Convert::ToXpp<geometry_msgs::Vector3>(terrain_msg->surface_normals).ToImpl();
+	  std::vector<Eigen::Vector3d> normals({n.begin(), n.end()});
+	  terrainNormalMap_.insert( std::pair<double,std::vector<Eigen::Vector3d>>(t,normals) );
+	}
+  }
+  bag.close();
+
+  std::cout << "States: " << desiredStates_.size() << std::endl;
+  std::cout << "Normals: " << terrainNormalMap_.size() << std::endl;
+  for (auto const& x : terrainNormalMap_)
+  {
+      std::cout << x.first  // string (key)
+                << ':'
+                << x.second.at(0).transpose() << ", "// string's value
+				<< x.second.at(1).transpose() << ", "
+				<< x.second.at(2).transpose() << ", "
+				<< x.second.at(3).transpose()
+                << std::endl ;
+  }
 }
 
 void
