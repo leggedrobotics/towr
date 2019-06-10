@@ -74,17 +74,17 @@ ForceConstraint::InitVariableDependedQuantities (const VariablesPtr& x)
 
   	if (params_.just_drive_){
   		constraint_count = node_ids_.size()*n_constraints_per_node_;
-  		}
+  	}
   	else {
   		if (ee_ == 0 or ee_ == 1){
   		  		constraint_count = node_ids_.size()*n_constraints_per_node_;
-  		  	}
-  		  	if (ee_ == 2 or ee_ == 3){
+  		}
+  		if (ee_ == 2 or ee_ == 3){
   		  		constraint_count = (params_.polynomials_in_first_drive_phase_ + params_.polynomials_in_second_drive_phase_+1)*n_constraints_per_node_ + (params_.polynomials_in_drift_phase_)*n_constraints_drift_node_;
-  		  	}
+  		}
   	}
 
-//  	cout << "node id size: " << node_ids_.size() << endl;
+//  	cout << "force node id size: " << node_ids_.size() << endl;
   SetRows(constraint_count);
 
 }

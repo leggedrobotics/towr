@@ -99,7 +99,12 @@ TowrRosInterface::UserCommandCallback(const TowrCommandMsg& msg)
   PublishInitialState();
 
   // Defaults to /home/user/.ros/
-  std::string bag_file = "towr_trajectory.bag";
+  std::string bag_file = "/home/dominic/Documents/trajectory_bags/towr_trajectory.bag";
+  std::string bag_file_sim = "/home/dominic/git/anymal_wheels_controller/anymal_wheels_ctrl_track_ros/data/towr_trajectory_sim.bag";
+  std::string terrain_normals_sim = "/home/dominic/Documents/trajectory_bags/terrain_normals.txt";
+  std::string bag_file_total = "/home/dominic/git/anymal_wheels_controller/anymal_wheels_ctrl_track_ros/data/towr_trajectory_total.bag";
+
+
   if (msg.optimize || msg.play_initialization) {
     nlp_ = ifopt::Problem();
     for (auto c : formulation_.GetVariableSets(solution))
@@ -112,6 +117,11 @@ TowrRosInterface::UserCommandCallback(const TowrCommandMsg& msg)
     solver_->Solve(nlp_);
     SaveOptimizationAsRosbag(bag_file, robot_params_msg, msg, false);
     ExtractGeometryMessagesFromTrajectoryBag(bag_file);
+    SaveTrajectoryInRosbagForVisualization(solution, bag_file_sim);
+    SaveTerrainNormalsInFile(solution, msg.terrain, terrain_normals_sim);
+    SaveDrivingMotionTerrainInRosbag(solution, msg.terrain, bag_file_total);
+//    getDataFromBag(bag_file_total);
+
   }
 
   // playback using terminal commands
@@ -142,6 +152,8 @@ TowrRosInterface::PublishInitialState()
   for (int ee_towr=0; ee_towr<n_ee; ++ee_towr) {
     int ee_xpp = ToXppEndeffector(n_ee, ee_towr).first;
     xpp.ee_contact_.at(ee_xpp)   = true;
+//    xpp.ee_state_.at(ee_xpp) = drive_;
+    xpp.ee_state_.at(ee_xpp) = false;
     xpp.ee_motion_.at(ee_xpp).p_ = formulation_.initial_ee_W_.at(ee_towr);
     xpp.ee_forces_.at(ee_xpp).setZero(); // zero for visualization
   }
@@ -185,6 +197,8 @@ TowrRosInterface::GetTrajectory () const
       int ee_xpp = ToXppEndeffector(n_ee, ee_towr).first;
 
       state.ee_contact_.at(ee_xpp) = solution.phase_durations_.at(ee_towr)->IsContactPhase(t);
+//      TODO: add solution
+      state.ee_state_.at(ee_xpp) = solution.phase_durations_.at(ee_towr)->EE_States(t);
       state.ee_motion_.at(ee_xpp)  = ToXpp(solution.ee_motion_.at(ee_towr)->GetPoint(t));
       state.ee_forces_ .at(ee_xpp) = solution.ee_force_.at(ee_towr)->GetPoint(t).p();
     }
@@ -192,6 +206,42 @@ TowrRosInterface::GetTrajectory () const
     state.t_global_ = t;
     trajectory.push_back(state);
     t += visualization_dt_;
+  }
+
+  return trajectory;
+}
+
+std::vector<xpp::RobotStateCartesian>
+TowrRosInterface::GetTrajectoryFromSolution (const SplineHolder& solution)
+{
+  std::vector<xpp::RobotStateCartesian> trajectory;
+  double t = 0.0;
+  double T = solution.base_linear_->GetTotalTime();
+
+  EulerConverter base_angular(solution.base_angular_);
+
+  while (t<=T+1e-5) {
+    int n_ee = solution.ee_motion_.size();
+    xpp::RobotStateCartesian state(n_ee);
+
+    state.base_.lin = ToXpp(solution.base_linear_->GetPoint(t));
+
+    state.base_.ang.q  = base_angular.GetQuaternionBaseToWorld(t);
+    state.base_.ang.w  = base_angular.GetAngularVelocityInWorld(t);
+    state.base_.ang.wd = base_angular.GetAngularAccelerationInWorld(t);
+
+    for (int ee_towr=0; ee_towr<n_ee; ++ee_towr) {
+      int ee_xpp = ToXppEndeffector(n_ee, ee_towr).first;
+
+      state.ee_contact_.at(ee_xpp) = solution.phase_durations_.at(ee_towr)->IsContactPhase(t);
+      state.ee_state_.at(ee_xpp) = solution.phase_durations_.at(ee_towr)->EE_States(t);
+      state.ee_motion_.at(ee_xpp)  = ToXpp(solution.ee_motion_.at(ee_towr)->GetPoint(t));
+      state.ee_forces_ .at(ee_xpp) = solution.ee_force_.at(ee_towr)->GetPoint(t).p();
+    }
+
+    state.t_global_ = t;
+    trajectory.push_back(state);
+    t += 0.0025;
   }
 
   return trajectory;
@@ -273,6 +323,138 @@ TowrRosInterface::SaveTrajectoryInRosbag (rosbag::Bag& bag,
     bag.write(xpp_msgs::terrain_info, timestamp, terrain_msg);
   }
 }
+
+void
+TowrRosInterface::SaveTerrainNormalsInFile (const SplineHolder& solution, int terrain, const std::string &filename)
+{
+  double t = 0.0;
+  double T = solution.base_linear_->GetTotalTime();
+
+  auto terrain_id = static_cast<HeightMap::TerrainID>(terrain);
+  auto terrain_ = HeightMap::MakeTerrain(terrain_id);
+
+  std::ofstream file;
+  file.open(filename);
+  while (t<=T+1e-5) {
+	int n_ee = solution.ee_motion_.size();
+	file << t << " ";
+
+	for (int ee=0; ee<n_ee; ++ee) {
+	  Eigen::Vector3d ee_pos = solution.ee_motion_.at(ee)->GetPoint(t).p();
+	  Eigen::Vector3d n = terrain_->GetNormalizedBasis(HeightMap::Normal,ee_pos(X),ee_pos(Y));
+	  file << n.transpose() << " ";
+	}
+
+	file << "\n";
+	t += 0.0025;
+  }
+
+  file.close();
+  std::cout << "Successfully created file " + filename << std::endl;
+}
+
+void
+TowrRosInterface::SaveTrajectoryInRosbagForVisualization (const SplineHolder& solution, const std::string &bag_file)
+{
+  rosbag::Bag bag;
+  bag.open(bag_file, rosbag::bagmode::Write);
+
+  std::vector<xpp::RobotStateCartesian> traj = GetTrajectoryFromSolution(solution);
+  xpp_msgs::RobotStateCartesianTrajectory msg = xpp::Convert::ToRos(traj);
+
+  ::ros::Time t0(1e-6);
+  bag.write(xpp_msgs::robot_trajectory_desired, t0, msg);
+
+  std::cout << "Successfully created bag  " << bag.getFileName() << std::endl;
+  bag.close();
+
+}
+
+//NEW
+void
+TowrRosInterface::SaveDrivingMotionTerrainInRosbag (const SplineHolder& solution, int terrain, const std::string &bag_file)
+{
+  rosbag::Bag bag;
+  bag.open(bag_file, rosbag::bagmode::Write);
+
+  std::vector<xpp::RobotStateCartesian> traj = GetTrajectoryFromSolution(solution);
+
+  auto terrain_id = static_cast<HeightMap::TerrainID>(terrain);
+  auto terrain_ = HeightMap::MakeTerrain(terrain_id);
+
+  for (const auto state : traj) {
+	auto timestamp = ::ros::Time(state.t_global_ + 1e-6); // t=0.0 throws ROS exception
+
+	xpp_msgs::RobotStateCartesian msg;
+	msg = xpp::Convert::ToRos(state);
+	bag.write(xpp_msgs::robot_state_desired, timestamp, msg);
+
+    xpp_msgs::TerrainInfo terrain_msg;
+    for (auto ee : state.ee_motion_.ToImpl()) {
+      Eigen::Vector3d n = terrain_->GetNormalizedBasis(HeightMap::Normal, ee.p_.x(), ee.p_.y());
+      terrain_msg.surface_normals.push_back(xpp::Convert::ToRos<geometry_msgs::Vector3>(n));
+      terrain_msg.friction_coeff = terrain_->GetFrictionCoeff();
+    }
+
+    bag.write(xpp_msgs::terrain_info, timestamp, terrain_msg);
+  }
+
+  std::cout << "Successfully created bag  " << bag.getFileName() << std::endl;
+  bag.close();
+}
+
+void
+TowrRosInterface::getDataFromBag (std::string bagname)
+{
+  std::vector<xpp_msgs::RobotStateCartesian> desiredStates_;
+  std::map<double,std::vector<Eigen::Vector3d>> terrainNormalMap_;
+
+  rosbag::Bag bag;
+  bag.open(bagname, rosbag::bagmode::Read);
+
+  std::vector<std::string> topics;
+  topics.push_back(xpp_msgs::robot_state_desired);
+  topics.push_back(xpp_msgs::terrain_info);
+
+  rosbag::View view(bag, rosbag::TopicQuery(topics));
+
+  double t = 0.0;
+  for (rosbag::MessageInstance const m: view) //rosbag::View(bag, rosbag::TopicQuery(xpp_msgs::robot_state_desired)) )
+  {
+	t = m.getTime().toSec();
+	xpp_msgs::RobotStateCartesianPtr traj_msg = m.instantiate<xpp_msgs::RobotStateCartesian>();
+	if (traj_msg != NULL) {
+	  desiredStates_.push_back(*traj_msg);
+	}
+
+    std::cout << std::fixed;
+    std::cout << std::setprecision(5);
+	std::cout << t << std::endl;
+
+	xpp_msgs::TerrainInfoPtr terrain_msg = m.instantiate<xpp_msgs::TerrainInfo>();
+	if (terrain_msg != NULL) {
+	  auto n = xpp::Convert::ToXpp<geometry_msgs::Vector3>(terrain_msg->surface_normals).ToImpl();
+	  std::vector<Eigen::Vector3d> normals({n.begin(), n.end()});
+	  terrainNormalMap_.insert( std::pair<double,std::vector<Eigen::Vector3d>>(t,normals) );
+	}
+  }
+  bag.close();
+
+  std::cout << "States: " << desiredStates_.size() << std::endl;
+  std::cout << "Normals: " << terrainNormalMap_.size() << std::endl;
+  for (auto const& x : terrainNormalMap_)
+  {
+      std::cout << x.first  // string (key)
+                << ':'
+                << x.second.at(0).transpose() << ", "// string's value
+				<< x.second.at(1).transpose() << ", "
+				<< x.second.at(2).transpose() << ", "
+				<< x.second.at(3).transpose()
+                << std::endl ;
+  }
+}
+
+
 
 void
 TowrRosInterface::ExtractGeometryMessagesFromTrajectoryBag (const std::string bag_file)

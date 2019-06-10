@@ -40,16 +40,17 @@ namespace towr {
 Parameters::Parameters ()
 {
   // constructs optimization variables
-  duration_base_polynomial_ = 0.1;
-  duration_node_polynomial_ = 0.1;
+  duration_base_polynomial_ = 0.2;
+  duration_node_polynomial_ = 0.2;
 
   //set to true if no drift phase at all wanted,
   //all 3 phases will be drive phases
-  just_drive_ = false;
+  just_drive_ = true;
 
-  phase_duration_drive_1 = 1.0;
-  phase_duration_drive_2 = 1.0;
-  phase_duration_drift 	 = 1.0;
+  //TODO: error if durations are not the same!!!
+  phase_duration_drive_1 = 1.6;
+  phase_duration_drive_2 = 1.6;
+  phase_duration_drift 	 = 1.6;
 
   ee_phase_durations_ = {{phase_duration_drive_1,phase_duration_drift,phase_duration_drive_2},
   	  	  	  	  	  	 {phase_duration_drive_1,phase_duration_drift,phase_duration_drive_2},
@@ -67,7 +68,7 @@ Parameters::Parameters ()
   dt_constraint_range_of_motion_ = 0.08;
   dt_constraint_drive_ = 0.1;
   dt_constraint_drift_ = 0.1;
-  dt_constraint_dynamic_ = 0.1;
+  dt_constraint_dynamic_ = 0.2;
   dt_constraint_base_motion_ = duration_base_polynomial_/4.; // only for base RoM constraint
   bound_phase_duration_ = std::make_pair(0.0, 10);  // used only when optimizing phase durations, so gait
 

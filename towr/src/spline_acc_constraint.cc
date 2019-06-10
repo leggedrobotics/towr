@@ -38,7 +38,9 @@ SplineAccConstraint::SplineAccConstraint (const NodeSpline::Ptr& spline,
   spline_ = spline;
   node_variables_id_ = node_variable_name;
 
+  //n_dim_ anders für ee_splines als base splines?
   n_dim_       = spline->GetPoint(0.0).p().rows();
+//  n_dim_ = 3;
 
 
   //TODO: different poly durations for ee and for base!!
@@ -49,12 +51,12 @@ SplineAccConstraint::SplineAccConstraint (const NodeSpline::Ptr& spline,
   }
 
   else {
-	  n_junctions_ = params_.polynomials_in_first_drive_phase_ + params_.polynomials_in_drift_phase_ + params_.polynomials_in_second_drive_phase_ - 1;
+	  n_junctions_ = (params_.polynomials_in_first_drive_phase_ + params_.polynomials_in_drift_phase_ + params_.polynomials_in_second_drive_phase_) - 1;
 
 	  for (int i = 0; i < (n_junctions_ + 1); i++){
 		  T_.push_back(params_.duration_node_polynomial_);
 	  }
-	    }
+  }
 
 
   SetRows(n_dim_*n_junctions_);
@@ -106,7 +108,7 @@ SplineAccConstraint::FillJacobianBlock (std::string var_set, Jacobian& jac) cons
 		        Jacobian vel_next = spline_->GetJacobianWrtNodes(p_next, 0.0, kVel, false);
 
 		        jac.middleRows(j*n_dim_, n_dim_) = vel_prev - vel_next;
-	  }
+		  }
 	  }
 	else {
     for (int j=0; j<n_junctions_; ++j) {

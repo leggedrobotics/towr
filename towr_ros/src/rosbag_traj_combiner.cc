@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
 {
   ros::init(argc, argv, "rosbag_trajectory_combiner");
 
-  std::string name = "/home/winklera/bags/optimal_traj";
+  std::string name = "/home/dominic/bags/optimal_traj";
 
   rosbag::Bag bag_r;
   bag_r.open(name+".bag", rosbag::bagmode::Read);

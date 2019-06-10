@@ -9,6 +9,9 @@
 #include <towr/variables/variable_names.h>
 #include <towr/variables/spline_holder.h>
 #include <towr/variables/cartesian_dimensions.h>
+#include <iostream>
+
+using namespace std;
 
 namespace towr {
 
@@ -25,9 +28,13 @@ DriveConstraint::DriveConstraint (const KinematicModel::Ptr& model,
   ee_ = ee;
 
   // set 3 if y-vel. and y-acc constraint, 2 if only y-vel constraint (and pos x vel)
-  n_constraints_per_node_ = 2; // 3: if y-vel. and y-acc constraint
+  n_constraints_per_node_ = 3; // 3: if y-vel. and y-acc constraint
 
 	  SetRows(GetNumberOfNodes()*n_constraints_per_node_);
+
+//	  cout << "drive node id size: " << GetNumberOfNodes() << endl;
+//	  cout << "ee: " << ee << endl;
+
 
 	  T_ = ee_motion_->GetPolyDurations();
 }
@@ -69,35 +76,33 @@ DriveConstraint::UpdateBoundsAtInstance (double t, int k, VecBound& bounds) cons
 	int row = k*n_constraints_per_node_;
 
 	if (params_.just_drive_){
-		bounds.at(row++) = ifopt::BoundGreaterZero;
+		bounds.at(row++) = ifopt::NoBound;
 		bounds.at(row++) = ifopt::BoundZero;
 		if (n_constraints_per_node_ == 3)
-			bounds.at(row++) = ifopt::BoundZero;
+			bounds.at(row++) = ifopt::NoBound;
 	}
 	else {
 		if (ee_ == 0 or ee_ == 1){
 				bounds.at(row++) = ifopt::BoundGreaterZero;
 				bounds.at(row++) = ifopt::BoundZero;
 				if (n_constraints_per_node_ == 3)
-					bounds.at(row++) = ifopt::BoundZero;
-			  }
-			  else if (ee_ == 2 or ee_ == 3){
-				  if ((t <= params_.ee_phase_durations_[0][0]) or (t > (params_.ee_phase_durations_[0][0]+params_.ee_phase_durations_[0][1]))){
+					bounds.at(row++) = ifopt::NoBound;
+		}
+		else if (ee_ == 2 or ee_ == 3){
+				if ((t <= params_.ee_phase_durations_[0][0]) or (t > (params_.ee_phase_durations_[0][0]+params_.ee_phase_durations_[0][1]))){
 					  bounds.at(row++) = ifopt::BoundGreaterZero;
 					  bounds.at(row++) = ifopt::BoundZero;
 					  if (n_constraints_per_node_ == 3)
-						  bounds.at(row++) = ifopt::BoundZero;
-				  }
-				  else {
+						  bounds.at(row++) = ifopt::NoBound;
+				 }
+				 else {
 					  bounds.at(row++) = ifopt::BoundGreaterZero; //during drift also just in positive x dir
 					  bounds.at(row++) = ifopt::NoBound;
 					  if (n_constraints_per_node_ == 3)
-						  bounds.at(row++) = ifopt::NoBound;
-				  }
-				  }
+						  bounds.at(row++) = ifopt::Bounds(-4, +4);
+				 }
+		}
 	}
-
-
 }
 
 void

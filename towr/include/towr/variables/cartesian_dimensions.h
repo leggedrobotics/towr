@@ -40,6 +40,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace towr {
 
+static constexpr int states3 = 3;
+enum EE_States { open_=0, drive_, drift_ };
+
+
 // 2-dimensional
 static constexpr int k2D = 2;
 enum Dim2D { X_=0, Y_};

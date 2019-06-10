@@ -33,6 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <towr/variables/variable_names.h>
 #include <towr/variables/spline.h> // for Spline::GetSegmentID()
+#include <towr/variables/cartesian_dimensions.h>
 
 
 namespace towr {
@@ -50,6 +51,7 @@ PhaseDurations::PhaseDurations (EndeffectorID ee,
   t_total_ = std::accumulate(timings.begin(), timings.end(), 0.0);
   phase_duration_bounds_ = ifopt::Bounds(min_duration, max_duration);
   initial_contact_state_ = is_first_phase_in_contact;
+  ee_ = ee;
 }
 
 void
@@ -96,10 +98,10 @@ PhaseDurations::SetVariables (const VectorXd& x)
   durations_.at(1) = params_.ee_phase_durations_[0][1];
   durations_.at(2) = params_.ee_phase_durations_[0][2];
 
-  for (int i=3; i<GetRows(); ++i)
-//    durations_.at(i) = x(i);
-	  durations_.at(i) = 0;
-  durations_.back()=0;
+//  for (int i=3; i<GetRows(); ++i)
+////    durations_.at(i) = x(i);
+//	  durations_.at(i) = 0;
+//  durations_.back()=0;
 //
 //  // last phase duration not optimized, used to fill up to total time.
 //  durations_.back() =  t_total_ - x.sum();
@@ -129,6 +131,25 @@ PhaseDurations::IsContactPhase (double t) const
   int phase_id = Spline::GetSegmentID(t, durations_);
 //  return phase_id%2 == 0? initial_contact_state_ : !initial_contact_state_;
   return true;
+}
+
+bool
+PhaseDurations::EE_States (double t) const
+{
+
+	bool states;
+	//ee here are not the same as in controller, so ee 2 and 3
+	if (t < durations_.at(0) or t > (durations_.at(0) + durations_.at(1)) or params_.just_drive_ or ee_ == 0 or ee_ == 1){
+//		states = drive_;
+		states = false;
+	}
+
+	else {
+//		states = drift_;
+		states = true;
+	}
+
+  return states;
 }
 
 PhaseDurations::Jacobian

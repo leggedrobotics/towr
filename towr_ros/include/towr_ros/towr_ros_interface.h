@@ -113,6 +113,16 @@ private:
                                const std::vector<xpp::RobotStateCartesian>& traj,
                                const std::string& topic) const;
 
+  void SaveTerrainNormalsInFile (const SplineHolder& solution, int terrain, const std::string &filename);
+
+  void SaveDrivingMotionTerrainInRosbag (const SplineHolder& solution, int terrain, const std::string &bag_file);
+
+  void getDataFromBag (std::string bagname);
+
+  std::vector<xpp::RobotStateCartesian>  GetTrajectoryFromSolution (const SplineHolder& solution);
+
+  void SaveTrajectoryInRosbagForVisualization (const SplineHolder& solution, const std::string &bag_file);
+
   void ExtractGeometryMessagesFromTrajectoryBag (const std::string bag_file);
 };
 

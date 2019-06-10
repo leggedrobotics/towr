@@ -118,6 +118,8 @@ public:
    */
   bool IsContactPhase(double t) const;
 
+  bool EE_States(double t) const;
+
 private:
   VecDurations durations_;
 
@@ -125,6 +127,7 @@ private:
   bool initial_contact_state_; ///< true if first phase in contact
   Parameters params_;
   ifopt::Bounds phase_duration_bounds_;
+  uint ee_;
 
   std::vector<PhaseDurationsObserver*> observers_;
   void UpdateObservers() const;
