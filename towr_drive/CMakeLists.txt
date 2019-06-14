@@ -12,7 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   towr
   xpp_states
   xpp_msgs
-  terrain_msgs
+  anymal_wheels_ctrl_track_msgs
   yaml_tools  
 )
 

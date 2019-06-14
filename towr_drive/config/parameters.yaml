@@ -1,4 +1,4 @@
-terrain: "Step"
+terrain: "Flat"
 # Options: Flat, Step, Rough, SineLowFreq, SineHighFreq, SlopePlat, Gap, TwoSlope, MultipleSlopes, TwoStep
 run_derivative_test: false
 plot_trajectory: false
@@ -13,7 +13,7 @@ Flat:
     z: 0.5
    
   final_pose: 
-    x: 2.0
+    x: -2.0
     y: 0.0
     z: 0.5
 

@@ -31,7 +31,7 @@ TowrDriveRosInterface::TowrDriveRosInterface () : current_state_robot_(4)
 
   new_trajectory_pub_ = n.advertise<std_msgs::Bool>("/xpp/new_trajectory", 1);
 
-  terrain_map_pub_ = n.advertise<terrain_msgs::TerrainMap>("/towr/terrain_map", 1);
+  terrain_map_pub_ = n.advertise<anymal_wheels_ctrl_track_msgs::TerrainMap>("/towr/terrain_map", 1);
 
   towr_command_pub_ = n.advertise<towr_ros::TowrCommand>(towr_msgs::user_command, 1);
 
@@ -114,7 +114,7 @@ TowrDriveRosInterface::planServiceCallback(std_srvs::Trigger::Request  &req,
   xpp_msgs::RobotStateCartesianTrajectory xpp_msg = xpp::Convert::ToRos(trajectory);
   new_trajectory_pub_.publish(new_traj);
   trajectory_pub_.publish(xpp_msg);
-  terrain_msgs::TerrainMap terrain_msg = GetTerrainMap(trajectory);
+  anymal_wheels_ctrl_track_msgs::TerrainMap terrain_msg = GetTerrainMap(trajectory);
   terrain_map_pub_.publish(terrain_msg);
 
 //  // save bags for controller and matlab
@@ -307,10 +307,10 @@ TowrDriveRosInterface::SaveTrajectoryInRosbag (rosbag::Bag& bag,
   }
 }
 
-terrain_msgs::TerrainMap
+anymal_wheels_ctrl_track_msgs::TerrainMap
 TowrDriveRosInterface::GetTerrainMap (const XppVec& traj) const
 {
-  terrain_msgs::TerrainMap map;
+  anymal_wheels_ctrl_track_msgs::TerrainMap map;
 
   for (const auto state : traj) {
     auto timestamp = ::ros::Time(state.t_global_ + 1e-6); // t=0.0 throws ROS exception

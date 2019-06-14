@@ -20,7 +20,7 @@
 #include <xpp_msgs/RobotStateCartesian.h>
 #include <xpp_msgs/RobotParameters.h>
 #include <towr_ros/TowrCommand.h>
-#include <terrain_msgs/TerrainMap.h>
+#include <anymal_wheels_ctrl_track_msgs/TerrainMap.h>
 
 #include <towr/nlp_formulation.h>
 #include <towr/nlp_formulation_drive.h>
@@ -66,7 +66,7 @@ private:
   ::ros::Publisher  towr_command_pub_;
   ::ros::Subscriber current_state_sub_;
 
-  terrain_msgs::TerrainMap GetTerrainMap (const XppVec& traj) const;
+  anymal_wheels_ctrl_track_msgs::TerrainMap GetTerrainMap (const XppVec& traj) const;
   bool planServiceCallback(std_srvs::Trigger::Request  &req,
 	   	   	   	   	   	   std_srvs::Trigger::Response &res);
   bool replayServiceCallback(std_srvs::Trigger::Request  &req,
