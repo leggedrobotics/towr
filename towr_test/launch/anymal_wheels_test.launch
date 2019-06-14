@@ -1,6 +1,0 @@
-<launch>
-  
-  <!-- ROS nodes -->
-  <node pkg="towr_test" type="anymal_wheels_test" name="anymal_wheels_test" output="screen"></node>
-
-</launch>

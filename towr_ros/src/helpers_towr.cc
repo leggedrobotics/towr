@@ -157,7 +157,7 @@ void getDataFromBag (std::string bagname)
   rosbag::View view(bag, rosbag::TopicQuery(topics));
 
   double t = 0.0;
-  for (rosbag::MessageInstance const m: view) //rosbag::View(bag, rosbag::TopicQuery(xpp_msgs::robot_state_desired)) )
+  for (rosbag::MessageInstance const m: view)
   {
 	t = m.getTime().toSec();
 	xpp_msgs::RobotStateCartesianPtr traj_msg = m.instantiate<xpp_msgs::RobotStateCartesian>();
@@ -285,7 +285,7 @@ ExtractGeometryMessagesFromTrajectoryBag (const std::string bag_file)
 
 	// write the message with modified timestamp into new bag file
 	rosbag::Bag bag_w;
-	std::string path = ros::package::getPath("towr_test") + "/bags/anymal_wheels_matlab.bag";
+	std::string path = ros::package::getPath("towr_drive") + "/bags/anymal_wheels_matlab.bag";
 	bag_w.open(path, rosbag::bagmode::Write);
 
 	BOOST_FOREACH(rosbag::MessageInstance const m, view)

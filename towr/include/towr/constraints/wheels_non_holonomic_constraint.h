@@ -13,6 +13,8 @@
 #include <towr/variables/cartesian_dimensions.h>
 #include <towr/variables/euler_converter.h>
 
+#include <towr/terrain/height_map.h>
+
 #include "time_discretization_constraint.h"
 
 namespace towr {
@@ -22,8 +24,9 @@ class WheelsNonHolonomicConstraint : public TimeDiscretizationConstraint {
 public:
   using EE = uint;
   using Vector3d = Eigen::Vector3d;
+  using Jacobian = Eigen::SparseMatrix<double, Eigen::RowMajor>;
 
-  WheelsNonHolonomicConstraint (double T, double dt, const EE& ee,
+  WheelsNonHolonomicConstraint (const HeightMap::Ptr& terrain, double T, double dt, const EE& ee,
 						        const SplineHolderDrive& spline_holder);
   virtual ~WheelsNonHolonomicConstraint () = default;
 
@@ -32,11 +35,16 @@ private:
   EulerConverter base_angular_; 		///< the orientation of the base.
   NodeSpline::Ptr ee_wheels_motion_;    ///< the linear position of the wheels.
   int n_constraints_per_node_; 		  	///< number of constraint for each node.
+  HeightMap::Ptr terrain_;    			///< the height map of the current terrain.
   EE ee_;
 
   void UpdateConstraintAtInstance(double t, int k, VectorXd& g) const override;
   void UpdateBoundsAtInstance(double t, int k, VecBound& bounds) const override;
   void UpdateJacobianAtInstance(double t, int k, std::string var_set, Jacobian& jac) const override;
+
+  Eigen::Matrix3d GetJacobianTerrainBasis(HeightMap::Direction basis, double x, double y) const;
+  int GetCol(int node, int dim) const;
+  Jacobian SkewSymmetricMatrix (const Vector3d v) const;
 
 };
 

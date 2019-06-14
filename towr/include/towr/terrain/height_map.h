@@ -201,6 +201,25 @@ const static std::map<HeightMap::TerrainID, std::string> terrain_names =
   {HeightMap::RoughID,        	"Rough"      	 }
 };
 
+const static std::map<std::string, HeightMap::TerrainID> terrain_ids =
+{
+  {"Flat", 			 HeightMap::FlatID         	  },
+  {"Block", 		 HeightMap::BlockID        	  },
+  {"Stairs", 		 HeightMap::StairsID       	  },
+  {"Gap", 			 HeightMap::GapID          	  },
+  {"Slope", 		 HeightMap::SlopeID        	  },
+  {"Chimney", 		 HeightMap::ChimneyID      	  },
+  {"ChimenyLR", 	 HeightMap::ChimneyLRID       },
+  {"SlopePlat", 	 HeightMap::SlopePlatID    	  },
+  {"MultipleSlopes", HeightMap::MultipleSlopesID  },
+  {"Step", 			 HeightMap::StepID         	  },
+  {"TwoSlope", 		 HeightMap::TwoSlopeID        },
+  {"TwoStep", 		 HeightMap::TwoStepID,        },
+  {"SineLowFreq", 	 HeightMap::SineLowFreqID,    },
+  {"SineHighFreq", 	 HeightMap::SineHighFreqID,   },
+  {"Rough", 		 HeightMap::RoughID,          }
+};
+
 } /* namespace towr */
 
 #endif /* TOWR_HEIGHT_MAP_H_ */

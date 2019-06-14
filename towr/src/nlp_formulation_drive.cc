@@ -120,7 +120,8 @@ NlpFormulationDrive::MakeEEWheelsMotionVariables () const
     nodes->AddStartBound(kPos, {Y}, initial_ee_W_.at(ee));
 
     // wheels non-holonomic constraint (v_y = 0) -> IMPORTANT!
-    nodes->AddAllNodesBounds(kVel, {Y}, Vector3d(0.0, 0.0, 0.0), Vector3d(0.0, 0.0, 0.0));
+    if (!params_drive_.use_non_holonomic_constraint_)
+      nodes->AddAllNodesBounds(kVel, {Y}, Vector3d(0.0, 0.0, 0.0), Vector3d(0.0, 0.0, 0.0));
 
     vars.push_back(nodes);
   }
@@ -328,7 +329,7 @@ NlpFormulationDrive::MakeWheelsNonHolonomicConstraint (const SplineHolderDrive& 
   ContraintPtrVec c;
 
   for (int ee=0; ee<params_drive_.GetEECount(); ee++) {
-	auto constraint = std::make_shared<WheelsNonHolonomicConstraint>(params_drive_.GetTotalTime(),
+	auto constraint = std::make_shared<WheelsNonHolonomicConstraint>(terrain_, params_drive_.GetTotalTime(),
 																	 params_drive_.dt_constraint_dynamic_, ee, s);
     c.push_back(constraint);
   }

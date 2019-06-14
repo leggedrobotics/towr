@@ -19,6 +19,7 @@ ParametersDrive::ParametersDrive()
   max_base_acc_ang_ = {5.0, 5.0, 5.0};
   wheels_radius_ = 0.08;
   force_limit_in_x_direction_ = 400.0;
+  use_non_holonomic_constraint_ = false;
 
 //  bounds_final_lin_pos_ = {X,Y,Z};   // adds the bound on the final z-position of the base
 
@@ -49,6 +50,12 @@ ParametersDrive::SetWheelsMotionConstraint () {
 void
 ParametersDrive::SetEndeffectorRomConstraint () {
   constraints_.push_back(EndeffectorRom);
+}
+
+void
+ParametersDrive::SetNonHolonomicConstraint () {
+  constraints_.push_back(WheelsNonHolonomic);
+  use_non_holonomic_constraint_ = true;
 }
 
 ParametersDrive::VecTimes

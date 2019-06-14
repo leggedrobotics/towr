@@ -1,0 +1,34 @@
+<launch>
+  <!-- ros_args.launch -->
+  <arg name="debug" default="false" doc="run with gdb" />
+    
+  <!-- so the logging prints the node name -->
+  <env name="ROSCONSOLE_FORMAT" value="[${severity}] [${node}]: ${message}" />
+
+  <!-- TOWR: Start the optimizer and GUI-->
+  <group unless="$(arg debug)">
+    <include file="$(find towr_drive)/launch/towr_drive_nodes.launch">
+      <arg name="gdb" value="" />
+    </include>
+  </group>
+  
+  <!-- TOWR: Start the optimizer and GUI with gdb -->
+  <group if="$(arg debug)">
+    <include file="$(find towr_drive)/launch/towr_drive_nodes.launch">
+      <arg name="gdb" value="gdb -ex run --args" />
+    </include>
+  </group>
+   
+  <!-- visualizes goal, opt. parameters and cartesian base state, endeffector positions and forces -->
+  <node name="rviz_marker_node" pkg="xpp_vis" type="rviz_marker_node" output="screen">
+  </node>
+  
+  <!-- Launch rviz with specific configuration -->
+  <node name="rviz_xpp" pkg="rviz" type="rviz" args="-d $(find towr_drive)/rviz/xpp_towr_drive.rviz">
+  </node>
+  
+  <!--  Launches the URDF visualizers  --> 
+  <!-- <include file="$(find xpp_anymal)/launch/xpp_anymal.launch"></include> -->
+  <include file="$(find xpp_anymal_wheels)/launch/xpp_anymal_wheels.launch"></include>
+       
+</launch>

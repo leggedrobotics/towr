@@ -1,0 +1,166 @@
+terrain: "Step"
+# Options: Flat, Step, Rough, SineLowFreq, SineHighFreq, SlopePlat, Gap, TwoSlope, MultipleSlopes, TwoStep
+run_derivative_test: false
+plot_trajectory: false
+play_initialization: false
+shift_initialization: false
+init_state_file: false  # 'true' if initial_pose for base is read from this file, 'false' if it is set by the current anymal state
+
+Flat:
+  initial_pose:
+    x: 0.0
+    y: 0.0
+    z: 0.5
+   
+  final_pose: 
+    x: 2.0
+    y: 0.0
+    z: 0.5
+
+  total_time: 2.0
+  use_wheels_motion_constraint: false
+  traction_limit: 300.0 #30.0
+
+Step:
+  initial_pose:
+    x: 0.0
+    y: 0.0
+    z: 0.5
+   
+  final_pose: 
+    x: 2.0
+    y: 0.0
+    z: 0.7
+
+  total_time: 4.8 #4.0 for two legs at the same time, 5.2 or 4.8 for one leg at a time
+  use_wheels_motion_constraint: false
+  traction_limit: 400.0
+
+Rough:
+  initial_pose:
+    x: 0.0
+    y: 0.0
+    z: 0.4
+   
+  final_pose: 
+    x: 4.0
+    y: 0.0
+    z: 0.9
+
+  total_time: 3.5
+  use_wheels_motion_constraint: false
+  traction_limit: 30.0
+
+SineHighFreq:
+  initial_pose:
+    x: 0.0
+    y: 0.0
+    z: 0.5
+   
+  final_pose: 
+    x: 4.0
+    y: 0.0
+    z: 0.5
+
+  total_time: 4.0
+  use_wheels_motion_constraint: false
+  traction_limit: 30.0
+
+SineLowFreq:
+  initial_pose:
+    x: 0.0
+    y: 0.0
+    z: 0.6
+   
+  final_pose: 
+    x: 8.0
+    y: 0.0
+    z: 0.6
+
+  total_time: 8.0
+  use_wheels_motion_constraint: false
+  traction_limit: 30.0
+
+SlopePlat:
+  initial_pose:
+    x: 0.0
+    y: 0.0
+    z: 0.4
+   
+  final_pose: 
+    x: 6.0
+    y: 0.0
+    z: 0.4
+
+  total_time: 4.0
+  use_wheels_motion_constraint: false
+  traction_limit: 400.0
+
+Gap:
+  initial_pose:
+    x: 0.0
+    y: 0.0
+    z: 0.95
+   
+  final_pose: 
+    x: 3.5
+    y: 0.0
+    z: 0.95
+
+  total_time: 3.0
+  use_wheels_motion_constraint: false
+  traction_limit: 400.0
+
+TwoSlope:
+  initial_pose:
+    x: 0.0
+    y: 0.0
+    z: 0.5
+   
+  final_pose: 
+    x: 3.0
+    y: 0.0
+    z: 0.5
+
+  total_time: 6.0 #4.0
+  use_wheels_motion_constraint: false
+  traction_limit: 300.0 #300.0
+
+MultipleSlopes:
+  initial_pose:
+    x: 0.0
+    y: 0.0
+    z: 0.5
+   
+  final_pose: 
+    x: 6.0
+    y: 0.0
+    z: 0.5
+
+  total_time: 4.0 #6.0
+  use_wheels_motion_constraint: false
+  traction_limit: 400.0
+
+TwoStep:
+  initial_pose:
+    x: 0.0
+    y: 0.0
+    z: 0.5
+   
+  final_pose: 
+    x: 2.2
+    y: 0.0
+    z: 0.8
+
+  total_time: 3.6 #3.6 #4.1 #4.0
+  use_wheels_motion_constraint: false
+  traction_limit: 400.0 #300.0
+
+use_non_holonomic_constraint: false
+
+
+
+
+
+
+

@@ -44,6 +44,9 @@ public:
   /// The wheels radius [m]
   double wheels_radius_;
 
+  /// Non-holonomic constraint
+  double use_non_holonomic_constraint_;
+
   /// Maximum acceleration of the wheels [m/s^2] (x, y, z)
   std::vector<double> max_wheels_acc_;
 
@@ -70,6 +73,7 @@ public:
 
   void SetWheelsMotionConstraint ();
   void SetEndeffectorRomConstraint ();
+  void SetNonHolonomicConstraint ();
 
 };
 
