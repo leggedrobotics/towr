@@ -10,6 +10,7 @@ close all;
 filePath = '../bags/anymal_wheels_matlab.bag';
 % filePath = '../bags/multiple_slopes_bear_matlab.bag';
 % filePath = '../bags/step_bear_v2_matlab.bag';
+% filePath = '/home/vivian/.ros/towr_trajectory.bag';
 bag_all = rosbag(filePath);
 
 t0 = bag_all.StartTime;
@@ -141,18 +142,18 @@ acc_lin_dyn = (1/m)*(force_LF' + force_RF' + force_LH' + force_RH') + g;
 
 figure()
 subplot(3,1,1)
-plot(t,base_acc_lin(:,1)); hold on; plot(t,acc_lin_dyn(1,:),'k--');
+plot(t,base_acc_lin(:,1)); %hold on; plot(t,acc_lin_dyn(1,:),'k--');
 hold on; plot(t(dyn_con_idx),base_acc_lin(dyn_con_idx,1),'ro');
 grid on; xlabel('t [s]'); ylabel('a_x [m/s^2]')
 title('Dynamics (linear)')
 subplot(3,1,2)
-plot(t,base_acc_lin(:,2)); hold on; plot(t,acc_lin_dyn(2,:),'k--'); 
+plot(t,base_acc_lin(:,2)); %hold on; plot(t,acc_lin_dyn(2,:),'k--'); 
 hold on; plot(t(dyn_con_idx),base_acc_lin(dyn_con_idx,2),'ro');
 grid on; xlabel('t [s]'); ylabel('a_y [m/s^2]')
 subplot(3,1,3)
-plot(t,base_acc_lin(:,3)); hold on; plot(t,acc_lin_dyn(3,:),'k--'); 
-hold on; plot(t(dyn_con_idx),base_acc_lin(dyn_con_idx,3),'ro');
-grid on; xlabel('t [s]'); ylabel('a_z [m/s^2]'); legend('from opt','from forces','constraint enforced points')
+plot(t,base_acc_lin(:,3)); %hold on; plot(t,acc_lin_dyn(3,:),'k--'); 
+hold on; plot(t(dyn_con_idx),base_acc_lin(dyn_con_idx,3),'ro'); grid on;
+% xlabel('t [s]'); ylabel('a_z [m/s^2]'); legend('from opt','from forces','constraint enforced points')
 
 % angular
 n = size(base_acc_ang,1);
@@ -220,27 +221,30 @@ plot(t,base_yaw*180/pi); grid on;
 xlabel('t [s]'); ylabel('yaw [deg]')
 
 figure()
-subplot(3,2,1)
+subplot(3,1,1)
 plot(t,base_vel_lin(:,1)); grid on;
+hold on; plot(t(dyn_con_idx),base_vel_lin(dyn_con_idx,1),'ro');
 xlabel('t [s]'); ylabel('v_x [m/s]')
 title('Base Linear Velocity')
-subplot(3,2,3)
+subplot(3,1,2)
 plot(t,base_vel_lin(:,2)); grid on;
+hold on; plot(t(dyn_con_idx),base_vel_lin(dyn_con_idx,2),'ro');
 xlabel('t [s]'); ylabel('v_y [m/s]')
-subplot(3,2,5)
+subplot(3,1,3)
 plot(t,base_vel_lin(:,3)); grid on;
+hold on; plot(t(dyn_con_idx),base_vel_lin(dyn_con_idx,3),'ro');
 xlabel('t [s]'); ylabel('v_z [m/s]')
 
-subplot(3,2,2)
-plot(t,base_vel_ang(:,1)); grid on;
-xlabel('t [s]'); ylabel('\omega_x [rad/s]')
-title('Base Angular Velocity')
-subplot(3,2,4)
-plot(t,base_vel_ang(:,2)); grid on;
-xlabel('t [s]'); ylabel('\omega_y [rad/s]')
-subplot(3,2,6)
-plot(t,base_vel_ang(:,3)); grid on;
-xlabel('t [s]'); ylabel('\omega_z [rad/s]')
+% subplot(3,2,2)
+% plot(t,base_vel_ang(:,1)); grid on;
+% xlabel('t [s]'); ylabel('\omega_x [rad/s]')
+% title('Base Angular Velocity')
+% subplot(3,2,4)
+% plot(t,base_vel_ang(:,2)); grid on;
+% xlabel('t [s]'); ylabel('\omega_y [rad/s]')
+% subplot(3,2,6)
+% plot(t,base_vel_ang(:,3)); grid on;
+% xlabel('t [s]'); ylabel('\omega_z [rad/s]')
 
 % foot motion
 h = figure();

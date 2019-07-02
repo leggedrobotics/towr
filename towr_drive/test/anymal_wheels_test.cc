@@ -35,8 +35,8 @@ bool SetTowrParameters(NlpFormulationDrive *formulation, const std::string& file
 
   std::string terrain = basenode["terrain"].as<std::string>();
   auto towr_terrain_id = terrain_ids.find(terrain)->second;
-  formulation->terrain_ = HeightMap::MakeTerrain(towr_terrain_id);
   terrain_id = (int) towr_terrain_id;
+  formulation->terrain_ = HeightMap::MakeTerrain(towr_terrain_id);
 
   if (basenode.isNull())
 	throw std::runtime_error("CONFIGURATION LOADING FAILED");
@@ -51,7 +51,7 @@ bool SetTowrParameters(NlpFormulationDrive *formulation, const std::string& file
 
 	// set the initial position of the robot
   formulation->initial_base_.lin.at(kPos) = initial_position_;
-  formulation->initial_base_.ang.at(kPos) = Eigen::Vector3d(0.0, 0.0, 0.3491);
+//  formulation->initial_base_.ang.at(kPos) = Eigen::Vector3d(0.0, 0.0, 0.3491);
 
   // define the desired goal state of the robot
   formulation->final_base_.lin.at(kPos) = final_position_;
@@ -96,6 +96,25 @@ bool SetTowrParameters(NlpFormulationDrive *formulation, const std::string& file
 
   formulation->params_drive_.force_limit_in_x_direction_ = basenode[terrain]["traction_limit"].as<double>();
 
+  bool constrain_final_z_base = basenode["constrain_final_z_base"].as<bool>();
+  bool constrain_final_y_base = basenode["constrain_final_y_base"].as<bool>();
+  if (constrain_final_y_base)
+  {
+  	if (constrain_final_z_base)
+  		formulation->params_drive_.bounds_final_lin_pos_ = {X, Y, Z};
+  	else
+  		formulation->params_drive_.bounds_final_lin_pos_ = {X, Y};
+  }
+  else
+  {
+  	if (constrain_final_z_base)
+  		formulation->params_drive_.bounds_final_lin_pos_ = {X, Z};
+  	else
+  		formulation->params_drive_.bounds_final_lin_pos_ = {X};
+  }
+
+  formulation->params_drive_.constrain_final_ee_pos_ = basenode["constrain_final_ee_pos"].as<bool>();
+
   return basenode["run_derivative_test"].as<bool>();
 
 }
@@ -132,7 +151,7 @@ int main(int argc, char **argv)
   auto solver = std::make_shared<ifopt::IpoptSolver>();
   solver->SetOption("linear_solver", "ma97"); // ma27, ma57, ma77, ma86, ma97
   solver->SetOption("jacobian_approximation", "exact"); // "finite difference-values"
-  solver->SetOption("max_cpu_time", 180.0); // 3 min
+  solver->SetOption("max_cpu_time", 60.0); // 3 min
   solver->SetOption("print_level", 5);
 
   // derivative test

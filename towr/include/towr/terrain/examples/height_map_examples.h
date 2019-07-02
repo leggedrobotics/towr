@@ -31,6 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define TOWR_TOWR_ROS_INCLUDE_TOWR_ROS_HEIGHT_MAP_EXAMPLES_H_
 
 #include <cmath>
+#include <iostream>
 #include <towr/terrain/height_map.h>
 
 namespace towr {
@@ -123,9 +124,9 @@ public:
   double GetHeightDerivWrtX(double x, double y) const override;
 
 private:
-  const double slope_start_ = 1.0;
-  const double up_length_   = 1.0;
-  const double down_length_ = 1.0;
+  const double slope_start_  = 1.0;
+  const double up_length_    = 1.0;
+  const double down_length_  = 1.0;
   const double height_center = 0.7;
 
   const double x_down_start_ = slope_start_+up_length_;
@@ -180,11 +181,10 @@ public:
   double GetHeightDerivWrtXX(double x, double y) const override;
 
 private:
-  double step_start = 1.0;
-  double step_end   = 1.1;
-  double height     = 0.2;
-
-  double slope = 2;
+  double slope_		 = std::tan(63*M_PI/180.0);  // std::tan(45*M_PI/180.0);
+  double height_     = 0.2;
+  double step_start_ = 1.0;
+  double step_end_   = step_start_ + height_/slope_;
 
 //  Eigen::Vector4d coeff {-400, 1260, -1320, 460}; // block from 1.0 to 1.1
 };
@@ -240,16 +240,17 @@ public:
   double GetHeightDerivWrtX(double x, double y) const override;
 
 private:
-  const double slope_start_   = 0.5;
-  const double up_length_     = 2.0;
-  const double down_length_   = 2.0;
-  const double plat_length_   = 0.0; //1.0;
-  const double slope_		  = 0.3;
-  const double height_center_ = up_length_*sin(slope_);
+  const double slope_start_   = 1.0;
+  const double up_length_     = 0.05; //0.091651513899117; //0.101905089898886; // 0.2;
+  const double down_length_   = 0.2;
+  const double plat_length_   = 1.216; //1.2; //1.0;
+  const double height_center_ = 0.2;
+  const double slope_up_	  = height_center_/up_length_;
+  const double slope_down_	  = height_center_/down_length_;
 
-  const double x_plat_start_ = slope_start_ + up_length_*cos(slope_);
+  const double x_plat_start_ = slope_start_ + up_length_;
   const double x_down_start_ = x_plat_start_ + plat_length_;
-  const double x_flat_start_ = x_down_start_ + down_length_*cos(slope_);
+  const double x_flat_start_ = x_down_start_ + down_length_;
 };
 
 /**
@@ -261,18 +262,19 @@ public:
   double GetHeightDerivWrtX(double x, double y) const override;
 
 private:
-  const double slope_start_   = 0.5;
-  const double up_length_     = 0.676772672364825;
-  const double down_length_   = up_length_;
-  const double plat_length_   = 0.5;
-  const double slope_		  = 0.3;
-  const double height_center_ = up_length_*sin(slope_);
+  const double slope_start_   = 1.0;
+  const double up_length_     = 0.091651513899117; //0.101905089898886;
+  const double down_length_   = 0.2;
+  const double plat_length_   = 1.216; //1.0;
+  const double height_center_ = 0.2;
+  const double slope_up_	  = height_center_/up_length_;
+  const double slope_down_	  = height_center_/down_length_;
 
-  const double x_plat_start_ = slope_start_ + up_length_*cos(slope_);
+  const double x_plat_start_ = slope_start_ + up_length_;
   const double x_down_start_ = x_plat_start_ + plat_length_;
-  const double x_flat_start_ = x_down_start_ + down_length_*cos(slope_);
+  const double x_flat_start_ = x_down_start_ + down_length_;
 
-  const double dist_slopes_ = 2.0;
+  const double dist_slopes_ = 4.0;
 };
 
 /**

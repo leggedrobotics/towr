@@ -39,6 +39,9 @@ public:
   // constraints
   ConstraintPtrVec GetConstraints(const SplineHolderDrive& spline_holder) const;
 
+  // costs
+  ConstraintPtrVec GetCosts() const;
+
   ParametersDrive params_drive_;
 
   void PrintSolution (const SplineHolderDrive& spline_holder, double dt) const;
@@ -64,6 +67,10 @@ private:
   ConstraintPtrVec MakeWheelsNonHolonomicConstraint(const SplineHolderDrive& s) const;
   ConstraintPtrVec MakeWheelsMotionConstraint (const SplineHolderDrive& s) const;
   ConstraintPtrVec MakeStabilityConstraint (const SplineHolderDrive& s) const;
+
+  // costs
+  CostPtrVec GetCost(const Parameters::CostName& id, double weight) const;
+  CostPtrVec MakeTorqueCost(double weight) const;
 
   // for printing the stability angles
   void UpdateDynamicsModel (const SplineHolderDrive& solution, double t) const;

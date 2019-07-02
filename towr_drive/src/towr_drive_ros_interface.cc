@@ -65,10 +65,6 @@ TowrDriveRosInterface::planServiceCallback(std_srvs::Trigger::Request  &req,
   TowrCommandMsg msg = BuildTowrCommandMsg(current_state_robot_);
   towr_command_pub_.publish(msg);
 
-  // terrain
-  auto terrain_id = static_cast<HeightMap::TerrainID>(msg.terrain);
-  formulation_.terrain_ = HeightMap::MakeTerrain(terrain_id);
-
   int n_ee = formulation_.model_.kinematic_model_->GetNumberOfEndeffectors();
   formulation_.params_drive_ = GetTowrDriveParameters(n_ee, msg);
   formulation_.final_base_ = GetGoalState(msg);
@@ -94,6 +90,8 @@ TowrDriveRosInterface::planServiceCallback(std_srvs::Trigger::Request  &req,
     SaveOptimizationAsRosbag(bag_file, robot_params_msg, msg, false);
   }
 
+  nlp_.PrintCurrent();
+
   // playback using terminal commands
   if (msg.replay_trajectory || msg.play_initialization || msg.optimize) {
     int success = system(("rosbag play --topics "
@@ -117,10 +115,10 @@ TowrDriveRosInterface::planServiceCallback(std_srvs::Trigger::Request  &req,
   anymal_wheels_ctrl_track_msgs::TerrainMap terrain_msg = GetTerrainMap(trajectory);
   terrain_map_pub_.publish(terrain_msg);
 
-//  // save bags for controller and matlab
-//  ExtractGeometryMessagesFromTrajectoryBag(bag_file);
-//  bag_file = ros::package::getPath("anymal_wheels_ctrl_track_ros") + "/data/anymal_wheels_traj.bag";
-//  SaveDrivingMotionTerrainInRosbag (solution, msg.terrain, bag_file);
+  // save bags for controller and matlab
+  ExtractGeometryMessagesFromTrajectoryBag(bag_file);
+  bag_file = ros::package::getPath("anymal_wheels_ctrl_track_ros") + "/data/anymal_wheels_traj.bag";
+  SaveDrivingMotionTerrainInRosbag (solution, msg.terrain, bag_file);
 
   res.success = true;
   res.message = "optimization done";

@@ -85,6 +85,13 @@ int main()
   auto solver = std::make_shared<ifopt::IpoptSolver>();
   solver->SetOption("jacobian_approximation", "exact"); // "finite difference-values"
   solver->SetOption("max_cpu_time", 20.0);
+
+  // derivative test
+  solver->SetOption("max_iter", 0);
+  solver->SetOption("derivative_test", "first-order");
+  solver->SetOption("print_level", 4);
+  solver->SetOption("derivative_test_tol", 1e-3);
+
   solver->Solve(nlp);
 
   nlp.PrintCurrent();

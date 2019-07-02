@@ -55,6 +55,7 @@ add_library(${PROJECT_NAME} SHARED
   # costs
   src/node_cost.cc
   src/soft_constraint.cc
+  src/torque_cost.cc
   # initialization
   src/gait_generator.cc
   src/monoped_gait_generator.cc

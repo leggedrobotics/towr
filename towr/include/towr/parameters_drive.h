@@ -47,6 +47,12 @@ public:
   /// Non-holonomic constraint
   double use_non_holonomic_constraint_;
 
+  /// Non-holonomic constraint
+  double constrain_final_ee_pos_;
+
+  /// which dimensions (x,y,z) of the initial base state should be bounded
+  std::vector<int> bounds_initial_lin_pos_;
+
   /// Maximum acceleration of the wheels [m/s^2] (x, y, z)
   std::vector<double> max_wheels_acc_;
 
@@ -70,6 +76,9 @@ public:
 
   /// Clear the constraints initialized by the Base class
   void DeleteAllConstraints();
+
+  /// Clear the costs initialized by the Base class
+  void DeleteAllCosts();
 
   void SetWheelsMotionConstraint ();
   void SetEndeffectorRomConstraint ();

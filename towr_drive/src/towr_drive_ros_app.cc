@@ -76,7 +76,6 @@ public:
 
 	// initial feet position
 	int n_ee = formulation_.model_.kinematic_model_->GetNumberOfEndeffectors();
-	auto nominal_stance_B = formulation_.model_.kinematic_model_->GetNominalStanceInBase();
 	formulation_.initial_ee_W_.resize(n_ee);
 	for (int ee = 0; ee < n_ee; ++ee) {
 	  formulation_.initial_ee_W_.at(ee) = init_state.ee_motion_.at(ee).GetByIndex(xpp::kPos);
@@ -133,6 +132,31 @@ public:
 
     params_drive.force_limit_in_x_direction_ = basenode[terrain]["traction_limit"].as<double>();
 
+    bool constrain_initial_y_base = basenode["constrain_final_y_base"].as<bool>();
+    if (constrain_initial_y_base)
+    {
+    	params_drive.bounds_initial_lin_pos_ = {X, Y, Z};
+    }
+
+    bool constrain_final_y_base = basenode["constrain_final_y_base"].as<bool>();
+    bool constrain_final_z_base = basenode["constrain_final_z_base"].as<bool>();
+    if (constrain_final_y_base)
+    {
+    	if (constrain_final_z_base)
+    		params_drive.bounds_final_lin_pos_ = {X, Y, Z};
+    	else
+    		params_drive.bounds_final_lin_pos_ = {X, Y};
+    }
+    else
+    {
+    	if (constrain_final_z_base)
+    		params_drive.bounds_final_lin_pos_ = {X, Z};
+    	else
+    		params_drive.bounds_final_lin_pos_ = {X};
+    }
+
+    params_drive.constrain_final_ee_pos_ = basenode["constrain_final_ee_pos"].as<bool>();
+
     return params_drive;
   }
 
@@ -160,8 +184,8 @@ public:
     initial_position_.y() = basenode[terrain]["initial_pose"]["y"].as<double>();
     initial_position_.z() = basenode[terrain]["initial_pose"]["z"].as<double>();
 
-    bool init_state_file = basenode["init_state_file"].as<bool>();
-    if (init_state_file)
+    bool init_state_from_file = basenode["init_state_from_file"].as<bool>();
+    if (init_state_from_file)
     	SetTowrInitialStateFromFile();
     else
     	SetTowrInitialStateFromController(init_state);
@@ -189,7 +213,7 @@ public:
     msg.total_duration           = total_duration;
     msg.replay_trajectory        = true;
     msg.play_initialization      = play_initialization;
-    msg.replay_speed             = 1.0;
+    msg.replay_speed             = 0.6; //1.0;
     msg.optimize                 = true;
     msg.terrain                  = (int) towr_terrain_id;
     msg.gait                     = towr::GaitGenerator::C0;   // it's not used for driving motions!!
@@ -208,7 +232,7 @@ public:
   {
     solver_->SetOption("linear_solver", "ma97"); // ma27, ma57, ma77, ma86, ma97
 	solver_->SetOption("jacobian_approximation", "exact"); // "finite difference-values"
-	solver_->SetOption("max_cpu_time", 180.0); // 3 min
+	solver_->SetOption("max_cpu_time", 60.0); // 1 min
 	solver_->SetOption("print_level", 5);
 
     if (msg.play_initialization)

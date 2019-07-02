@@ -20,10 +20,12 @@ ParametersDrive::ParametersDrive()
   wheels_radius_ = 0.08;
   force_limit_in_x_direction_ = 400.0;
   use_non_holonomic_constraint_ = false;
+  constrain_final_ee_pos_ = false;
 
-//  bounds_final_lin_pos_ = {X,Y,Z};   // adds the bound on the final z-position of the base
+  bounds_initial_lin_pos_ = {X, Z};
 
   DeleteAllConstraints();  // clear the constraints initialized in the base class
+  DeleteAllCosts();		   // clear the costs initialized in the base class
 
   // constraints for driving motions
   constraints_.push_back(TerrainWheels);   		// ensures terrain contact during the entire motion
@@ -40,6 +42,8 @@ ParametersDrive::ParametersDrive()
 //  constraints_.push_back(WheelsMotion);    // constrain minimum and maximum legs extension
 //  constraints_.push_back(EndeffectorRom);  // ensures that the range of motion of the wheels is respected at discrete times.
 
+  // cost
+//  costs_.push_back({TorqueCostID, 1.0});  // weighed by 1.0 relative to other costs
 }
 
 void
@@ -110,6 +114,12 @@ void
 ParametersDrive::DeleteAllConstraints()
 {
   constraints_.clear();
+}
+
+void
+ParametersDrive::DeleteAllCosts()
+{
+  costs_.clear();
 }
 
 } // namespace towr

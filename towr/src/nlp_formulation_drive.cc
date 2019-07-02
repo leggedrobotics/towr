@@ -25,6 +25,9 @@
 #include <towr/constraints/stability_constraint.h>
 #include <towr/constraints/wheels_non_holonomic_constraint.h>
 
+#include <towr/costs/node_cost.h>
+#include <towr/costs/torque_cost.h>
+
 namespace towr {
 
 NlpFormulationDrive::VariablePtrVec
@@ -67,10 +70,14 @@ NlpFormulationDrive::MakeBaseVariables () const
   Vector3d final_pos(x, y, z);
 
   spline_lin->SetByLinearInterpolation(initial_base_.lin.p(), final_pos, params_drive_.GetTotalTime());
-  spline_lin->AddStartBound(kPos, {X,Y,Z}, initial_base_.lin.p());
+  spline_lin->AddStartBound(kPos, params_drive_.bounds_initial_lin_pos_, initial_base_.lin.p());
   spline_lin->AddStartBound(kVel, {X,Y,Z}, initial_base_.lin.v());
   spline_lin->AddFinalBound(kPos, params_drive_.bounds_final_lin_pos_, final_base_.lin.p());
   spline_lin->AddFinalBound(kVel, params_drive_.bounds_final_lin_vel_, final_base_.lin.v());
+
+  // constrain same height for the entire motion
+//  spline_lin->AddAllNodesBounds(kPos, {Z}, initial_base_.lin.p(), initial_base_.lin.p());
+
   vars.push_back(spline_lin);
 
   auto spline_ang = std::make_shared<NodesVariablesAll>(n_nodes, k3D, id::base_ang_nodes);
@@ -95,7 +102,7 @@ NlpFormulationDrive::MakeEEWheelsMotionVariables () const
   std::vector<NodesVariables::Ptr> vars;
 
   int n_nodes = params_drive_.GetEEWheelsPolyDurations().size() + 1;
-//  std::cout<< n_nodes << std::endl;
+//  std::cout << "ee_n_nodes: " << n_nodes << std::endl;
 
   // Endeffector Motions
   double T = params_drive_.GetTotalTime();
@@ -116,8 +123,12 @@ NlpFormulationDrive::MakeEEWheelsMotionVariables () const
 //    nodes->AddStartBound(kVel, {X,Y,Z}, Vector3d(0.0, 0.0, 0.0));  // wheels vel zero at the beginning
 //    nodes->AddFinalBound(kVel, {X,Y,Z}, Vector3d(0.0, 0.0, 0.0));  // wheels vel zero at the end
 
-    // initial wheel's y-position
+    // initial wheel's position
     nodes->AddStartBound(kPos, {Y}, initial_ee_W_.at(ee));
+
+    // final wheel's position
+    if (params_drive_.constrain_final_ee_pos_)
+      nodes->AddFinalBound(kPos, {X}, final_ee_pos_W);
 
     // wheels non-holonomic constraint (v_y = 0) -> IMPORTANT!
     if (!params_drive_.use_non_holonomic_constraint_)
@@ -158,6 +169,17 @@ NlpFormulationDrive::GetConstraints(const SplineHolderDrive& spline_holder) cons
       constraints.push_back(c);
 
   return constraints;
+}
+
+NlpFormulationDrive::ConstraintPtrVec
+NlpFormulationDrive::GetCosts() const
+{
+  ContraintPtrVec costs;
+  for (const auto& pair : params_drive_.costs_)
+    for (auto c : GetCost(pair.first, pair.second))
+      costs.push_back(c);
+
+  return costs;
 }
 
 NlpFormulationDrive::ConstraintPtrVec
@@ -335,6 +357,26 @@ NlpFormulationDrive::MakeWheelsNonHolonomicConstraint (const SplineHolderDrive& 
   }
 
   return c;
+}
+
+NlpFormulationDrive::CostPtrVec
+NlpFormulationDrive::GetCost(const Parameters::CostName& name, double weight) const
+{
+  switch (name) {
+    case Parameters::TorqueCostID:   return MakeTorqueCost(weight);
+    default: throw std::runtime_error("cost not defined for driving motions!");
+  }
+}
+
+NlpFormulationDrive::CostPtrVec
+NlpFormulationDrive::MakeTorqueCost(double weight) const
+{
+  CostPtrVec cost;
+
+  for (int ee=0; ee<params_drive_.GetEECount(); ee++)
+    cost.push_back(std::make_shared<TorqueCost>(terrain_, weight, ee));
+
+  return cost;
 }
 
 void

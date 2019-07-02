@@ -216,12 +216,12 @@ Step::GetHeight(double x, double y) const
 {
   double h = 0.0;
 
-  if (step_start <= x && x <= step_end)
+  if (step_start_ <= x && x <= step_end_)
 //    h = coeff(0)*pow(x,3)+coeff(1)*pow(x,2)+coeff(2)*x+coeff(3);
-    h = slope*(x-step_start);
+    h = slope_*(x-step_start_);
 
-  if (step_end <= x)
-    h = height;
+  if (step_end_ <= x)
+    h = height_;
 
   return h;
 }
@@ -231,8 +231,8 @@ Step::GetHeightDerivWrtX(double x, double y) const
 {
   double dhdx = 0.0;
 
-  if (step_start <= x && x <= step_end)
-    dhdx = slope;
+  if (step_start_ <= x && x <= step_end_)
+    dhdx = slope_;
 
   return dhdx;
 }
@@ -242,7 +242,7 @@ Step::GetHeightDerivWrtXX(double x, double y) const
 {
   double Dhdx = 0.0;
 
-  if (step_start <= x && x <= step_end)
+  if (step_start_ <= x && x <= step_end_)
     Dhdx = 0.0;
 
   return Dhdx;
@@ -374,9 +374,10 @@ SlopePlat::GetHeight(double x, double y) const
 {
   double h = 0.0;
 
+//  if (y > 0) {
   // going up
   if (x >= slope_start_)
-    h = slope_*(x-slope_start_);
+    h = slope_up_*(x-slope_start_);
 
   // flat platform
   if (x >= x_plat_start_)
@@ -384,12 +385,13 @@ SlopePlat::GetHeight(double x, double y) const
 
   // going back down
   if (x >= x_down_start_) {
-    h = height_center_ - slope_*(x-x_down_start_);
+    h = height_center_ - slope_down_*(x-x_down_start_);
   }
 
   // back on flat ground
   if (x >= x_flat_start_)
     h = 0.0;
+//  }
 
   return h;
 }
@@ -398,17 +400,20 @@ double
 SlopePlat::GetHeightDerivWrtX(double x, double y) const
 {
   double dhdx = 0.0;
+
+//  if (y > 0) {
   if (x >= slope_start_)
-    dhdx = slope_;
+    dhdx = slope_up_;
 
   if (x >= x_plat_start_)
 	dhdx = 0.0;
 
   if (x >= x_down_start_)
-    dhdx = -slope_;
+    dhdx = -slope_down_;
 
   if (x >= x_flat_start_)
     dhdx = 0.0;
+//  }
 
   return dhdx;
 }
@@ -422,13 +427,13 @@ MultipleSlopes::GetHeight(double x, double y) const
   if (y >= 0)
   {
 	if (x >= slope_start_)
-      h = slope_*(x-slope_start_);
+      h = slope_up_*(x-slope_start_);
 
 	if (x >= x_plat_start_)
       h = height_center_;
 
 	if (x >= x_down_start_)
-      h = height_center_ - slope_*(x-x_down_start_);
+      h = height_center_ - slope_down_*(x-x_down_start_);
 
 	if (x >= x_flat_start_)
       h = 0.0;
@@ -437,13 +442,13 @@ MultipleSlopes::GetHeight(double x, double y) const
   if (y <= 0)
   {
 	if (x >= (slope_start_+dist_slopes_) )
-      h = slope_*(x-(slope_start_+dist_slopes_));
+      h = slope_up_*(x-(slope_start_+dist_slopes_));
 
 	if (x >= (x_plat_start_+dist_slopes_) )
       h = height_center_;
 
 	if (x >= (x_down_start_+dist_slopes_) )
-      h = height_center_ - slope_*(x-(x_down_start_+dist_slopes_));
+      h = height_center_ - slope_down_*(x-(x_down_start_+dist_slopes_));
 
 	if (x >= (x_flat_start_+dist_slopes_) )
       h = 0.0;
@@ -460,13 +465,13 @@ MultipleSlopes::GetHeightDerivWrtX(double x, double y) const
   if (y >= 0)
   {
 	if (x >= slope_start_)
-	  dhdx = slope_;
+	  dhdx = slope_up_;
 
 	if (x >= x_plat_start_)
 	  dhdx = 0.0;
 
 	if (x >= x_down_start_)
-	  dhdx = -slope_;
+	  dhdx = -slope_down_;
 
 	if (x >= x_flat_start_)
 	  dhdx = 0.0;
@@ -475,13 +480,13 @@ MultipleSlopes::GetHeightDerivWrtX(double x, double y) const
   if (y <= 0)
   {
 	if (x >= (slope_start_+dist_slopes_) )
-	  dhdx = slope_;
+	  dhdx = slope_up_;
 
 	if (x >= (x_plat_start_+dist_slopes_) )
 	  dhdx = 0.0;
 
 	if (x >= (x_down_start_+dist_slopes_) )
-	  dhdx = -slope_;
+	  dhdx = -slope_down_;
 
 	if (x >= (x_flat_start_+dist_slopes_) )
 	  dhdx = 0.0;

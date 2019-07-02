@@ -22,6 +22,6 @@
   <depend>roslib</depend>
   <depend>yaml_tools</depend>
   
-  <exec_depend>xpp_anymal</exec_depend>
+  <exec_depend>xpp_anymal_wheels</exec_depend>
 
 </package>
