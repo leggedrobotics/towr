@@ -241,7 +241,7 @@ public:
 
 private:
   const double slope_start_   = 1.0;
-  const double up_length_     = 0.05; //0.091651513899117; //0.101905089898886; // 0.2;
+  const double up_length_     = 0.091651513899117; //0.101905089898886; // 0.2;
   const double down_length_   = 0.2;
   const double plat_length_   = 1.216; //1.2; //1.0;
   const double height_center_ = 0.2;
@@ -274,7 +274,7 @@ private:
   const double x_down_start_ = x_plat_start_ + plat_length_;
   const double x_flat_start_ = x_down_start_ + down_length_;
 
-  const double dist_slopes_ = 4.0;
+  const double dist_slopes_ = 6.0;
 };
 
 /**

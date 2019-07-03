@@ -1,13 +1,10 @@
-function [n, tx, ty] = GetTerrainBasis(x, type)
+function h = GetTerrainHeight(x, type)
 
-dhdx = 0.0;
-dhdy = 0.0;
+h = zeros(size(x));
         
 switch type
     case "Flat"
-        h = 0.0;
-        dhdx = 0.0;
-        dhdy = 0.0;
+        h = zeros(size(x));
     case "Rough"
         rough_start = 0.5;
         freq = 5.0;
@@ -18,13 +15,9 @@ switch type
         h_end = amp*sin(freq*(rough_end-rough_start))+slope*(rough_end-rough_start);
         if x >= rough_start 
             h = amp*sin(freq*(x-rough_start))+slope*(x-rough_start);
-            dhdx = amp*freq*cos(freq*(x-rough_start))+slope;
-            dhdy = 0.0;
         end
         if x >= rough_end
             h = h_end;
-            dhdx = 0.0;
-            dhdy = 0.0;
         end
     case "SineLowFreq"
         h_offset = 0.2;
@@ -35,10 +28,8 @@ switch type
         sine_end = n_cycles*2*pi/freq + sine_start;
         if x>=sine_start && x<=sine_end
             h = amp*sin(freq*(x-sine_start))+h_offset;
-            dhdx = amp*freq*cos(freq*(x-sine_start));
         else
             h = h_offset;
-            dhdx = 0.0;
         end
     case "SineHighFreq"
         amp = 0.06; %0.1;
@@ -49,23 +40,21 @@ switch type
         sine_end = n_cycles*2*pi/freq + sine_start;
         if x>=sine_start && x<=sine_end
             h = amp*sin(freq*(x-sine_start))+h_offset;
-            dhdx = amp*freq*cos(freq*(x-sine_start));
         else
             h = h_offset;
-            dhdx = 0.0;
         end
     case "Step"
        step_start = 1.0;
-       step_end = 1.1;
        height = 0.2;
        slope = 2.182178902359924;
-       if x >= step_start 
-           h = slope*(x-step_start);
-           dhdx = slope;
-       end
-       if x >= step_end
-           h = height;
-           dhdx = 0.0;
+       step_end = step_start + height/slope;
+       for i = 1:length(x)
+         if x(i) >= step_start 
+            h(i) = slope*(x(i)-step_start);
+         end
+         if x(i) >= step_end
+            h(i) = height;
+         end
        end
     case "Slope"
        slope_start = 0.5; 
@@ -79,28 +68,19 @@ switch type
        x_flat_start = x_down_start + down_length*cos(slope);
         if (x >= slope_start)
             h = slope*(x-slope_start);
-            dhdx = slope;
         end
         if (x >= x_plat_start)
             h = height_center;
-            dhdx = 0.0;
         end
         if (x >= x_down_start)
             h = height_center - slope*(x-x_down_start);
-            dhdx = -slope;
         end
         if (x >= x_flat_start)
             h = 0.0; 
-            dhdx = 0.0;
         end
     otherwise
         h = 0.0;
-        dhdx = 0.0;
-        dhdy = 0.0;
 end
 
-n  = [-dhdx, -dhdy, 1.0]';
-tx = [1.0, 0.0, dhdx]';
-ty = [0.0, 1.0, dhdy]';
 
 end
