@@ -155,6 +155,12 @@ public:
     		params_drive.bounds_final_lin_pos_ = {X};
     }
 
+    bool constrain_final_base_orientation = basenode["constrain_final_base_orientation"].as<bool>();
+    if (constrain_final_base_orientation)
+    	params_drive.bounds_final_ang_pos_ = {X,Y,Z};
+    else
+    	params_drive.bounds_final_ang_pos_.clear();
+
     params_drive.constrain_final_ee_pos_ = basenode["constrain_final_ee_pos"].as<bool>();
 
     return params_drive;

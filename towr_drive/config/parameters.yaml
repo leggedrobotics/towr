@@ -1,4 +1,4 @@
-terrain: "SlopePlat"
+terrain: "MultipleSlopes"
 # Options: Flat, Step, Rough, SineLowFreq, SineHighFreq, SlopePlat, Gap, TwoSlope, MultipleSlopes, TwoStep
 run_derivative_test: false
 plot_trajectory: false
@@ -6,10 +6,11 @@ play_initialization: false
 shift_initialization: true
 init_state_from_file: true  # 'true' if initial_pose for base is read from this file, 'false' if it is set by the current anymal state
 
-constrain_initial_y_base: false
-constrain_final_y_base:   false  # true
-constrain_final_z_base:   false  # true
-constrain_final_ee_pos:   true   # true
+constrain_initial_y_base: true
+constrain_final_y_base:   false 
+constrain_final_z_base:   false
+constrain_final_ee_pos:   false
+constrain_final_base_orientation: true
 
 Flat:
 # 0.5m, 3s
@@ -19,13 +20,13 @@ Flat:
     z: 0.41
    
   final_pose: 
-    x: 0.5
+    x: 2.0
     y: 0.0
     z: 0.41
 
-  total_time: 3.0
+  total_time: 8.0
   use_wheels_motion_constraint: false
-  traction_limit: 30.0 #30.0
+  traction_limit: 100.0 #30.0
 
 Step:
 # slope 1 up, no shift, 1.8, 0.65, 3s, 200N, tt
@@ -45,13 +46,13 @@ Step:
     z: 0.41
    
   final_pose: 
-    x: 1.7
+    x: 1.8
     y: 0.0
-    z: 0.65
+    z: 0.61
 
-  total_time: 4.2
+  total_time: 3.5
   use_wheels_motion_constraint: false
-  traction_limit: 400.0
+  traction_limit: 300.0
 
 Rough:
   initial_pose:
@@ -108,14 +109,14 @@ SlopePlat:
   initial_pose:
     x: 0.0 # 3.0
     y: 0.0
-    z: 0.5 #0.41
+    z: 0.45 #0.41
    
   final_pose: 
     x: 1.7 # -3.2
     y: 0.0
-    z: 0.65
+    z: 0.62
 
-  total_time: 4.2
+  total_time: 5.0 #3.5
   use_wheels_motion_constraint: false
   traction_limit: 400.0
 
@@ -160,7 +161,7 @@ TwoSlope:
     y: 0.0
     z: 0.5
 
-  total_time: 6.0 #4.0
+  total_time: 3.5 #4.0
   use_wheels_motion_constraint: false
   traction_limit: 300.0 #300.0
 
@@ -173,11 +174,11 @@ MultipleSlopes:
     z: 0.5
    
   final_pose: 
-    x: 3.2
+    x: 1.8
     y: 0.0
-    z: 0.5
+    z: 0.45
 
-  total_time: 5.0 #6.8
+  total_time: 4.0 #6.8
   use_wheels_motion_constraint: false
   traction_limit: 400.0
 

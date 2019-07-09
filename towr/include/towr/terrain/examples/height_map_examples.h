@@ -263,9 +263,9 @@ public:
 
 private:
   const double slope_start_   = 1.0;
-  const double up_length_     = 0.091651513899117; //0.101905089898886;
+  const double up_length_     = 0.2; //0.091651513899117; //0.101905089898886;
   const double down_length_   = 0.2;
-  const double plat_length_   = 1.216; //1.0;
+  const double plat_length_   = 1.2; //1.216; //1.0;
   const double height_center_ = 0.2;
   const double slope_up_	  = height_center_/up_length_;
   const double slope_down_	  = height_center_/down_length_;

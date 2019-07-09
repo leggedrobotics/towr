@@ -424,7 +424,7 @@ MultipleSlopes::GetHeight(double x, double y) const
 {
   double h = 0.0;
 
-  if (y >= 0)
+  if (y <= 0)
   {
 	if (x >= slope_start_)
       h = slope_up_*(x-slope_start_);
@@ -439,7 +439,7 @@ MultipleSlopes::GetHeight(double x, double y) const
       h = 0.0;
   }
 
-  if (y <= 0)
+  if (y >= 0)
   {
 	if (x >= (slope_start_+dist_slopes_) )
       h = slope_up_*(x-(slope_start_+dist_slopes_));
@@ -462,7 +462,7 @@ MultipleSlopes::GetHeightDerivWrtX(double x, double y) const
 {
   double dhdx = 0.0;
 
-  if (y >= 0)
+  if (y <= 0)
   {
 	if (x >= slope_start_)
 	  dhdx = slope_up_;
@@ -477,7 +477,7 @@ MultipleSlopes::GetHeightDerivWrtX(double x, double y) const
 	  dhdx = 0.0;
   }
 
-  if (y <= 0)
+  if (y >= 0)
   {
 	if (x >= (slope_start_+dist_slopes_) )
 	  dhdx = slope_up_;
