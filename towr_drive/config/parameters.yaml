@@ -8,9 +8,9 @@ init_state_from_file: true  # 'true' if initial_pose for base is read from this 
 
 constrain_initial_y_base: true
 constrain_final_y_base:   false 
-constrain_final_z_base:   false
+constrain_final_z_base:   true
 constrain_final_ee_pos:   false
-constrain_final_base_orientation: true
+constrain_final_base_orientation: false
 
 Flat:
 # 0.5m, 3s
@@ -176,7 +176,7 @@ MultipleSlopes:
   final_pose: 
     x: 1.8
     y: 0.0
-    z: 0.45
+    z: 0.50
 
   total_time: 4.0 #6.8
   use_wheels_motion_constraint: false
