@@ -28,6 +28,7 @@
   </node>
   
   <!--  Launches the URDF visualizers  --> 
-  <include file="$(find xpp_hyq)/launch/all.launch"></include>
+  <!-- <include file="$(find xpp_hyq)/launch/all.launch"></include> -->
+  <include file="$(find xpp_anymal_wheels)/launch/xpp_anymal_wheels.launch"></include>
        
 </launch>

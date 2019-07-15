@@ -167,11 +167,12 @@ public:
   Parameters();
   virtual ~Parameters() = default;
 
-  /// Number and initial duration of each foot's swing and stance phases.
-
   double phase_duration_drive_1;
   double phase_duration_drive_2;
   double phase_duration_drift;
+
+  bool is_lateralAccBounds;
+  double lateral_AccBound;
 
   // 3 phases:
   std::vector<VecTimes> ee_phase_durations_;
@@ -196,20 +197,17 @@ public:
   /// Interval at which the base motion constraint is enforced.
   double dt_constraint_base_motion_;
 
+  /// Interval at which the drive constraint is enforced.
   double dt_constraint_drive_;
 
+  /// Interval at which the drift constraint is enforced.
   double dt_constraint_drift_;
 
   /// Fixed duration of each cubic polynomial describing the base motion.
   double duration_base_polynomial_;
   double duration_node_polynomial_;
 
-  /// Number of polynomials to parameterize foot movement during swing phases.
-//  int ee_polynomials_per_swing_phase_;
-
-  /// Number of polynomials to parameterize each contact force during stance phase.
-//  int force_polynomials_per_stance_phase_;
-
+  /// Number of polynomials to parameterize motion and forces in the different phases.
   int polynomials_in_first_drive_phase_;
   int polynomials_in_second_drive_phase_;
   int polynomials_in_drift_phase_;

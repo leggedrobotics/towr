@@ -40,17 +40,17 @@ namespace towr {
 Parameters::Parameters ()
 {
   // constructs optimization variables
-  duration_base_polynomial_ = 0.2;
-  duration_node_polynomial_ = 0.2;
+  duration_base_polynomial_ = 0.1;
+  duration_node_polynomial_ = duration_base_polynomial_;
 
   //set to true if no drift phase at all wanted,
   //all 3 phases will be drive phases
-  just_drive_ = true;
+  just_drive_ = false;
 
-  //TODO: error if durations are not the same!!!
-  phase_duration_drive_1 = 1.6;
-  phase_duration_drive_2 = 1.6;
-  phase_duration_drift 	 = 1.6;
+  phase_duration_drive_1 = 2.0;
+  phase_duration_drift 	 = 4.0;
+  phase_duration_drive_2 = 2.0;
+
 
   ee_phase_durations_ = {{phase_duration_drive_1,phase_duration_drift,phase_duration_drive_2},
   	  	  	  	  	  	 {phase_duration_drive_1,phase_duration_drift,phase_duration_drive_2},
@@ -63,12 +63,12 @@ Parameters::Parameters ()
 
 
   // parameters related to specific constraints (only used when it is added as well)
-  vx_wheel_during_drift_ = 2.0; //choose between 1 and 4 m/s
+  vx_wheel_during_drift_ = 2.0; //choose between 2 and 4 m/s
   force_limit_in_normal_direction_ = 1000;
-  dt_constraint_range_of_motion_ = 0.08;
-  dt_constraint_drive_ = 0.1;
-  dt_constraint_drift_ = 0.1;
-  dt_constraint_dynamic_ = 0.2;
+  dt_constraint_range_of_motion_ = 0.05;
+  dt_constraint_drive_ = duration_node_polynomial_/2;
+  dt_constraint_drift_ = duration_node_polynomial_/2;
+  dt_constraint_dynamic_ = duration_base_polynomial_;
   dt_constraint_base_motion_ = duration_base_polynomial_/4.; // only for base RoM constraint
   bound_phase_duration_ = std::make_pair(0.0, 10);  // used only when optimizing phase durations, so gait
 
@@ -78,9 +78,14 @@ Parameters::Parameters ()
   constraints_.push_back(BaseAcc); // so accelerations don't jump between polynomials
   constraints_.push_back(EndeffectorRom); //Ensures that the range of motion is respected at discrete times.
   constraints_.push_back(Force); // ensures unilateral forces and inside the friction cone, or at the boundary of the friction cone for drift.
-  constraints_.push_back(Drive); // no y-vel in base frame during drive phases
+  constraints_.push_back(Drive); // no y-vel in base frame during drive phases, only positive x-velocity and optional Acc. constraint
   constraints_.push_back(Drift); // friction forces during drift are aligned with the total velocity
-  constraints_.push_back(EEAcc); // so endeffector motion and force "accelerations" don't jump between polynomials
+
+  //optional constraints
+  //  constraints_.push_back(EEAcc); // smoother motions but longer computation time
+
+  is_lateralAccBounds = false; 	//set to true if it should be active, implemented in Drive constraint!
+  lateral_AccBound = 5; 		//[m/s^2] choose bound for lateral acc, only set if active
 
   // optional costs to e.g penalize endeffector forces
   // costs_.push_back({ForcesCostID, 1.0}); weighed by 1.0 relative to other costs
@@ -100,7 +105,7 @@ void
 
 Parameters::OptimizePhaseDurations ()
 {
-//	NEW: dont optimize over phase durations!
+//	don't optimize over phase durations!
 //  constraints_.push_back(TotalTime);
 }
 
@@ -137,15 +142,7 @@ Parameters::GetEECount() const
 double
 Parameters::GetTotalTime () const
 {
-//  std::vector<double> T_feet;
-//
-//  for (const auto& v : ee_phase_durations_)
-//    T_feet.push_back(std::accumulate(v.begin(), v.end(), 0.0));
-//
-//  // safety check that all feet durations sum to same value
-//  double T = T_feet.empty()? 0.0 : T_feet.front(); // take first foot as reference
-//  for (double Tf : T_feet)
-//    assert(fabs(Tf - T) < 1e-6);
+
 	double T = phase_duration_drive_1 + phase_duration_drive_2 + phase_duration_drift;
 
   return T;
@@ -158,7 +155,7 @@ Parameters::IsOptimizeTimings () const
   ConstraintName c = TotalTime;
   auto v = constraints_; // shorthand
 
-  //NEW: dont optimize over timings, so always return false:
+  //don't optimize over timings, so always return false:
 //  return std::find(v.begin(), v.end(), c) != v.end();
   bool optimize=false;
   return optimize;

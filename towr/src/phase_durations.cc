@@ -93,18 +93,10 @@ PhaseDurations::SetVariables (const VectorXd& x)
   // implementation is still required. PR desired ;)
   assert(t_total_>x.sum());
 
-  //TODO: add third phase here as well!!!
   durations_.at(0) = params_.ee_phase_durations_[0][0];
   durations_.at(1) = params_.ee_phase_durations_[0][1];
   durations_.at(2) = params_.ee_phase_durations_[0][2];
 
-//  for (int i=3; i<GetRows(); ++i)
-////    durations_.at(i) = x(i);
-//	  durations_.at(i) = 0;
-//  durations_.back()=0;
-//
-//  // last phase duration not optimized, used to fill up to total time.
-//  durations_.back() =  t_total_ - x.sum();
   UpdateObservers();
 }
 
@@ -129,7 +121,6 @@ bool
 PhaseDurations::IsContactPhase (double t) const
 {
   int phase_id = Spline::GetSegmentID(t, durations_);
-//  return phase_id%2 == 0? initial_contact_state_ : !initial_contact_state_;
   return true;
 }
 
@@ -138,14 +129,11 @@ PhaseDurations::EE_States (double t) const
 {
 
 	bool states;
-	//ee here are not the same as in controller, so ee 2 and 3
 	if (t < durations_.at(0) or t > (durations_.at(0) + durations_.at(1)) or params_.just_drive_ or ee_ == 0 or ee_ == 1){
-//		states = drive_;
 		states = false;
 	}
 
 	else {
-//		states = drift_;
 		states = true;
 	}
 

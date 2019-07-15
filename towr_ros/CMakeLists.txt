@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   xpp_msgs
   xpp_states
   towr
+  xpp_anymal_wheels
 )
 
 

@@ -163,6 +163,7 @@ NodesVariablesPhaseBased::GetIndicesOfNonConstantNodes() const
   return node_ids;
 }
 
+//phase = 0 -> drive, phase = 1 -> drift
 int
 NodesVariablesPhaseBased::GetPhase (int node_id, EE ee) const
 {
@@ -180,20 +181,20 @@ NodesVariablesPhaseBased::GetPhase (int node_id, EE ee) const
 		if (ee == 0 or ee == 1)
 			return 0;
 		if (ee == 2 or ee == 3)
-			return 3;
+			return 0;
 	}
 
 	else if (node_id > (n_nodes_first_drive_phase + n_nodes_drift_phase - 1)){
 		if (ee == 0 or ee == 1)
-			return 2;
+			return 0;
 		if (ee == 2 or ee == 3)
-			return 5;
+			return 0;
 	}
 	else {
 		if (ee == 0 or ee == 1)
-					return 1;
+					return 0;
 		if (ee == 2 or ee == 3)
-					return 4;
+					return 1; 	//this is the drift phase!
 	}
 	}
 }

@@ -30,6 +30,7 @@
   <depend>xpp_states</depend>
   <depend>xpp_msgs</depend>
   <depend>towr</depend>
+  <depend>xpp_anymal_wheels</depend>
   
   <exec_depend>xterm</exec_depend>
   <exec_depend>xpp_hyq</exec_depend>

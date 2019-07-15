@@ -31,6 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define TOWR_MODELS_QUADRUPED_GAIT_GENERATOR_H_
 
 #include "gait_generator.h"
+#include <towr/parameters.h>
 
 namespace towr {
 
@@ -93,6 +94,7 @@ private:
   ContactState PB_;
   // stance-phase
   ContactState BB_;
+  Parameters params_;
 };
 
 } /* namespace towr */

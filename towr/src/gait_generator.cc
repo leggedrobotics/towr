@@ -126,7 +126,6 @@ GaitGenerator::SetGaits (const std::vector<Gaits>& gaits)
 
     times_.insert      (times_.end(), t.begin(), t.end());
     contacts_.insert(contacts_.end(), c.begin(), c.end());
-//    drive_ee.insert(drive_ee.end(), )
   }
 }
 

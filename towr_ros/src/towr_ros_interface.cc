@@ -197,7 +197,6 @@ TowrRosInterface::GetTrajectory () const
       int ee_xpp = ToXppEndeffector(n_ee, ee_towr).first;
 
       state.ee_contact_.at(ee_xpp) = solution.phase_durations_.at(ee_towr)->IsContactPhase(t);
-//      TODO: add solution
       state.ee_state_.at(ee_xpp) = solution.phase_durations_.at(ee_towr)->EE_States(t);
       state.ee_motion_.at(ee_xpp)  = ToXpp(solution.ee_motion_.at(ee_towr)->GetPoint(t));
       state.ee_forces_ .at(ee_xpp) = solution.ee_force_.at(ee_towr)->GetPoint(t).p();

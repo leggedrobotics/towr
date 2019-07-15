@@ -2,8 +2,9 @@
  * drift_constraint.h
  *
  *  Created on: Apr 25, 2019
- *      Author: dominic
+ *      Author: dominic landolf
  */
+
 
 #ifndef TOWR_TOWR_INCLUDE_TOWR_CONSTRAINTS_DRIFT_CONSTRAINT_H_
 #define TOWR_TOWR_INCLUDE_TOWR_CONSTRAINTS_DRIFT_CONSTRAINT_H_
@@ -21,31 +22,14 @@ using namespace Eigen;
 
 namespace towr {
 
-/** @brief Constrains an endeffector to lie in a box around the nominal stance.
-  *
-  * These constraints are necessary to avoid configurations
-  * that are outside the kinematic reach of the robot. The constraint
-  * is defined by Cartesian estimates of the reachability of each endeffector.
-  *
-  * This constraint calculates the position of of the contact expressed in the
-  * current CoM frame and constrains it to lie in a box around the nominal/
-  * natural contact position for that leg.
-  *
-  * @ingroup Constraints
-  */
+// constrains the tangential force and the total velocity to point in opposite directions during drift.
+
+
 class DriftConstraint : public TimeDiscretizationConstraint {
 public:
   using EE = uint;
   using Vector3d = Eigen::Vector3d;
 
-  /**
-   * @brief Constructs a constraint instance.
-   * @param robot_model   The kinematic restrictions of the robot.
-   * @param T   The total duration of the optimization.
-   * @param dt  the discretization intervall at which to enforce constraints.
-   * @param ee            The endeffector for which to constrain the range.
-   * @param spline_holder Pointer to the current variables.
-   */
   DriftConstraint(const KinematicModel::Ptr& robot_model,
                           double T, double dt,
                           const EE& ee,

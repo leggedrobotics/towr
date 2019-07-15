@@ -2,7 +2,7 @@
  * drive_constraint.h
  *
  *  Created on: Apr 25, 2019
- *      Author: dominic
+ *      Author: dominic landolf
  */
 
 #ifndef TOWR_TOWR_INCLUDE_TOWR_CONSTRAINTS_DRIVE_CONSTRAINT_H_
@@ -19,31 +19,15 @@
 
 namespace towr {
 
-/** @brief Constrains an endeffector to lie in a box around the nominal stance.
-  *
-  * These constraints are necessary to avoid configurations
-  * that are outside the kinematic reach of the robot. The constraint
-  * is defined by Cartesian estimates of the reachability of each endeffector.
-  *
-  * This constraint calculates the position of of the contact expressed in the
-  * current CoM frame and constrains it to lie in a box around the nominal/
-  * natural contact position for that leg.
-  *
-  * @ingroup Constraints
-  */
+// constrains the lateral velocity during drive phases to be 0
+// constrains the heading velocity to be positive to avoid oscillations
+// optional: constrains the lateral Acceleration to lie inside bounds to avoid infeasible motions.
+
 class DriveConstraint : public TimeDiscretizationConstraint {
 public:
   using EE = uint;
   using Vector3d = Eigen::Vector3d;
 
-  /**
-   * @brief Constructs a constraint instance.
-   * @param robot_model   The kinematic restrictions of the robot.
-   * @param T   The total duration of the optimization.
-   * @param dt  the discretization intervall at which to enforce constraints.
-   * @param ee            The endeffector for which to constrain the range.
-   * @param spline_holder Pointer to the current variables.
-   */
   DriveConstraint(const KinematicModel::Ptr& robot_model,
                           double T, double dt,
                           const EE& ee,

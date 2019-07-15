@@ -63,7 +63,7 @@ class ForceConstraint : public ifopt::ConstraintSet {
 public:
   using Vector3d = Eigen::Vector3d;
   using EE = uint;
-  using Vector2d = Eigen::Vector2d; //new
+  using Vector2d = Eigen::Vector2d;
 
 
   /**

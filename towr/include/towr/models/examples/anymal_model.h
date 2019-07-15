@@ -43,26 +43,15 @@ class AnymalKinematicModel : public KinematicModel {
 public:
   AnymalKinematicModel () : KinematicModel(4)
   {
-    const double x_nominal_b = 0.34;
-    const double y_nominal_b = 0.19;
-
-	  //x and y changed
-//	  const double x_nominal_b = 0.19;
-//	      const double y_nominal_b = 0.34;
-
-    const double z_nominal_b = -0.42;
+    const double x_nominal_b = 0.35;
+    const double y_nominal_b = 0.235;
+    const double z_nominal_b = -0.46;
 
     nominal_stance_.at(LF) <<  x_nominal_b,   y_nominal_b, z_nominal_b;
     nominal_stance_.at(RF) <<  x_nominal_b,  -y_nominal_b, z_nominal_b;
     nominal_stance_.at(LH) << -x_nominal_b,   y_nominal_b, z_nominal_b;
     nominal_stance_.at(RH) << -x_nominal_b,  -y_nominal_b, z_nominal_b;
 
-//    nominal_stance_.at(LF) <<  y_nominal_b,   x_nominal_b, z_nominal_b;
-//        nominal_stance_.at(RF) <<  y_nominal_b,  -x_nominal_b, z_nominal_b;
-//        nominal_stance_.at(LH) << -y_nominal_b,   x_nominal_b, z_nominal_b;
-//        nominal_stance_.at(RH) << -y_nominal_b,  -x_nominal_b, z_nominal_b;
-
-//    max_dev_from_nominal_ << 0.15, 0.1, 0.10;
     max_dev_from_nominal_ << 0.15, 0.1, 0.10;
   }
 };

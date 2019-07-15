@@ -139,7 +139,6 @@ NlpFormulation::MakeEndeffectorVariables () const
     auto nodes = std::make_shared<NodesVariablesEEMotion>(
                                               params_.GetPhaseCount(ee),
                                               params_.ee_in_contact_at_start_.at(ee),
-//											  false,
                                               id::EEMotionNodes(ee),
 											  params_.polynomials_in_first_drive_phase_,
 											  params_.polynomials_in_drift_phase_,
@@ -148,15 +147,14 @@ NlpFormulation::MakeEndeffectorVariables () const
 
     // initialize towards final footholds
     double yaw = final_base_.ang.p().z();
-    double pitch = final_base_.ang.p().y(); //new
-    double roll = final_base_.ang.p().x(); //new
+    double pitch = final_base_.ang.p().y();
+    double roll = final_base_.ang.p().x();
     Eigen::Vector3d euler(0.0, 0.0, yaw);
-//    Eigen::Vector3d euler(roll, pitch, yaw); //new
     Eigen::Matrix3d w_R_b = EulerConverter::GetRotationMatrixBaseToWorld(euler);
     Vector3d final_ee_pos_W = final_base_.lin.p() + w_R_b*model_.kinematic_model_->GetNominalStanceInBase().at(ee);
     double x = final_ee_pos_W.x();
     double y = final_ee_pos_W.y();
-//    double z = terrain_->GetHeight(x,y);
+//    double z = terrain_->GetHeight(x,y); //not needed for flat terrain
     nodes->SetByLinearInterpolation(initial_ee_W_.at(ee), Vector3d(x,y,0), T);
 
     nodes->AddStartBound(kPos, {X,Y,Z}, initial_ee_W_.at(ee));
@@ -389,11 +387,8 @@ NlpFormulation::MakeEEAccConstraint (const SplineHolder& s) const
 
   for (int ee=0; ee<params_.GetEECount(); ee++) {
     auto constraint_motion = std::make_shared<SplineAccConstraint>(s.ee_motion_.at(ee), id::EEMotionNodes(ee));
-    auto constraint_force = std::make_shared<SplineAccConstraint>(s.ee_force_.at(ee), id::EEForceNodes(ee));
 
     c.push_back(constraint_motion);
-    c.push_back(constraint_force);
-
   }
 
   return c;

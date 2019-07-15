@@ -2,7 +2,7 @@
  * drift_constraint.cc
  *
  *  Created on: Apr 25, 2019
- *      Author: dominic
+ *      Author: dominic landolf
  */
 
 #include <towr/constraints/drift_constraint.h>
@@ -40,6 +40,7 @@ DriftConstraint::GetRow (int node, int dim) const
   return node*n_constraints_per_node_ + dim;
 }
 
+//used for the Jacobians
 DriftConstraint::Vector3d
 DriftConstraint::NormDerivative (const Vector3d& v) const
 {
@@ -57,33 +58,28 @@ DriftConstraint::UpdateConstraintAtInstance (double t, int k, VectorXd& g) const
   EulerConverter::MatrixSXd b_C_w = base_angular_.GetRotationMatrixBaseToWorld(t);
   EulerConverter::MatrixSXd w_C_b = base_angular_.GetRotationMatrixBaseToWorld(t).transpose();
 
-  //introduce a "fictional" constant spinning velocity of the wheels during drift
-  //in the negative x-direction of the base projected onto the terrain
+  //introduce a constant spinning velocity of the wheels during drift
   double des_v_x_wheel = params_.vx_wheel_during_drift_;
   double pitch_angle = base_angular_for_angles_->GetPoint(t).p()(Y);
-  Vector3d v_x_wheel(-des_v_x_wheel, 0.0, 0.0); //in base frame!!
-//  Vector3d v_x_wheel(-des_v_x_wheel/cos(pitch_angle), 0.0, 0.0); //in base frame!!
+  Vector3d v_x_wheel(-des_v_x_wheel, 0.0, 0.0); //in base frame
   Vector3d v_x_wheel_world_with_z = b_C_w*v_x_wheel;
   Vector3d v_x_wheel_world(v_x_wheel_world_with_z(X), v_x_wheel_world_with_z(Y), 0.0);
 
   Vector3d f_tang_world(ee_force_->GetPoint(t).p()(X), ee_force_->GetPoint(t).p()(Y), 0.0);
   Vector3d f_deriv_tang_world(ee_force_->GetPoint(t).v()(X), ee_force_->GetPoint(t).v()(Y), 0.0);
 
-  //total "fictional" velocity of the wheels
+  //total velocity of the wheels
   Vector3d v_total = v_x_wheel_world + ee_motion_->GetPoint(t).v();
-  Vector3d a_total = ee_motion_->GetPoint(t).a();
 
   double v_tot_abs_value = v_total.norm();
-  double a_tot_abs_value = a_total.norm();
 
   double f_tang_abs_value = f_tang_world.norm();
   double f_deriv_tang_abs_value = f_deriv_tang_world.norm();
 
   int row = k*n_constraints_per_node_;
 
-  //constrain the friction force to point in the opposite direction of the fictional total velocity
+  //constrain the tangential force and the total velocity to point in opposite directions during drift.
   g(row++) = f_tang_world.transpose()*v_total + f_tang_abs_value*v_tot_abs_value;
-//  g(row++) = f_deriv_tang_world.transpose()*a_total + f_deriv_tang_abs_value*a_tot_abs_value;
 
 }
 
@@ -94,26 +90,21 @@ DriftConstraint::UpdateBoundsAtInstance (double t, int k, VecBound& bounds) cons
 	int row = k*n_constraints_per_node_;
 
 	if (params_.just_drive_){
-//		bounds.at(row++) = ifopt::NoBound;
 		bounds.at(row++) = ifopt::NoBound;
 	}
 	else {
 		if (ee_ == 0 or ee_ == 1){
-//				bounds.at(row++) = ifopt::NoBound;
 				bounds.at(row++) = ifopt::NoBound;
-			  }
-			  else if (ee_ == 2 or ee_ == 3){
-				  if ((t <= params_.ee_phase_durations_[0][0]) or (t > (params_.ee_phase_durations_[0][0]+params_.ee_phase_durations_[0][1]))){
-//					  bounds.at(row++) = ifopt::NoBound;
-					  bounds.at(row++) = ifopt::NoBound;
-				  }
-
-				  //this is the drift phase
-				  else {
-//					  bounds.at(row++) = ifopt::BoundZero;
-					  bounds.at(row++) = ifopt::BoundZero;
-				  }
-				  }
+		}
+		else if (ee_ == 2 or ee_ == 3){
+			if ((t <= params_.phase_duration_drive_1) or (t > (params_.phase_duration_drive_1+params_.phase_duration_drift))){
+				bounds.at(row++) = ifopt::NoBound;
+			}
+			//this is the drift phase
+			else {
+				bounds.at(row++) = ifopt::BoundZero;
+			}
+		}
 	}
 }
 
@@ -128,75 +119,42 @@ DriftConstraint::UpdateJacobianAtInstance (double t, int k,
   int row = k*n_constraints_per_node_;
 
     Vector3d f_tang_world(ee_force_->GetPoint(t).p()(X), ee_force_->GetPoint(t).p()(Y), 0.0);
-    Vector3d f_deriv_tang_world(ee_force_->GetPoint(t).v()(X), ee_force_->GetPoint(t).v()(Y), 0.0);
     f_tang_world = f_tang_world + Vector3d::Constant(1e-10);
-    f_deriv_tang_world = f_deriv_tang_world + Vector3d::Constant(1e-10);
     double pitch_angle = base_angular_for_angles_->GetPoint(t).p()(Y);
 
     double des_v_x_wheel = params_.vx_wheel_during_drift_;
-//    Vector3d v_x_wheel(-des_v_x_wheel/cos(pitch_angle), 0.0, 0.0); //in base frame!!!
-    Vector3d v_x_wheel(-des_v_x_wheel, 0.0, 0.0); //in base frame!!!
+    Vector3d v_x_wheel(-des_v_x_wheel, 0.0, 0.0); //in base frame
     Vector3d v_x_wheel_world_with_z = b_C_w*v_x_wheel;
     Vector3d v_x_wheel_world(v_x_wheel_world_with_z(X), v_x_wheel_world_with_z(Y), 0.0);
     Vector3d v_x_wheel_base_with_y = w_C_b*v_x_wheel_world;
     Vector3d v_x_wheel_base(v_x_wheel_base_with_y(X), 0.0, 0.0);
 
     Vector3d v_total = v_x_wheel_world + ee_motion_->GetPoint(t).v() + Vector3d::Constant(1e-10);
-    Vector3d a_total = ee_motion_->GetPoint(t).a(); // + Vector3d::Constant(1e-10);
-
     double v_tot_abs_value =  v_total.norm();
-    double a_tot_abs_value = a_total.norm();
-    double f_deriv_tang_abs_value = f_deriv_tang_world.norm();
     double f_tang_abs_value = f_tang_world.norm();
 
   Vector3d Dg = NormDerivative(v_total) + Vector3d::Constant(1e-10);
-  Jacobian g_deriv = Dg.transpose().sparseView();
   Vector3d Dg_f = NormDerivative(f_tang_world) + Vector3d::Constant(1e-10);
-  Jacobian g_deriv_f = Dg_f.transpose().sparseView();
-
-  Vector3d Dg_a = NormDerivative(a_total) + Vector3d::Constant(1e-10);
-  Vector3d Dg_f_deriv = NormDerivative(f_deriv_tang_world) + Vector3d::Constant(1e-10);
 
   if (var_set == id::base_ang_nodes) {
+	  Vector3d derivativeVec_base = (f_tang_world + f_tang_abs_value * Dg);
+	  Jacobian derivativeJac_base = derivativeVec_base.transpose().sparseView();
 
-	  Vector3d tt_base = (f_tang_world + f_tang_abs_value * Dg);
-	  Jacobian ttt_base = tt_base.transpose().sparseView();
-	  Vector3d tt_base_a = (f_deriv_tang_world + f_deriv_tang_abs_value * Dg_a);
-	  Jacobian ttt_base_a = tt_base_a.transpose().sparseView();
-
-//	  Vector3d d_vtot(0.0, -des_v_x_wheel*sin(pitch_angle)/(cos(pitch_angle)*cos(pitch_angle)), 0.0);
-//	  d_vtot = d_vtot + Vector3d::Constant(1e-10);
-//	  Jacobian d_vtot_jac = (b_C_w*d_vtot).transpose().sparseView();
-
-	  //only v_x_wheel is rotated (or v_x_wheel_base?)
-	  jac.row(row++) = ttt_base * base_angular_.DerivOfRotVecMult(t, v_x_wheel, false, false);
-//	  jac.row(row++) = ttt_base_a * base_angular_.DerivOfRotVecMult(t, v_x_wheel, false, false);
-//	  jac.row(row++) = ttt_base_a * base_angular_.DerivOfRotVecMult(t, v_x_wheel, false, true);
-
-	  // TODO: add the cosine
-//	  jac.row(row++) = ttt_base * (base_angular_.DerivOfRotVecMult(t, v_x_wheel, false, false) + d_vtot_jac);
-  }
+	  jac.row(row++) = derivativeJac_base * base_angular_.DerivOfRotVecMult(t, v_x_wheel, false, false);
+ }
 
   if (var_set == id::EEMotionNodes(ee_)) {
-	  Vector3d tt_motion = (f_tang_world + f_tang_abs_value * Dg);
-	  Jacobian ttt_motion = tt_motion.transpose().sparseView();
-	  Vector3d tt_motion_a = (f_deriv_tang_world + f_deriv_tang_abs_value * Dg_a);
-	  Jacobian ttt_motion_a = tt_motion_a.transpose().sparseView();
+	  Vector3d derivativeVec_motion = (f_tang_world + f_tang_abs_value * Dg);
+	  Jacobian derivativeJac_motion = derivativeVec_motion.transpose().sparseView();
 
-	  jac.row(row++) = ttt_motion * ee_motion_->GetJacobianWrtNodes(t, kVel, false);
-//	  jac.row(row++) = ttt_motion_a * ee_motion_->GetJacobianWrtNodes(t, kAcc, false);
-
+	  jac.row(row++) = derivativeJac_motion * ee_motion_->GetJacobianWrtNodes(t, kVel, false);
   }
 
   if (var_set == id::EEForceNodes(ee_)) {
-      Vector3d tt = (v_total + v_tot_abs_value * Dg_f);
-      Jacobian ttt = tt.transpose().sparseView();
-      Vector3d tt_deriv = (a_total + a_tot_abs_value * Dg_f_deriv);
-      Jacobian ttt_deriv = tt_deriv.transpose().sparseView();
+      Vector3d derivativeVec_force = (v_total + v_tot_abs_value * Dg_f);
+      Jacobian derivativeJac_force = derivativeVec_force.transpose().sparseView();
 
-	  jac.row(row++) = ttt * ee_force_->GetJacobianWrtNodes(t, kPos, false);
-//	  jac.row(row++) = ttt_deriv * ee_force_->GetJacobianWrtNodes(t, kVel, false);
-
+	  jac.row(row++) = derivativeJac_force * ee_force_->GetJacobianWrtNodes(t, kPos, false);
   }
 }
 

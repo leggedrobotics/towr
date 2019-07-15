@@ -47,8 +47,6 @@ QuadrupedGaitGenerator::QuadrupedGaitGenerator ()
   Bb_ = BP_ = bB_ = PB_             = init; // three-leg support
   BB_                               = init; // four-leg support phase
 
-  // true is drive, false is drift!
-
   // flight_phase
   II_ = ContactState(n_ee, false);
   // one stanceleg
@@ -86,7 +84,6 @@ QuadrupedGaitGenerator::SetCombo (Combos combo)
     case C4: SetGaits({Stand, Hop3, Hop3, Hop3, Hop3E, Stand}); break; // gallop
     case C5: SetGaits({Stand, Drive, Drive, Drive, DriveE, Stand}); break; // just drive
     case C6: SetGaits({DriveDrift}); break; // Drive and Drift (bei Drift ist auch drive dabei!)
-//    case C6: SetGaits({Stand, Drive, Drive, Drive, DriveDrift, Stand}); break; //ohne stand, das waere ein erneuter phase change!
     default: assert(false); std::cout << "Gait not defined\n"; break;
   }
 }
@@ -152,9 +149,9 @@ QuadrupedGaitGenerator::GetStrideDriveEnd () const
 QuadrupedGaitGenerator::GaitInfo
 QuadrupedGaitGenerator::GetStrideDriveDrift () const
 {
-  double drive1   = 1.0;
-  double drift = 1.0;
-  double drive2 = 0.5;
+  double drive1   = params_.phase_duration_drive_1;
+  double drift = params_.phase_duration_drift;
+  double drive2 = params_.phase_duration_drive_2;
 
   auto times =
   {
@@ -171,7 +168,7 @@ QuadrupedGaitGenerator::GetStrideDriveDrift () const
 QuadrupedGaitGenerator::GaitInfo
 QuadrupedGaitGenerator::GetStrideDriveDriftEnd () const
 {
-  double drive   = 2.4;
+  double drive   = params_.phase_duration_drive_1 + params_.phase_duration_drive_2 + params_.phase_duration_drift;
 
   auto times =
   {
