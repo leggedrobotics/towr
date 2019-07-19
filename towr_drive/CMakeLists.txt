@@ -66,6 +66,14 @@ target_link_libraries(anymal_wheels_test
   ${catkin_LIBRARIES}
 )
 
+# Send trajectory to controller from TOWR rosbag
+add_executable(send_trajectory_from_bag 
+  src/send_trajectory_from_bag.cc
+)
+target_link_libraries(send_trajectory_from_bag
+  ${catkin_LIBRARIES}
+)
+
 #############
 ## Install ##
 #############
