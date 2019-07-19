@@ -7,9 +7,9 @@ clear;
 close all;
 
 %% Extract the desired 3D vectors from the bag
-filePath = '../bags/anymal_wheels_matlab.bag';
+% filePath = '../bags/anymal_wheels_matlab.bag';
 % filePath = '../bags/multiple_slopes_bear_matlab.bag';
-% filePath = '../bags/step_bear_v2_matlab.bag';
+filePath = '../bags/step_bear_v2_matlab.bag';
 % filePath = '/home/vivian/.ros/towr_trajectory.bag';
 bag_all = rosbag(filePath);
 
@@ -391,7 +391,7 @@ wh_torque = zeros(size(forces_ee));
 for i = 1:n
     for j = 1:n_ee
         x = pos_ee(i,1,j);
-        [n, tx, ty] = GetTerrainBasis(x, "Flat");
+        [n, tx, ty] = GetTerrainBasis(x, "Step");
         wh_torque(i,:,j) = (forces_ee(i,:,j) * tx) * wh_radius * 2;    
     end
 end

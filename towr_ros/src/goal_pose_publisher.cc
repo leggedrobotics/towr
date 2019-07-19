@@ -33,6 +33,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <towr/terrain/height_map.h>
 #include <xpp_states/convert.h>
 
+#include <std_msgs/Float64.h>
+
 #include <towr_ros/TowrCommand.h>  // listen to goal state
 #include <towr_ros/topic_names.h>
 
@@ -40,12 +42,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace towr {
 
 static ros::Publisher rviz_pub;
+static double heigh_ref = 0.0;
 
 void UserCommandCallback(const towr_ros::TowrCommand& msg_in)
 {
   // get which terrain
   auto terrain_id = static_cast<HeightMap::TerrainID>(msg_in.terrain);
-  auto terrain_ = HeightMap::MakeTerrain(terrain_id);
+  auto terrain_ = HeightMap::MakeTerrain(terrain_id, heigh_ref);
 
   geometry_msgs::PoseStamped goal_msg;
   goal_msg.header.frame_id = "world";
@@ -65,6 +68,11 @@ void UserCommandCallback(const towr_ros::TowrCommand& msg_in)
   rviz_pub.publish(goal_msg);
 }
 
+void TerrainHeightCallback(const std_msgs::Float64Ptr& msg_in)
+{
+	heigh_ref = msg_in->data;
+}
+
 } // namespace towr
 
 int main(int argc, char *argv[])
@@ -74,6 +82,8 @@ int main(int argc, char *argv[])
   ros::NodeHandle n;
 
   ros::Subscriber goal_sub;
+  ros::Subscriber terrain_height_ref;
+  terrain_height_ref = n.subscribe("/towr/terrain_ref_height", 1, towr::TerrainHeightCallback);
   goal_sub       = n.subscribe(towr_msgs::user_command, 1, towr::UserCommandCallback);
   towr::rviz_pub = n.advertise<geometry_msgs::PoseStamped>("xpp/goal", 1);
 

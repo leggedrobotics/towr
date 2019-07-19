@@ -94,7 +94,7 @@ public:
 				   RoughID,
                    TERRAIN_COUNT };
 
-  static HeightMap::Ptr MakeTerrain(TerrainID type);
+  static HeightMap::Ptr MakeTerrain(TerrainID type, double height_ref = 0.0);
 
   enum Direction { Normal, Tangent1, Tangent2 };
 

@@ -178,10 +178,6 @@ public:
 
     std::string terrain = basenode["terrain"].as<std::string>();
     auto towr_terrain_id = terrain_ids.find(terrain)->second;
-    formulation_.terrain_ = HeightMap::MakeTerrain(towr_terrain_id);
-
-    bool plot_trajectory = basenode["plot_trajectory"].as<bool>();
-    bool play_initialization = basenode["play_initialization"].as<bool>();
 
     shift_initialization_ = basenode["shift_initialization"].as<bool>();
 
@@ -191,10 +187,23 @@ public:
     initial_position_.z() = basenode[terrain]["initial_pose"]["z"].as<double>();
 
     bool init_state_from_file = basenode["init_state_from_file"].as<bool>();
-    if (init_state_from_file)
-    	SetTowrInitialStateFromFile();
-    else
-    	SetTowrInitialStateFromController(init_state);
+    double height_ref = 0.0;
+    bool offset_reference_height = basenode["offset_reference_height"].as<bool>();
+    if (offset_reference_height) {
+//	  height_ref = basenode["offset_height"].as<double>();
+	  // can also use the height of one of the wheels as reference for the terrain
+	  height_ref = init_state.ee_motion_.at(LH).GetByIndex(xpp::kPos).z();
+    }
+    terrain_ref_height_pub_.publish(height_ref);  // publish reference height for visualization in RViz
+
+    if (init_state_from_file) {
+      formulation_.terrain_ = HeightMap::MakeTerrain(towr_terrain_id, height_ref);
+      SetTowrInitialStateFromFile();
+    }
+    else {
+	  formulation_.terrain_ = HeightMap::MakeTerrain(towr_terrain_id, height_ref);
+	  SetTowrInitialStateFromController(init_state);
+    }
 
     // hack to initialize the left foot ahead of the right
     if (shift_initialization_)
@@ -208,9 +217,12 @@ public:
 
     final_position_.x() = basenode[terrain]["final_pose"]["x"].as<double>();
     final_position_.y() = basenode[terrain]["final_pose"]["y"].as<double>();
-    final_position_.z() = basenode[terrain]["final_pose"]["z"].as<double>();
+    final_position_.z() = basenode[terrain]["final_pose"]["z"].as<double>() + height_ref;
     goal_geom_.lin.p_ = final_position_;
     goal_geom_.lin.p_.x() += formulation_.initial_base_.lin.at(kPos).x();
+
+    bool plot_trajectory = basenode["plot_trajectory"].as<bool>();
+    bool play_initialization = basenode["play_initialization"].as<bool>();
 
     float total_duration = basenode[terrain]["total_time"].as<float>();
 

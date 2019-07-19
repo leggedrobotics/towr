@@ -31,10 +31,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace towr {
 
-
+// FLAT
 FlatGround::FlatGround(double height)
 {
   height_ = height;
+}
+
+// BLOCK
+Block::Block(double height_ref)
+{
+  height_ref_ = height_ref;
 }
 
 double
@@ -49,7 +55,7 @@ Block::GetHeight (double x, double y) const
   if (block_start+eps_ <= x && x <= block_start+length_)
     h = height_;
 
-  return h;
+  return h + height_ref_;
 }
 
 double
@@ -66,6 +72,11 @@ Block::GetHeightDerivWrtX (double x, double y) const
 
 
 // STAIRS
+Stairs::Stairs(double height_ref)
+{
+  height_ref_ = height_ref;
+}
+
 double
 Stairs::GetHeight (double x, double y) const
 {
@@ -80,11 +91,16 @@ Stairs::GetHeight (double x, double y) const
   if (x>=first_step_start_+first_step_width_+width_top)
     h = 0.0;
 
-  return h;
+  return h + height_ref_;
 }
 
 
 // GAP
+Gap::Gap(double height_ref)
+{
+  height_ref_ = height_ref;
+}
+
 double
 Gap::GetHeight (double x, double y) const
 {
@@ -94,7 +110,7 @@ Gap::GetHeight (double x, double y) const
   if (gap_start_ <= x && x <= gap_end_x)
     h = a*x*x + b*x + c + h_offset_;
 
-  return h;
+  return h + height_ref_;
 }
 
 double
@@ -121,6 +137,11 @@ Gap::GetHeightDerivWrtXX (double x, double y) const
 
 
 // SLOPE
+Slope::Slope(double height_ref)
+{
+  height_ref_ = height_ref;
+}
+
 double
 Slope::GetHeight (double x, double y) const
 {
@@ -137,7 +158,7 @@ Slope::GetHeight (double x, double y) const
   if (x >= x_flat_start_)
     z = 0.0;
 
-  return z;
+  return z + height_ref_;
 }
 
 double
@@ -211,6 +232,11 @@ ChimneyLR::GetHeightDerivWrtY (double x, double y) const
 }
 
 // STEP
+Step::Step(double height_ref)
+{
+  height_ref_ = height_ref;
+}
+
 double
 Step::GetHeight(double x, double y) const
 {
@@ -223,7 +249,7 @@ Step::GetHeight(double x, double y) const
   if (step_end_ <= x)
     h = height_;
 
-  return h;
+  return h + height_ref_;
 }
 
 double
@@ -249,6 +275,11 @@ Step::GetHeightDerivWrtXX(double x, double y) const
 }
 
 // TWO SLOPE
+TwoSlope::TwoSlope(double height_ref)
+{
+  height_ref_ = height_ref;
+}
+
 double
 TwoSlope::GetHeight(double x, double y) const
 {
@@ -282,7 +313,7 @@ TwoSlope::GetHeight(double x, double y) const
 	  h = 0.0;
   }
 
-  return h;
+  return h + height_ref_;
 }
 
 double
@@ -328,6 +359,11 @@ TwoSlope::GetHeightDerivWrtXX(double x, double y) const
 }
 
 // TWO STEP
+TwoStep::TwoStep(double height_ref)
+{
+  height_ref_ = height_ref;
+}
+
 double
 TwoStep::GetHeight(double x, double y) const
 {
@@ -345,7 +381,7 @@ TwoStep::GetHeight(double x, double y) const
   if (x >= (step_end+dist_steps))
 	h = 2*height;
 
-  return h;
+  return h + height_ref_;
 }
 
 double
@@ -369,6 +405,11 @@ TwoStep::GetHeightDerivWrtX(double x, double y) const
 }
 
 // SLOPE PLAT
+SlopePlat::SlopePlat(double height_ref)
+{
+  height_ref_ = height_ref;
+}
+
 double
 SlopePlat::GetHeight(double x, double y) const
 {
@@ -393,7 +434,7 @@ SlopePlat::GetHeight(double x, double y) const
     h = 0.0;
 //  }
 
-  return h;
+  return h + height_ref_;
 }
 
 double
@@ -419,6 +460,11 @@ SlopePlat::GetHeightDerivWrtX(double x, double y) const
 }
 
 // MULTIPLE SLOPES
+MultipleSlopes::MultipleSlopes(double height_ref)
+{
+  height_ref_ = height_ref;
+}
+
 double
 MultipleSlopes::GetHeight(double x, double y) const
 {
@@ -454,7 +500,7 @@ MultipleSlopes::GetHeight(double x, double y) const
       h = 0.0;
   }
 
-  return h;
+  return h + height_ref_;
 }
 
 double
@@ -496,6 +542,11 @@ MultipleSlopes::GetHeightDerivWrtX(double x, double y) const
 }
 
 // LOW FREQUENCY SINE
+SineLowFreq::SineLowFreq(double height_ref)
+{
+  height_ref_ = height_ref;
+}
+
 double
 SineLowFreq::GetHeight(double x, double y) const
 {
@@ -503,7 +554,7 @@ SineLowFreq::GetHeight(double x, double y) const
   if (x >= sine_start_ && x <= sine_end_)
 	h = amp_*sin(freq_*(x-sine_start_)) + h_offset_;
 
-  return h;
+  return h + height_ref_;
 }
 
 double
@@ -527,6 +578,11 @@ SineLowFreq::GetHeightDerivWrtXX(double x, double y) const
 }
 
 // HIGH FREQUENCY SINE
+SineHighFreq::SineHighFreq(double height_ref)
+{
+  height_ref_ = height_ref;
+}
+
 double
 SineHighFreq::GetHeight(double x, double y) const
 {
@@ -534,7 +590,7 @@ SineHighFreq::GetHeight(double x, double y) const
   if (x >= sine_start_ && x <= sine_end_)
 	h = amp_*sin(freq_*(x-sine_start_)) + h_offset_;
 
-  return h;
+  return h + height_ref_;
 }
 
 double
@@ -558,6 +614,11 @@ SineHighFreq::GetHeightDerivWrtXX(double x, double y) const
 }
 
 // ROUGH
+Rough::Rough(double height_ref)
+{
+  height_ref_ = height_ref;
+}
+
 double
 Rough::GetHeight(double x, double y) const
 {
@@ -568,7 +629,7 @@ Rough::GetHeight(double x, double y) const
   if (x > rough_end_)
 	h = h_end_;
 
-  return h;
+  return h + height_ref_;
 }
 
 double

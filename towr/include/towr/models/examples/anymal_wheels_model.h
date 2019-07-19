@@ -30,7 +30,7 @@ public:
     nominal_stance_.at(LH) << -x_nominal_b,   y_nominal_b, z_nominal_b;
     nominal_stance_.at(RH) << -x_nominal_b,  -y_nominal_b, z_nominal_b;
 
-    max_dev_from_nominal_ << 0.15, 0.1, 0.10;
+    max_dev_from_nominal_ << 0.15, 0.1, 0.10; //0.15;
 
     const double x_nominal_hip = 0.3405;
     const double y_nominal_hip = y_nominal_b; //0.1710;

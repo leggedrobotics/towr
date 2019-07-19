@@ -35,24 +35,24 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace towr {
 
 HeightMap::Ptr
-HeightMap::MakeTerrain (TerrainID type)
+HeightMap::MakeTerrain (TerrainID type, double height_ref)
 {
   switch (type) {
-    case FlatID:      	   return std::make_shared<FlatGround>(); break;
-    case BlockID:     	   return std::make_shared<Block>(); break;
-    case StairsID:    	   return std::make_shared<Stairs>(); break;
-    case GapID:       	   return std::make_shared<Gap>(); break;
-    case SlopeID:     	   return std::make_shared<Slope>(); break;
+    case FlatID:      	   return std::make_shared<FlatGround>(height_ref); break;
+    case BlockID:     	   return std::make_shared<Block>(height_ref); break;
+    case StairsID:    	   return std::make_shared<Stairs>(height_ref); break;
+    case GapID:       	   return std::make_shared<Gap>(height_ref); break;
+    case SlopeID:     	   return std::make_shared<Slope>(height_ref); break;
     case ChimneyID:   	   return std::make_shared<Chimney>(); break;
     case ChimneyLRID: 	   return std::make_shared<ChimneyLR>(); break;
-    case SlopePlatID:  	   return std::make_shared<SlopePlat>(); break;
-    case MultipleSlopesID: return std::make_shared<MultipleSlopes>(); break;
-    case StepID:		   return std::make_shared<Step>(); break;
-    case TwoSlopeID:	   return std::make_shared<TwoSlope>(); break;
-    case TwoStepID:  	   return std::make_shared<TwoStep>(); break;
-    case SineLowFreqID:	   return std::make_shared<SineLowFreq>(); break;
-    case SineHighFreqID:   return std::make_shared<SineHighFreq>(); break;
-    case RoughID:		   return std::make_shared<Rough>(); break;
+    case SlopePlatID:  	   return std::make_shared<SlopePlat>(height_ref); break;
+    case MultipleSlopesID: return std::make_shared<MultipleSlopes>(height_ref); break;
+    case StepID:		   return std::make_shared<Step>(height_ref); break;
+    case TwoSlopeID:	   return std::make_shared<TwoSlope>(height_ref); break;
+    case TwoStepID:  	   return std::make_shared<TwoStep>(height_ref); break;
+    case SineLowFreqID:	   return std::make_shared<SineLowFreq>(height_ref); break;
+    case SineHighFreqID:   return std::make_shared<SineHighFreq>(height_ref); break;
+    case RoughID:		   return std::make_shared<Rough>(height_ref); break;
     default: assert(false); break;
   }
 }

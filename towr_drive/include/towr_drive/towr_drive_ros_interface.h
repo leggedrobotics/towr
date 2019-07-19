@@ -48,6 +48,8 @@ protected:
 
   ifopt::IpoptSolver::Ptr solver_; ///< NLP solver, could also use SNOPT.
 
+  ::ros::Publisher  terrain_ref_height_pub_;
+
 private:
   SplineHolderDrive solution; ///< the solution splines linked to the opt-variables.
   ifopt::Problem nlp_;        ///< the actual nonlinear program to be solved.

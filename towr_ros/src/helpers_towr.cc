@@ -118,6 +118,7 @@ void SaveDrivingMotionTerrainInRosbag (const SplineHolderDrive& solution, int te
 
   std::vector<xpp::RobotStateCartesian> traj = GetDrivingTrajectoryFromSolution(solution);
 
+  // change in reference height doesn't affect terrain normals!
   auto terrain_id = static_cast<HeightMap::TerrainID>(terrain);
   auto terrain_ = HeightMap::MakeTerrain(terrain_id);
 

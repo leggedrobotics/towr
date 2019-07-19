@@ -7,6 +7,7 @@
 
 #include <towr_drive/towr_drive_ros_interface.h>
 
+#include <std_msgs/Float64.h>
 #include <std_msgs/Int32.h>
 #include <std_msgs/Bool.h>
 
@@ -35,14 +36,14 @@ TowrDriveRosInterface::TowrDriveRosInterface () : current_state_robot_(4)
 
   towr_command_pub_ = n.advertise<towr_ros::TowrCommand>(towr_msgs::user_command, 1);
 
+  terrain_ref_height_pub_ = n.advertise<std_msgs::Float64>("/towr/terrain_ref_height", 1);
+
   plan_service_ = n.advertiseService("towr_drive/plan_motion", &TowrDriveRosInterface::planServiceCallback, this);
   replay_service_ = n.advertiseService("towr_drive/replay_motion", &TowrDriveRosInterface::replayServiceCallback, this);
 
-  initial_state_pub_  = n.advertise<xpp_msgs::RobotStateCartesian>
-                                          (xpp_msgs::robot_state_desired, 1);
+  initial_state_pub_  = n.advertise<xpp_msgs::RobotStateCartesian>(xpp_msgs::robot_state_desired, 1);
 
-  robot_parameters_pub_  = n.advertise<xpp_msgs::RobotParameters>
-                                    (xpp_msgs::robot_parameters, 1);
+  robot_parameters_pub_  = n.advertise<xpp_msgs::RobotParameters>(xpp_msgs::robot_parameters, 1);
 
   current_state_sub_ = n.subscribe(xpp_msgs::robot_state_current, 1, &TowrDriveRosInterface::currentStateCallback, this);
 

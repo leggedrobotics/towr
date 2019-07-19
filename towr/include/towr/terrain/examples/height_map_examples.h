@@ -58,10 +58,13 @@ private:
  */
 class Block : public HeightMap {
 public:
+  Block(double height_ref = 0.0);
   double GetHeight(double x, double y)  const override;
   double GetHeightDerivWrtX(double x, double y) const override;
 
 private:
+  double height_ref_;
+
   double block_start = 0.7;
   double length_     = 3.5;
   double height_     = 0.5; // [m]
@@ -75,9 +78,12 @@ private:
  */
 class Stairs : public HeightMap {
 public:
+  Stairs(double height_ref = 0.0);
   double GetHeight(double x, double y) const override;
 
 private:
+  double height_ref_;
+
   double first_step_start_  = 1.0;
   double first_step_width_  = 0.4;
   double height_first_step  = 0.2;
@@ -90,11 +96,14 @@ private:
  */
 class Gap : public HeightMap {
 public:
+  Gap(double height_ref = 0.0);
   double GetHeight(double x, double y) const override;
   double GetHeightDerivWrtX(double x, double y) const override;
   double GetHeightDerivWrtXX(double x, double y) const override;
 
 private:
+  double height_ref_;
+
   const double gap_start_ = 0.5; // 1.0;
   const double w = 2.0; //0.5;
   const double h = 0.5; //1.5;
@@ -120,10 +129,13 @@ private:
  */
 class Slope : public HeightMap {
 public:
+  Slope(double height_ref = 0.0);
   double GetHeight(double x, double y) const override;
   double GetHeightDerivWrtX(double x, double y) const override;
 
 private:
+  double height_ref_;
+
   const double slope_start_  = 1.0;
   const double up_length_    = 1.0;
   const double down_length_  = 1.0;
@@ -176,11 +188,14 @@ private:
  */
 class Step : public HeightMap {
 public:
+  Step(double height_ref = 0.0);
   double GetHeight(double x, double y) const override;
   double GetHeightDerivWrtX(double x, double y) const override;
   double GetHeightDerivWrtXX(double x, double y) const override;
 
 private:
+  double height_ref_;
+
   double slope_		 = -std::tan(45*M_PI/180.0); //std::tan(1.141096660643472);
   double height_     = -0.2;
   double step_start_ = 0.6; //1.0;
@@ -194,10 +209,13 @@ private:
  */
 class TwoStep : public HeightMap {
 public:
+  TwoStep(double height_ref = 0.0);
   double GetHeight(double x, double y) const override;
   double GetHeightDerivWrtX(double x, double y) const override;
 
 private:
+  double height_ref_;
+
   double step_start = 1.0;
   double step_end   = 1.1;
   double height     = 0.2;
@@ -211,11 +229,14 @@ private:
  */
 class TwoSlope : public HeightMap {
 public:
+  TwoSlope(double height_ref = 0.0);
   double GetHeight(double x, double y) const override;
   double GetHeightDerivWrtX(double x, double y) const override;
   double GetHeightDerivWrtXX(double x, double y) const override;
 
 private:
+  double height_ref_;
+
   double dx = 0.025; //0.0326352;
   double dh = 0.05;  //0.05;
 
@@ -236,10 +257,13 @@ private:
  */
 class SlopePlat : public HeightMap {
 public:
+  SlopePlat(double height_ref = 0.0);
   double GetHeight(double x, double y) const override;
   double GetHeightDerivWrtX(double x, double y) const override;
 
 private:
+  double height_ref_;
+
   const double slope_start_   = 1.0;
   const double up_length_     = 0.091651513899117; //0.101905089898886; // 0.2;
   const double down_length_   = 0.2;
@@ -258,10 +282,13 @@ private:
  */
 class MultipleSlopes : public HeightMap {
 public:
+  MultipleSlopes(double height_ref = 0.0);
   double GetHeight(double x, double y) const override;
   double GetHeightDerivWrtX(double x, double y) const override;
 
 private:
+  double height_ref_;
+
   const double slope_start_   = 1.0;
   const double up_length_     = 0.2; //0.091651513899117; //0.101905089898886;
   const double down_length_   = 0.2;
@@ -282,11 +309,14 @@ private:
  */
 class SineLowFreq : public HeightMap {
 public:
+  SineLowFreq(double height_ref = 0.0);
   double GetHeight(double x, double y) const override;
   double GetHeightDerivWrtX(double x, double y) const override;
   double GetHeightDerivWrtXX(double x, double y) const override;
 
 private:
+  double height_ref_;
+
   const double sine_start_ = 0.5;
   const double freq_ = 2.0;
   const double amp_  = 0.2;
@@ -300,11 +330,14 @@ private:
  */
 class SineHighFreq : public HeightMap {
 public:
+  SineHighFreq(double height_ref = 0.0);
   double GetHeight(double x, double y) const override;
   double GetHeightDerivWrtX(double x, double y) const override;
   double GetHeightDerivWrtXX(double x, double y) const override;
 
 private:
+  double height_ref_;
+
   const double sine_start_ = 0.5;
   const double freq_ = 2.0*M_PI/0.7;
   const double amp_  = 0.06;
@@ -318,11 +351,14 @@ private:
  */
 class Rough : public HeightMap {
 public:
+  Rough(double height_ref = 0.0);
   double GetHeight(double x, double y) const override;
   double GetHeightDerivWrtX(double x, double y) const override;
   double GetHeightDerivWrtXX(double x, double y) const override;
 
 private:
+  double height_ref_;
+
   const double rough_start_ = 0.5;
   const double freq_  = 5.0;
   const double amp_   = 0.1;
