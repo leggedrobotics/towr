@@ -71,6 +71,7 @@ private:
   // costs
   CostPtrVec GetCost(const Parameters::CostName& id, double weight) const;
   CostPtrVec MakeTorqueCost(double weight) const;
+  CostPtrVec MakeWheelsMotionCost(double weight) const;
 
   // for printing the stability angles
   void UpdateDynamicsModel (const SplineHolderDrive& solution, double t) const;

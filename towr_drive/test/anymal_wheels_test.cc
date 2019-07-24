@@ -151,7 +151,7 @@ int main(int argc, char **argv)
   auto solver = std::make_shared<ifopt::IpoptSolver>();
   solver->SetOption("linear_solver", "ma97"); // ma27, ma57, ma77, ma86, ma97
   solver->SetOption("jacobian_approximation", "exact"); // "finite difference-values"
-  solver->SetOption("max_cpu_time", 60.0); // 3 min
+  solver->SetOption("max_cpu_time", 180.0); // 3 min
   solver->SetOption("print_level", 5);
 
   // derivative test

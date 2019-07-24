@@ -44,6 +44,7 @@ ParametersDrive::ParametersDrive()
 
   // cost
 //  costs_.push_back({TorqueCostID, 1.0});  // weighed by 1.0 relative to other costs
+//  costs_.push_back({WheelsMotionCostID, -1.0});  // weighed by 1.0 relative to other costs
 }
 
 void
@@ -60,6 +61,11 @@ void
 ParametersDrive::SetNonHolonomicConstraint () {
   constraints_.push_back(WheelsNonHolonomic);
   use_non_holonomic_constraint_ = true;
+}
+
+void
+ParametersDrive::SetWheelsMotionCost () {
+  costs_.push_back({WheelsMotionCostID, -10.0});
 }
 
 ParametersDrive::VecTimes

@@ -7,9 +7,9 @@ clear;
 close all;
 
 %% Extract the desired 3D vectors from the bag
-% filePath = '../bags/anymal_wheels_matlab.bag';
+filePath = '../bags/anymal_wheels_matlab.bag';
 % filePath = '../bags/multiple_slopes_bear_matlab.bag';
-filePath = '../bags/step_bear_v2_matlab.bag';
+% filePath = '../bags/step_bear_v2_matlab.bag';
 % filePath = '/home/vivian/.ros/towr_trajectory.bag';
 bag_all = rosbag(filePath);
 
@@ -245,6 +245,8 @@ xlabel('t [s]'); ylabel('v_z [m/s]')
 % subplot(3,2,6)
 % plot(t,base_vel_ang(:,3)); grid on;
 % xlabel('t [s]'); ylabel('\omega_z [rad/s]')
+
+figure(); plot(t,pos_LF(:,3)-pos_RF(:,3)); grid on;
 
 % foot motion
 h = figure();

@@ -83,6 +83,7 @@ public:
   void SetWheelsMotionConstraint ();
   void SetEndeffectorRomConstraint ();
   void SetNonHolonomicConstraint ();
+  void SetWheelsMotionCost ();
 
 };
 

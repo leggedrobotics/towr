@@ -15,6 +15,29 @@ constrain_final_base_orientation: true
 offset_reference_height: false
 offset_height: -0.06
 
+set_wheels_motion_cost: true
+
+SlopePlat:
+# 45 up, 63 down: 3.2, 0.4, 7.0, 400, shift, ff
+# 63 up, 45 down: 3.2, 0.4, 7.0, 400, shift, ff
+# 45 up, 45 down: 1.8, 0.65, 4.2, 400, shift, ff (slow)
+# 45 up, 45 down: 1.8, 0.65, 3.2, 400, shift, ff (fast)
+# 65 up, 45 down: 1.7, 0.65, 4.2, 400, shift, ff (slow)
+
+  initial_pose:
+    x: 0.0 # 3.0
+    y: 0.0
+    z: 0.5 #0.41
+   
+  final_pose: 
+    x: 1.8 # -3.2
+    y: 0.0
+    z: 0.62
+
+  total_time: 5.2 #3.5
+  use_wheels_motion_constraint: false
+  traction_limit: 300.0
+
 Flat:
 # 0.5m, 3s
   initial_pose:
@@ -101,27 +124,6 @@ SineLowFreq:
   total_time: 8.0
   use_wheels_motion_constraint: false
   traction_limit: 30.0
-
-SlopePlat:
-# 45 up, 63 down: 3.2, 0.4, 7.0, 400, shift, ff
-# 63 up, 45 down: 3.2, 0.4, 7.0, 400, shift, ff
-# 45 up, 45 down: 1.8, 0.65, 4.2, 400, shift, ff (slow)
-# 45 up, 45 down: 1.8, 0.65, 3.2, 400, shift, ff (fast)
-# 65 up, 45 down: 1.7, 0.65, 4.2, 400, shift, ff (slow)
-
-  initial_pose:
-    x: 0.0 # 3.0
-    y: 0.0
-    z: 0.5 #0.41
-   
-  final_pose: 
-    x: 1.8 # -3.2
-    y: 0.0
-    z: 0.62
-
-  total_time: 4.0 #3.5
-  use_wheels_motion_constraint: false
-  traction_limit: 300.0
 
 Slope:
   initial_pose:

@@ -27,6 +27,7 @@
 
 #include <towr/costs/node_cost.h>
 #include <towr/costs/torque_cost.h>
+#include <towr/costs/wheels_motion_cost.h>
 
 namespace towr {
 
@@ -363,8 +364,9 @@ NlpFormulationDrive::CostPtrVec
 NlpFormulationDrive::GetCost(const Parameters::CostName& name, double weight) const
 {
   switch (name) {
-    case Parameters::TorqueCostID:   return MakeTorqueCost(weight);
-    default: throw std::runtime_error("cost not defined for driving motions!");
+    case Parameters::TorqueCostID:   		return MakeTorqueCost(weight);
+    case Parameters::WheelsMotionCostID:    return MakeWheelsMotionCost(weight);
+    default: throw std::runtime_error("Cost not defined for driving motions!");
   }
 }
 
@@ -375,6 +377,16 @@ NlpFormulationDrive::MakeTorqueCost(double weight) const
 
   for (int ee=0; ee<params_drive_.GetEECount(); ee++)
     cost.push_back(std::make_shared<TorqueCost>(terrain_, weight, ee));
+
+  return cost;
+}
+
+NlpFormulationDrive::CostPtrVec
+NlpFormulationDrive::MakeWheelsMotionCost(double weight) const
+{
+  CostPtrVec cost;
+
+  cost.push_back(std::make_shared<WheelsMotionCost>(params_drive_.duration_ee_polynomial_, weight));
 
   return cost;
 }

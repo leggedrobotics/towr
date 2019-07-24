@@ -11,6 +11,8 @@
 
 #include <xpp_states/convert.h>
 
+#include <std_msgs/Float64.h>
+
 #include "yaml_tools/yaml_tools.hpp"
 
 namespace towr {
@@ -126,6 +128,10 @@ public:
     else
     	params_drive.SetEndeffectorRomConstraint();
 
+    bool set_wheels_motion_cost = basenode["set_wheels_motion_cost"].as<bool>();
+    if (set_wheels_motion_cost)
+      params_drive.SetWheelsMotionCost();
+
     bool use_non_holonomic_constraint = basenode["use_non_holonomic_constraint"].as<bool>();
     if (use_non_holonomic_constraint)
   	  params_drive.SetNonHolonomicConstraint();
@@ -194,7 +200,9 @@ public:
 	  // can also use the height of one of the wheels as reference for the terrain
 	  height_ref = init_state.ee_motion_.at(LH).GetByIndex(xpp::kPos).z();
     }
-    terrain_ref_height_pub_.publish(height_ref);  // publish reference height for visualization in RViz
+    std_msgs::Float64 height_msg;
+    height_msg.data = height_ref;
+    terrain_ref_height_pub_.publish(height_msg);  // publish reference height for visualization in RViz
 
     if (init_state_from_file) {
       formulation_.terrain_ = HeightMap::MakeTerrain(towr_terrain_id, height_ref);
@@ -244,19 +252,35 @@ public:
   }
 
   /**
-   * @brief Sets the paramters for IPOPT.
+   * @brief Sets the parameters for IPOPT.
    */
   void SetIpoptParameters(const TowrCommandMsg& msg) override
   {
+	yaml_tools::YamlNode basenode = yaml_tools::YamlNode::fromFile(config_file_);
+
+	if (basenode.isNull())
+	throw std::runtime_error("CONFIGURATION LOADING FAILED");
+
+	bool run_derivative_test = basenode["run_derivative_test"].as<bool>();
     solver_->SetOption("linear_solver", "ma97"); // ma27, ma57, ma77, ma86, ma97
 	solver_->SetOption("jacobian_approximation", "exact"); // "finite difference-values"
-	solver_->SetOption("max_cpu_time", 60.0); // 1 min
+	solver_->SetOption("max_cpu_time", 180.0); // 1 min
 	solver_->SetOption("print_level", 5);
 
     if (msg.play_initialization)
       solver_->SetOption("max_iter", 0);
     else
       solver_->SetOption("max_iter", 3000);
+
+    // derivative test
+    if (run_derivative_test) {
+      solver_->SetOption("max_iter", 0);
+      solver_->SetOption("derivative_test", "first-order");
+      solver_->SetOption("print_level", 4);
+      solver_->SetOption("derivative_test_tol", 1e-3);
+      //solver_->SetOption("derivative_test_perturbation", 1e-4);
+      //solver_->SetOption("derivative_test_print_all", "yes");
+    }
   }
 
 protected:
