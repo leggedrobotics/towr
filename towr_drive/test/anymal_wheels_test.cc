@@ -115,6 +115,10 @@ bool SetTowrParameters(NlpFormulationDrive *formulation, const std::string& file
 
   formulation->params_drive_.constrain_final_ee_pos_ = basenode["constrain_final_ee_pos"].as<bool>();
 
+  bool set_wheels_motion_cost = basenode["set_wheels_motion_cost"].as<bool>();
+  if (set_wheels_motion_cost)
+	formulation->params_drive_.SetWheelsMotionCost();
+
   return basenode["run_derivative_test"].as<bool>();
 
 }

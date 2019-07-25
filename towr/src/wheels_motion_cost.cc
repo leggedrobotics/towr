@@ -39,14 +39,16 @@ WheelsMotionCost::GetCost () const
     double lf_z = lf_motion[i].at(kPos).z();
     double rf_z = rf_motion[i].at(kPos).z();
     if (i == 0 || i == lf_motion.size()-1) {
-      cost += pow(lf_z - rf_z, 2);
+//      cost += pow(lf_z - rf_z, 2);
+      cost += dt_*(lf_z - rf_z)/2.0;
     }
     else {
-      cost += 2*pow(lf_z - rf_z, 2);
+//      cost += 2*pow(lf_z - rf_z, 2);
+      cost += dt_*(lf_z - rf_z);
     }
   }
 
-  return weight_*cost*(dt_/2.0);
+  return weight_*pow(cost,2);
 }
 
 int
@@ -63,15 +65,29 @@ WheelsMotionCost::FillJacobianBlock (std::string var_set, Jacobian& jac) const
   std::vector<Node> lf_motion = LF_motion_nodes_->GetNodes();
   std::vector<Node> rf_motion = RF_motion_nodes_->GetNodes();
 
+  double cost = 0.0;
+  for (int i = 0; i < lf_motion.size(); ++i ) {
+    double lf_z = lf_motion[i].at(kPos).z();
+    double rf_z = rf_motion[i].at(kPos).z();
+    if (i == 0 || i == lf_motion.size()-1) {
+      cost += dt_*(lf_z - rf_z)/2.0;
+    }
+    else {
+      cost += dt_*(lf_z - rf_z);
+    }
+  }
+
   if (var_set == id::EEWheelsMotionNodes(LF)) {
     for (int i = 0; i < lf_motion.size(); ++i ) {
 	  double lf_z = lf_motion[i].at(kPos).z();
 	  double rf_z = rf_motion[i].at(kPos).z();
 	  if (i == 0 || i == lf_motion.size()-1) {
-	    jac.coeffRef(0, GetCol(i, Z)) = 2*(lf_z - rf_z)*weight_*dt_/2.0;
+//	    jac.coeffRef(0, GetCol(i, Z)) = 2*(lf_z - rf_z)*weight_*dt_/2.0;
+		jac.coeffRef(0, GetCol(i, Z)) = weight_*cost*dt_;
 	  }
 	  else {
-		jac.coeffRef(0, GetCol(i, Z)) = 2*(lf_z - rf_z)*weight_*dt_;
+//		jac.coeffRef(0, GetCol(i, Z)) = 2*(lf_z - rf_z)*weight_*dt_;
+		jac.coeffRef(0, GetCol(i, Z)) = weight_*2*cost*dt_;
 	  }
     }
   }
@@ -81,10 +97,12 @@ WheelsMotionCost::FillJacobianBlock (std::string var_set, Jacobian& jac) const
   	  double lf_z = lf_motion[i].at(kPos).z();
   	  double rf_z = rf_motion[i].at(kPos).z();
 	  if (i == 0 || i == rf_motion.size()-1) {
-	    jac.coeffRef(0, GetCol(i, Z)) = -2*(lf_z - rf_z)*weight_*dt_/2.0;
+//	    jac.coeffRef(0, GetCol(i, Z)) = -2*(lf_z - rf_z)*weight_*dt_/2.0;
+		jac.coeffRef(0, GetCol(i, Z)) = -weight_*cost*dt_;
 	  }
 	  else {
-		jac.coeffRef(0, GetCol(i, Z)) = -2*(lf_z - rf_z)*weight_*dt_;
+//		jac.coeffRef(0, GetCol(i, Z)) = -2*(lf_z - rf_z)*weight_*dt_;
+		jac.coeffRef(0, GetCol(i, Z)) = -weight_*2*cost*dt_;
 	  }
     }
   }
