@@ -404,6 +404,42 @@ TwoStep::GetHeightDerivWrtX(double x, double y) const
   return dhdx;
 }
 
+// FIVE STEPS
+FiveSteps::FiveSteps(double height_ref)
+{
+  height_ref_ = height_ref;
+}
+
+double
+FiveSteps::GetHeight(double x, double y) const
+{
+  double h = 0.0;
+
+  for (int i = 0; i < num_steps; ++i) {
+	if (x >= (step_start + i*dist_steps))
+	  h = i*step_height + slope*(x-(step_start + i*dist_steps));
+	if (x >= (step_start + i*dist_steps + step_width))
+	  h = (i+1)*step_height;
+  }
+
+  return h + height_ref_;
+}
+
+double
+FiveSteps::GetHeightDerivWrtX(double x, double y) const
+{
+  double dhdx = 0.0;
+
+  for (int i = 0; i < num_steps; ++i) {
+	if (x >= (step_start + i*dist_steps))
+	  dhdx = slope;
+	if (x >= (step_start + i*dist_steps + step_width))
+	  dhdx = 0.0;
+  }
+
+  return dhdx;
+}
+
 // SLOPE PLAT
 SlopePlat::SlopePlat(double height_ref)
 {

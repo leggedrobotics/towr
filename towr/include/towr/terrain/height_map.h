@@ -89,6 +89,7 @@ public:
 				   StepID,
 				   TwoSlopeID,
 				   TwoStepID,
+				   FiveStepsID,
 				   SineLowFreqID,
 				   SineHighFreqID,
 				   RoughID,
@@ -196,6 +197,7 @@ const static std::map<HeightMap::TerrainID, std::string> terrain_names =
   {HeightMap::StepID,         	"Step"           },
   {HeightMap::TwoSlopeID,      	"TwoSlope"       },
   {HeightMap::TwoStepID,      	"TwoStep"        },
+  {HeightMap::FiveStepsID,      "FiveSteps"      },
   {HeightMap::SineLowFreqID,  	"SineLowFreq"    },
   {HeightMap::SineHighFreqID, 	"SineHighFreq"   },
   {HeightMap::RoughID,        	"Rough"      	 }
@@ -215,6 +217,7 @@ const static std::map<std::string, HeightMap::TerrainID> terrain_ids =
   {"Step", 			 HeightMap::StepID         	  },
   {"TwoSlope", 		 HeightMap::TwoSlopeID        },
   {"TwoStep", 		 HeightMap::TwoStepID,        },
+  {"FiveSteps", 	 HeightMap::FiveStepsID,      },
   {"SineLowFreq", 	 HeightMap::SineLowFreqID,    },
   {"SineHighFreq", 	 HeightMap::SineHighFreqID,   },
   {"Rough", 		 HeightMap::RoughID,          }

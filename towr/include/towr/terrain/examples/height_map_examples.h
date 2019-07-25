@@ -225,6 +225,26 @@ private:
 };
 
 /**
+ * @brief Sample terrain with two steps in height with a linear transition.
+ */
+class FiveSteps : public HeightMap {
+public:
+  FiveSteps(double height_ref = 0.0);
+  double GetHeight(double x, double y) const override;
+  double GetHeightDerivWrtX(double x, double y) const override;
+
+private:
+  double height_ref_;
+
+  double step_start  = 1.0;
+  double step_width  = 0.1;
+  double step_height = 0.2;
+  double dist_steps	 = 0.5; //0.4;
+  double slope = 2;
+  int num_steps = 5;
+};
+
+/**
  * @brief Sample terrain with one small slope on the left and another on the right.
  */
 class TwoSlope : public HeightMap {

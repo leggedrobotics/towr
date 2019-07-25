@@ -1,5 +1,5 @@
-terrain: "SlopePlat"
-# Options: Flat, Step, Rough, SineLowFreq, SineHighFreq, SlopePlat, Gap, TwoSlope, MultipleSlopes, TwoStep
+terrain: "FiveSteps"
+# Options: Flat, Step, Rough, SineLowFreq, SineHighFreq, SlopePlat, Gap, TwoSlope, MultipleSlopes, TwoStep, FiveSteps
 run_derivative_test: false
 plot_trajectory: false
 play_initialization: false
@@ -15,7 +15,7 @@ constrain_final_base_orientation: true
 offset_reference_height: false
 offset_height: -0.06
 
-set_wheels_motion_cost: true
+set_wheels_motion_cost: false
 
 SlopePlat:
 # 45 up, 63 down: 3.2, 0.4, 7.0, 400, shift, ff
@@ -94,6 +94,23 @@ Rough:
   total_time: 3.5
   use_wheels_motion_constraint: false
   traction_limit: 30.0
+
+FiveSteps:
+# no shift: 8.2, 8.6, 9.6 (only RViz)
+# shift: 
+  initial_pose:
+    x: 0.0
+    y: 0.0
+    z: 0.5
+   
+  final_pose: 
+    x: 3.6
+    y: 0.0
+    z: 1.45
+
+  total_time: 7.2 # 8.2, 8.6, 9.6
+  use_wheels_motion_constraint: false
+  traction_limit: 400.0
 
 SineHighFreq:
   initial_pose:

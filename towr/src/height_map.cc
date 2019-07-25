@@ -50,6 +50,7 @@ HeightMap::MakeTerrain (TerrainID type, double height_ref)
     case StepID:		   return std::make_shared<Step>(height_ref); break;
     case TwoSlopeID:	   return std::make_shared<TwoSlope>(height_ref); break;
     case TwoStepID:  	   return std::make_shared<TwoStep>(height_ref); break;
+    case FiveStepsID:  	   return std::make_shared<FiveSteps>(height_ref); break;
     case SineLowFreqID:	   return std::make_shared<SineLowFreq>(height_ref); break;
     case SineHighFreqID:   return std::make_shared<SineHighFreq>(height_ref); break;
     case RoughID:		   return std::make_shared<Rough>(height_ref); break;
