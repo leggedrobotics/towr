@@ -366,6 +366,7 @@ NlpFormulationDrive::GetCost(const Parameters::CostName& name, double weight) co
   switch (name) {
     case Parameters::TorqueCostID:   		return MakeTorqueCost(weight);
     case Parameters::WheelsMotionCostID:    return MakeWheelsMotionCost(weight);
+    case Parameters::BasePitchCostID:		return MakeBasePitchCost(weight);
     default: throw std::runtime_error("Cost not defined for driving motions!");
   }
 }
@@ -387,6 +388,16 @@ NlpFormulationDrive::MakeWheelsMotionCost(double weight) const
   CostPtrVec cost;
 
   cost.push_back(std::make_shared<WheelsMotionCost>(params_drive_.duration_ee_polynomial_, weight));
+
+  return cost;
+}
+
+NlpFormulationDrive::CostPtrVec
+NlpFormulationDrive::MakeBasePitchCost(double weight) const
+{
+  CostPtrVec cost;
+
+  cost.push_back(std::make_shared<NodeCost>(id::base_ang_nodes, kPos, Y, weight));
 
   return cost;
 }

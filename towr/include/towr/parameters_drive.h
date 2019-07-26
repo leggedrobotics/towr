@@ -84,6 +84,7 @@ public:
   void SetEndeffectorRomConstraint ();
   void SetNonHolonomicConstraint ();
   void SetWheelsMotionCost ();
+  void SetBasePitchCost ();
 
 };
 

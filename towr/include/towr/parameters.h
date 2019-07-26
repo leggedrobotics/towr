@@ -162,7 +162,8 @@ public:
   enum CostName       { ForcesCostID,    	///< sets NodeCost on force nodes
                         EEMotionCostID,   	///< sets NodeCost on endeffector velocity
 						TorqueCostID,	  	// minimizes total torque on the wheels
-						WheelsMotionCostID  // force one wheels at a time motion! (hack!!)
+						WheelsMotionCostID, // force one wheel at a time motion! (hack!!)
+						BasePitchCostID			// minimize base pitch angle
   };
 
   using CostWeights      = std::vector<std::pair<CostName, double>>;

@@ -132,6 +132,10 @@ public:
     if (set_wheels_motion_cost)
       params_drive.SetWheelsMotionCost();
 
+    bool set_base_pitch_cost = basenode["set_base_pitch_cost"].as<bool>();
+    if (set_base_pitch_cost)
+      params_drive.SetBasePitchCost();
+
     bool use_non_holonomic_constraint = basenode["use_non_holonomic_constraint"].as<bool>();
     if (use_non_holonomic_constraint)
   	  params_drive.SetNonHolonomicConstraint();

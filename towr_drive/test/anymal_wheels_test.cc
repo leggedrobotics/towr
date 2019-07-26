@@ -119,6 +119,10 @@ bool SetTowrParameters(NlpFormulationDrive *formulation, const std::string& file
   if (set_wheels_motion_cost)
 	formulation->params_drive_.SetWheelsMotionCost();
 
+  bool set_base_pitch_cost = basenode["set_base_pitch_cost"].as<bool>();
+  if (set_base_pitch_cost)
+	formulation->params_drive_.SetBasePitchCost();
+
   return basenode["run_derivative_test"].as<bool>();
 
 }

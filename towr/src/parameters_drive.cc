@@ -68,6 +68,11 @@ ParametersDrive::SetWheelsMotionCost () {
   costs_.push_back({WheelsMotionCostID, -10.0});
 }
 
+void
+ParametersDrive::SetBasePitchCost () {
+  costs_.push_back({BasePitchCostID, 1.0});
+}
+
 ParametersDrive::VecTimes
 ParametersDrive::GetEEWheelsPolyDurations() const
 {
