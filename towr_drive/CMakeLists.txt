@@ -74,6 +74,14 @@ target_link_libraries(send_trajectory_from_bag
   ${catkin_LIBRARIES}
 )
 
+# Extract geometric messges from TOWR rosbag (for matlab)
+add_executable(extract_geom_msg_rosbag
+  src/extract_geom_msg_rosbag.cc
+)
+target_link_libraries(extract_geom_msg_rosbag
+  ${catkin_LIBRARIES}
+)
+
 #############
 ## Install ##
 #############

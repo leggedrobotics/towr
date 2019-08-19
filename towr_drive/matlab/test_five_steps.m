@@ -16,11 +16,11 @@ plot(x,h); grid on; axis equal;
 
 function h = five_steps(x)
 
-height_ref = 0.0;
+height_ref  = 0.0;
 step_start  = 1.0;
 step_width  = 0.1;
 step_height = 0.2;
-dist_steps	= 0.45; % 0.5; % 0.4
+dist_steps	= 0.5; % 0.4;
 slope = 2;
 num_steps = 5;
 

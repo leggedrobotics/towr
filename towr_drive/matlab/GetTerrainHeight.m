@@ -46,7 +46,7 @@ switch type
     case "Step"
        step_start = 1.0;
        height = 0.2;
-       slope = 2.182178902359924;
+       slope = 2.182178902359924; % 10;
        step_end = step_start + height/slope;
        for i = 1:length(x)
          if x(i) >= step_start 

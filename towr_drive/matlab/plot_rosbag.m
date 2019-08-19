@@ -7,9 +7,8 @@ clear;
 close all;
 
 %% Extract the desired 3D vectors from the bag
-% filePath = '../bags/anymal_wheels_matlab.bag';
-% filePath = '../bags/multiple_slopes_bear_matlab.bag';
-filePath = '../bags/step_bear_v1_matlab.bag';
+filePath = '../bags/anymal_wheels_matlab.bag';
+% filePath = '../bags/step_bear_v1_matlab.bag';
 % filePath = '/home/vivian/.ros/towr_trajectory.bag';
 bag_all = rosbag(filePath);
 

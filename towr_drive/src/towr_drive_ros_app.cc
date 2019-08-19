@@ -200,9 +200,9 @@ public:
     double height_ref = 0.0;
     bool offset_reference_height = basenode["offset_reference_height"].as<bool>();
     if (offset_reference_height) {
-//	  height_ref = basenode["offset_height"].as<double>();
+	  height_ref = basenode["offset_height"].as<double>();
 	  // can also use the height of one of the wheels as reference for the terrain
-	  height_ref = init_state.ee_motion_.at(LH).GetByIndex(xpp::kPos).z();
+//	  height_ref = init_state.ee_motion_.at(LH).GetByIndex(xpp::kPos).z();
     }
     std_msgs::Float64 height_msg;
     height_msg.data = height_ref;

@@ -14,7 +14,7 @@ ParametersDrive::ParametersDrive()
 {
   duration_ee_polynomial_ = duration_base_polynomial_;
   wheels_torque_limit_ = 32.0;
-  max_wheels_acc_ = {6.0, 0.0, 6.0};
+  max_wheels_acc_ = {10.0, 0.0, 10.0};
   max_base_acc_lin_ = {8.0, 8.0, 8.0};
   max_base_acc_ang_ = {5.0, 5.0, 5.0};
   wheels_radius_ = 0.08;
@@ -23,6 +23,8 @@ ParametersDrive::ParametersDrive()
   constrain_final_ee_pos_ = false;
 
   bounds_initial_lin_pos_ = {X, Z};
+
+//  dt_constraint_range_of_motion_ = 0.02;
 
   DeleteAllConstraints();  // clear the constraints initialized in the base class
   DeleteAllCosts();		   // clear the costs initialized in the base class

@@ -1,4 +1,4 @@
-terrain: "SlopePlat"
+terrain: "FiveSteps"
 # Options: Flat, Step, Rough, SineLowFreq, SineHighFreq, SlopePlat, Gap, TwoSlope, MultipleSlopes, TwoStep, FiveSteps
 run_derivative_test: false
 plot_trajectory: false
@@ -31,29 +31,28 @@ SlopePlat:
     z: 0.5 #0.41
    
   final_pose: 
-    x: 1.8 # -3.2
+    x: 1.8 # 1.8
     y: 0.0
-    z: 0.62
+    z: 0.65
 
-  total_time: 4.2 #3.5
+  total_time: 4.5 #4.2 (4.0 for simulations with the state estimator)
   use_wheels_motion_constraint: false
-  traction_limit: 300.0
+  traction_limit: 400.0
 
 Flat:
-# 0.5m, 3s
   initial_pose:
     x: 0.0
     y: 0.0
-    z: 0.45
+    z: 0.5
    
   final_pose: 
-    x: -0.5
+    x: 2.0
     y: 0.0
-    z: 0.45
+    z: 0.5
 
-  total_time: 1.0
+  total_time: 4.0
   use_wheels_motion_constraint: false
-  traction_limit: 100.0 #30.0
+  traction_limit: 400.0 #30.0
 
 Step:
 # slope 1 up, no shift, 1.8, 0.65, 3s, 200N, tt
@@ -65,19 +64,17 @@ Step:
 # slope 2 down near, shift, -1.2, 0.45, 2.4s, 300N, ff
 # slope 1 up near, shift, 1.2, 0.65, 2.4s, 300N, ff
 
-# slope 65 up, shift, 1.8, 0.65, 3.4s, 200N, ff -> ok, but no convergence
-
   initial_pose:
     x: 0.0
     y: 0.0
     z: 0.41
    
   final_pose: 
-    x: 1.8
+    x: 2.0
     y: 0.0
-    z: 0.61
+    z: 0.31
 
-  total_time: 3.5
+  total_time: 2.5
   use_wheels_motion_constraint: false
   traction_limit: 300.0
 
@@ -97,8 +94,6 @@ Rough:
   traction_limit: 30.0
 
 FiveSteps:
-# no shift: 8.2, 8.6, 9.6 (only RViz)
-# shift: 
   initial_pose:
     x: 0.0
     y: 0.0
@@ -186,7 +181,7 @@ TwoSlope:
 
   total_time: 3.5 #4.0
   use_wheels_motion_constraint: false
-  traction_limit: 300.0 #300.0
+  traction_limit: 300.0
 
 MultipleSlopes:
 # 45 up, 63 down: 3.2, 0.5, 6.8, 400, shift, ff
@@ -194,10 +189,10 @@ MultipleSlopes:
   initial_pose:
     x: 0.0
     y: 0.0
-    z: 0.5
+    z: 0.42
    
   final_pose: 
-    x: 1.8
+    x: 1.9
     y: 0.0
     z: 0.50
 
