@@ -1,10 +1,10 @@
-terrain: "FiveSteps"
+terrain: "SlopePlat"
 # Options: Flat, Step, Rough, SineLowFreq, SineHighFreq, SlopePlat, Gap, TwoSlope, MultipleSlopes, TwoStep, FiveSteps
 run_derivative_test: false
 plot_trajectory: false
 play_initialization: false
 shift_initialization: true
-init_state_from_file: true  # 'true' if initial_pose for base is read from this file, 'false' if it is set by the current anymal state
+init_state_from_file: false  # 'true' if initial_pose for base is read from this file, 'false' if it is set by the current anymal state
 
 constrain_initial_y_base: true
 constrain_final_y_base:   false 
@@ -19,23 +19,17 @@ set_wheels_motion_cost: true
 set_base_pitch_cost: false
 
 SlopePlat:
-# 45 up, 63 down: 3.2, 0.4, 7.0, 400, shift, ff
-# 63 up, 45 down: 3.2, 0.4, 7.0, 400, shift, ff
-# 45 up, 45 down: 1.8, 0.65, 4.2, 400, shift, ff (slow)
-# 45 up, 45 down: 1.8, 0.65, 3.2, 400, shift, ff (fast)
-# 65 up, 45 down: 1.7, 0.65, 4.2, 400, shift, ff (slow)
-
   initial_pose:
-    x: 0.0 # 3.0
+    x: 0.0 
     y: 0.0
-    z: 0.5 #0.41
+    z: 0.5 
    
   final_pose: 
-    x: 1.8 # 1.8
+    x: 1.8
     y: 0.0
     z: 0.65
 
-  total_time: 4.5 #4.2 (4.0 for simulations with the state estimator)
+  total_time: 4.2
   use_wheels_motion_constraint: false
   traction_limit: 400.0
 
@@ -43,38 +37,30 @@ Flat:
   initial_pose:
     x: 0.0
     y: 0.0
-    z: 0.5
+    z: 0.48
    
   final_pose: 
     x: 2.0
     y: 0.0
-    z: 0.5
+    z: 0.48
 
-  total_time: 4.0
+  total_time: 6.0
   use_wheels_motion_constraint: false
-  traction_limit: 400.0 #30.0
+  traction_limit: 30.0 
 
 Step:
-# slope 1 up, no shift, 1.8, 0.65, 3s, 200N, tt
-# slope 1 down, no shift, -1.8, 0.45, 3s, 200N, tt
-# slope 2 up, shift, 1.7, 0.65, 3.5s, 300N, ff
-# slope 2 up, shift, 1.7, 0.65, 4.2s, 400N, ff (also works)
-# slope 2 down, shift, -1.7, 0.45, 4.5s, 300N, ff
-# slope 2 up near, shift, 1.2, 0.65, 2.4s, 300N, ff
-# slope 2 down near, shift, -1.2, 0.45, 2.4s, 300N, ff
-# slope 1 up near, shift, 1.2, 0.65, 2.4s, 300N, ff
 
   initial_pose:
     x: 0.0
     y: 0.0
-    z: 0.41
+    z: 0.45
    
   final_pose: 
-    x: 2.0
+    x: 2.5
     y: 0.0
-    z: 0.31
+    z: 0.22
 
-  total_time: 2.5
+  total_time: 5.0
   use_wheels_motion_constraint: false
   traction_limit: 300.0
 
@@ -184,8 +170,6 @@ TwoSlope:
   traction_limit: 300.0
 
 MultipleSlopes:
-# 45 up, 63 down: 3.2, 0.5, 6.8, 400, shift, ff
-# 63 up, 45 down: 3.2, 0.5, 6.8, 400, shift, ff
   initial_pose:
     x: 0.0
     y: 0.0
@@ -196,7 +180,7 @@ MultipleSlopes:
     y: 0.0
     z: 0.50
 
-  total_time: 4.0 #6.8
+  total_time: 4.0
   use_wheels_motion_constraint: false
   traction_limit: 400.0
 
