@@ -121,8 +121,8 @@ NlpFormulationDrive::MakeEEWheelsMotionVariables () const
     nodes->SetByLinearInterpolation(initial_ee_W_.at(ee), Vector3d(x,y,z), T);
 
     // initial and final wheel's speed = 0 (optional)
-//    nodes->AddStartBound(kVel, {X,Y,Z}, Vector3d(0.0, 0.0, 0.0));  // wheels vel zero at the beginning
-//    nodes->AddFinalBound(kVel, {X,Y,Z}, Vector3d(0.0, 0.0, 0.0));  // wheels vel zero at the end
+	nodes->AddStartBound(kVel, {X,Y,Z}, Vector3d(0.0, 0.0, 0.0));  // wheels vel zero at the beginning
+	nodes->AddFinalBound(kVel, {X,Y,Z}, Vector3d(0.0, 0.0, 0.0));  // wheels vel zero at the end
 
     // initial wheel's position
     nodes->AddStartBound(kPos, {Y}, initial_ee_W_.at(ee));

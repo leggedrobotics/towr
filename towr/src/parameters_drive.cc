@@ -24,8 +24,6 @@ ParametersDrive::ParametersDrive()
 
   bounds_initial_lin_pos_ = {X, Z};
 
-//  dt_constraint_range_of_motion_ = 0.02;
-
   DeleteAllConstraints();  // clear the constraints initialized in the base class
   DeleteAllCosts();		   // clear the costs initialized in the base class
 
@@ -37,7 +35,7 @@ ParametersDrive::ParametersDrive()
   constraints_.push_back(ForceWheels); 	   		// ensures unilateral forces and inside the friction cone
   constraints_.push_back(WheelsAccLimits); 		// constrain the acceleration on the wheels
   constraints_.push_back(BaseAccLimits);   		// constrain the acceleration of the base
-  constraints_.push_back(Stability);       		// ensure stability margin (weird roll angles)
+  constraints_.push_back(Stability);       		// ensure stability margin
 //  constraints_.push_back(WheelsNonHolonomic);  	// non-holonomic driving constraint
 
   // only one of these constraints are defined according to the config file
