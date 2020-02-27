@@ -50,7 +50,7 @@ int main()
   formulation.terrain_ = std::make_shared<FlatGround>(0.0);
 
   // Kinematic limits and dynamic parameters of the hopper
-  formulation.model_ = RobotModel(RobotModel::Monoped);
+  formulation.model_ = RobotModel(RobotModel::MonopedWheels);
 
   // set the initial position of the hopper
   formulation.initial_base_.lin.at(kPos).z() = 0.5;
