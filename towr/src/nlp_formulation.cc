@@ -119,7 +119,8 @@ NlpFormulation::MakeEndeffectorVariables () const
                                               params_.GetPhaseCount(ee),
                                               params_.ee_in_contact_at_start_.at(ee),
                                               id::EEMotionNodes(ee),
-                                              params_.ee_polynomials_per_swing_phase_);
+                                              params_.polynomials_per_stance_phase_,
+                                              params_.polynomials_per_swing_phase_);
 
     // initialize towards final footholds
     double yaw = final_base_.ang.p().z();
@@ -149,7 +150,8 @@ NlpFormulation::MakeForceVariables () const
                                               params_.GetPhaseCount(ee),
                                               params_.ee_in_contact_at_start_.at(ee),
                                               id::EEForceNodes(ee),
-                                              params_.force_polynomials_per_stance_phase_);
+                                              params_.polynomials_per_stance_phase_,
+                                              params_.polynomials_per_swing_phase_);
 
     // initialize with mass of robot distributed equally on all legs
     double m = model_.dynamic_model_->m();

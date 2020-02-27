@@ -41,23 +41,32 @@ Parameters::Parameters ()
 {
   // constructs optimization variables
   duration_base_polynomial_ = 0.1;
-  force_polynomials_per_stance_phase_ = 3;
-  ee_polynomials_per_swing_phase_ = 2; // so step can at least lift leg
+  polynomials_per_stance_phase_ = 3;
+  polynomials_per_swing_phase_ = 2; // so step can at least lift leg
 
   // parameters related to specific constraints (only used when it is added as well)
   force_limit_in_normal_direction_ = 1000;
-  dt_constraint_range_of_motion_ = 0.08;
+  dt_constraint_range_of_motion_ = 0.01;
   dt_constraint_dynamic_ = 0.1;
   dt_constraint_base_motion_ = duration_base_polynomial_/4.; // only for base RoM constraint
-  bound_phase_duration_ = std::make_pair(0.2, 1.0);  // used only when optimizing phase durations, so gait
+  bound_phase_duration_ = std::make_pair(0.2, 10.0);  // used only when optimizing phase durations, so gait
 
   // a minimal set of basic constraints
-  constraints_.push_back(Terrain);
-  constraints_.push_back(Dynamic); //Ensures that the dynamic model is fullfilled at discrete times.
-  constraints_.push_back(BaseAcc); // so accelerations don't jump between polynomials
-  constraints_.push_back(EndeffectorRom); //Ensures that the range of motion is respected at discrete times.
-  constraints_.push_back(Force); // ensures unilateral forces and inside the friction cone.
-  constraints_.push_back(Swing); // creates smoother swing motions, not absolutely required.
+  constraints_.clear();
+  constraints_.push_back(Parameters::ConstraintName::Terrain);
+
+  constraints_.push_back(Parameters::ConstraintName::Dynamic); //Ensures that the dynamic model is fullfilled at discrete times.
+  constraints_.push_back(Parameters::ConstraintName::BaseAcc); // so accelerations don't jump between polynomials
+  constraints_.push_back(Parameters::ConstraintName::EndeffectorRom); //Ensures that the range of motion is respected at discrete times.
+
+  constraints_.push_back(Parameters::ConstraintName::Force); // ensures unilateral forces and inside the friction cone.
+
+  //constraints_.push_back(Parameters::ConstraintName::Swing); // creates smoother swing motions, not absolutely required.
+  constraints_.push_back(Parameters::ConstraintName::TotalTime);//optimize timings
+
+  //constraints_.push_back(Parameters::ConstraintName::WheelsNonHolonomic);//Make sure the wheels move only how they should
+
+
 
   // optional costs to e.g penalize endeffector forces
   // costs_.push_back({ForcesCostID, 1.0}); weighed by 1.0 relative to other costs
@@ -76,7 +85,7 @@ void
 
 Parameters::OptimizePhaseDurations ()
 {
-  constraints_.push_back(TotalTime);
+  //constraints_.push_back(TotalTime); already above
 }
 
 Parameters::VecTimes
