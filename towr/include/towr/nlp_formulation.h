@@ -39,6 +39,24 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <towr/terrain/height_map.h>
 #include <towr/parameters.h>
 
+
+#include <towr/variables/variable_names.h>
+#include <towr/variables/phase_durations.h>
+
+#include <towr/constraints/base_motion_constraint.h>
+#include <towr/constraints/dynamic_constraint.h>
+#include <towr/constraints/force_constraint.h>
+#include <towr/constraints/range_of_motion_constraint.h>
+#include <towr/constraints/swing_constraint.h>
+#include <towr/constraints/terrain_constraint.h>
+#include <towr/constraints/total_duration_constraint.h>
+#include <towr/constraints/spline_acc_constraint.h>
+
+#include <towr/costs/node_cost.h>
+#include <towr/variables/nodes_variables_all.h>
+
+#include <iostream>
+
 namespace towr {
 
 /**
