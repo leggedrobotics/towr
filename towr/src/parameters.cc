@@ -53,18 +53,18 @@ Parameters::Parameters ()
 
   // a minimal set of basic constraints
   constraints_.clear();
-  constraints_.push_back(Parameters::ConstraintName::Terrain);
+  constraints_.push_back(Terrain);
 
-  constraints_.push_back(Parameters::ConstraintName::Dynamic); //Ensures that the dynamic model is fullfilled at discrete times.
-  constraints_.push_back(Parameters::ConstraintName::BaseAcc); // so accelerations don't jump between polynomials
-  constraints_.push_back(Parameters::ConstraintName::EndeffectorRom); //Ensures that the range of motion is respected at discrete times.
+  constraints_.push_back(Dynamic); //Ensures that the dynamic model is fullfilled at discrete times.
+  constraints_.push_back(BaseAcc); // so accelerations don't jump between polynomials
+  constraints_.push_back(EndeffectorRom); //Ensures that the range of motion is respected at discrete times.
 
-  constraints_.push_back(Parameters::ConstraintName::Force); // ensures unilateral forces and inside the friction cone.
+  constraints_.push_back(Force); // ensures unilateral forces and inside the friction cone.
 
-  //constraints_.push_back(Parameters::ConstraintName::Swing); // creates smoother swing motions, not absolutely required.
-  constraints_.push_back(Parameters::ConstraintName::TotalTime);//optimize timings
+  constraints_.push_back(Swing); // creates smoother swing motions, not absolutely required.
+  constraints_.push_back(TotalTime);//optimize timings
 
-  //constraints_.push_back(Parameters::ConstraintName::WheelsNonHolonomic);//Make sure the wheels move only how they should
+  //constraints_.push_back(WheelsNonHolonomic);//Make sure the wheels move only how they should
 
 
 
