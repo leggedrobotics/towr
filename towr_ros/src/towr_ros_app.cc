@@ -81,7 +81,7 @@ public:
     // increases optimization time, but sometimes helps find a solution for
     // more difficult terrain.
     if (msg.optimize_phase_durations)
-      params.OptimizePhaseDurations();
+      params.OptimizePhaseDurations();//does not do anything at the moment. Phase durations are always optimized
 
     return params;
   }
@@ -92,7 +92,7 @@ public:
   void SetIpoptParameters(const TowrCommandMsg& msg) override
   {
     // the HA-L solvers are alot faster, so consider installing and using
-    solver_->SetOption("linear_solver", "mumps"); // ma27, ma57
+    solver_->SetOption("linear_solver", "ma57"); // ma27, ma57, mumps
 
     // Analytically defining the derivatives in IFOPT as we do it, makes the
     // problem a lot faster. However, if this becomes too difficult, we can also
