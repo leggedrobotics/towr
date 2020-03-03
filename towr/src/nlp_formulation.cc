@@ -197,10 +197,10 @@ NlpFormulation::MakeContactScheduleVariables () const
   return vars;
 }
 
-NlpFormulation::ContraintPtrVec
+NlpFormulation::ConstraintPtrVec
 NlpFormulation::GetConstraints(const SplineHolder& spline_holder) const
 {
-  ContraintPtrVec constraints;
+  ConstraintPtrVec constraints;
   for (auto name : params_.constraints_)
     for (auto c : GetConstraint(name, spline_holder))
       constraints.push_back(c);
@@ -208,7 +208,7 @@ NlpFormulation::GetConstraints(const SplineHolder& spline_holder) const
   return constraints;
 }
 
-NlpFormulation::ContraintPtrVec
+NlpFormulation::ConstraintPtrVec
 NlpFormulation::GetConstraint (Parameters::ConstraintName name,
                            const SplineHolder& s) const
 {
@@ -226,7 +226,7 @@ NlpFormulation::GetConstraint (Parameters::ConstraintName name,
 }
 
 
-NlpFormulation::ContraintPtrVec
+NlpFormulation::ConstraintPtrVec
 NlpFormulation::MakeBaseRangeOfMotionConstraint (const SplineHolder& s) const
 {
   return {std::make_shared<BaseMotionConstraint>(params_.GetTotalTime(),
@@ -234,7 +234,7 @@ NlpFormulation::MakeBaseRangeOfMotionConstraint (const SplineHolder& s) const
                                                  s)};
 }
 
-NlpFormulation::ContraintPtrVec
+NlpFormulation::ConstraintPtrVec
 NlpFormulation::MakeDynamicConstraint(const SplineHolder& s) const
 {
   auto constraint = std::make_shared<DynamicConstraint>(model_.dynamic_model_,
@@ -244,10 +244,10 @@ NlpFormulation::MakeDynamicConstraint(const SplineHolder& s) const
   return {constraint};
 }
 
-NlpFormulation::ContraintPtrVec
+NlpFormulation::ConstraintPtrVec
 NlpFormulation::MakeRangeOfMotionBoxConstraint (const SplineHolder& s) const
 {
-  ContraintPtrVec c;
+  ConstraintPtrVec c;
 
   for (int ee=0; ee<params_.GetEECount(); ee++) {
     auto rom = std::make_shared<RangeOfMotionConstraint>(model_.kinematic_model_,
@@ -261,10 +261,10 @@ NlpFormulation::MakeRangeOfMotionBoxConstraint (const SplineHolder& s) const
   return c;
 }
 
-NlpFormulation::ContraintPtrVec
+NlpFormulation::ConstraintPtrVec
 NlpFormulation::MakeTotalTimeConstraint () const
 {
-  ContraintPtrVec c;
+  ConstraintPtrVec c;
   double T = params_.GetTotalTime();
 
   for (int ee=0; ee<params_.GetEECount(); ee++) {
@@ -275,10 +275,10 @@ NlpFormulation::MakeTotalTimeConstraint () const
   return c;
 }
 
-NlpFormulation::ContraintPtrVec
+NlpFormulation::ConstraintPtrVec
 NlpFormulation::MakeTerrainConstraint () const
 {
-  ContraintPtrVec constraints;
+  ConstraintPtrVec constraints;
 
   for (int ee=0; ee<params_.GetEECount(); ee++) {
     auto c = std::make_shared<TerrainConstraint>(terrain_, id::EEMotionNodes(ee));
@@ -288,10 +288,10 @@ NlpFormulation::MakeTerrainConstraint () const
   return constraints;
 }
 
-NlpFormulation::ContraintPtrVec
+NlpFormulation::ConstraintPtrVec
 NlpFormulation::MakeForceConstraint () const
 {
-  ContraintPtrVec constraints;
+  ConstraintPtrVec constraints;
 
   for (int ee=0; ee<params_.GetEECount(); ee++) {
     auto c = std::make_shared<ForceConstraint>(terrain_,
@@ -303,10 +303,10 @@ NlpFormulation::MakeForceConstraint () const
   return constraints;
 }
 
-NlpFormulation::ContraintPtrVec
+NlpFormulation::ConstraintPtrVec
 NlpFormulation::MakeSwingConstraint () const
 {
-  ContraintPtrVec constraints;
+  ConstraintPtrVec constraints;
 
   for (int ee=0; ee<params_.GetEECount(); ee++) {
     auto swing = std::make_shared<SwingConstraint>(id::EEMotionNodes(ee));
@@ -316,10 +316,10 @@ NlpFormulation::MakeSwingConstraint () const
   return constraints;
 }
 
-NlpFormulation::ContraintPtrVec
+NlpFormulation::ConstraintPtrVec
 NlpFormulation::MakeBaseAccConstraint (const SplineHolder& s) const
 {
-  ContraintPtrVec constraints;
+  ConstraintPtrVec constraints;
 
   constraints.push_back(std::make_shared<SplineAccConstraint>
                         (s.base_linear_, id::base_lin_nodes));
@@ -330,10 +330,10 @@ NlpFormulation::MakeBaseAccConstraint (const SplineHolder& s) const
   return constraints;
 }
 
-NlpFormulation::ContraintPtrVec
+NlpFormulation::ConstraintPtrVec
 NlpFormulation::GetCosts() const
 {
-  ContraintPtrVec costs;
+  ConstraintPtrVec costs;
   for (const auto& pair : params_.costs_)
     for (auto c : GetCost(pair.first, pair.second))
       costs.push_back(c);

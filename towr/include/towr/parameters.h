@@ -145,6 +145,7 @@ public:
                         BaseRom,        ///< sets BaseMotionConstraint
                         BaseAcc         ///< sets SplineAccConstraint
   };
+
   /**
    *  @brief Indentifiers to be used to add certain costs to the optimization
    *  problem.
@@ -173,7 +174,7 @@ public:
   /// Which constraints should be used in the optimization problem.
   UsedConstraints constraints_;
 
-  /// Which costs should be used in the optimiation problem.
+  /// Which costs should be used in the optimization problem.
   CostWeights costs_;
 
   /// Interval at which the dynamic constraint is enforced.
