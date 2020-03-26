@@ -61,6 +61,7 @@ add_library(${PROJECT_NAME} SHARED
   src/spline_holder.cc
   src/euler_converter.cc
   src/phase_durations_observer.cc
+  src/wheels_non_holonomic_constraint.cc
 )
 target_link_libraries(${PROJECT_NAME} 
   PUBLIC 
