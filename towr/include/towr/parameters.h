@@ -189,11 +189,16 @@ public:
   /// Fixed duration of each cubic polynomial describing the base motion.
   double duration_base_polynomial_;
 
-  /// Number of polynomials to parameterize each variable  during swing phases.
-  int polynomials_per_swing_phase_;
+    int polynomials_force_per_stance_phase_;
+    int polynomials_force_per_swing_phase_;
+    int polynomials_motion_per_stance_phase_;
+    int polynomials_motion_per_swing_phase_;
+
+    /// Number of polynomials to parameterize each variable  during swing phases.
+  //int polynomials_per_swing_phase_;
 
   /// Number of polynomials to parameterize each variable  during stance phase.
-  int polynomials_per_stance_phase_;
+  //int polynomials_per_stance_phase_;
 
   /// The maximum allowable force [N] in normal direction
   double force_limit_in_normal_direction_;
