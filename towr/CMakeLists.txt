@@ -17,6 +17,7 @@ set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 
 # The motion-planning problem formulated through variables and constraints
 add_library(${PROJECT_NAME} SHARED
+  src/wheels_non_holonomic_constraint.cc
   # sample formulation usage
   src/nlp_formulation.cc
   src/parameters.cc
@@ -61,7 +62,6 @@ add_library(${PROJECT_NAME} SHARED
   src/spline_holder.cc
   src/euler_converter.cc
   src/phase_durations_observer.cc
-  src/wheels_non_holonomic_constraint.cc
 )
 target_link_libraries(${PROJECT_NAME} 
   PUBLIC 

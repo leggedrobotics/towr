@@ -9,9 +9,11 @@
 #define TOWR_INCLUDE_TOWR_CONSTRAINTS_WHEELS_NON_HOLONOMIC_CONSTRAINT_H_
 
 #include <towr/variables/spline.h>
-#include <towr/variables/spline_holder_drive.h>
+#include <towr/variables/spline_holder.h>
 #include <towr/variables/cartesian_dimensions.h>
 #include <towr/variables/euler_converter.h>
+#include <iostream>
+#include <towr/variables/variable_names.h>
 
 #include <towr/terrain/height_map.h>
 
@@ -27,13 +29,14 @@ public:
   using Jacobian = Eigen::SparseMatrix<double, Eigen::RowMajor>;
 
   WheelsNonHolonomicConstraint (const HeightMap::Ptr& terrain, double T, double dt, const EE& ee,
-						        const SplineHolderDrive& spline_holder);
+						        const SplineHolder& spline_holder);
   virtual ~WheelsNonHolonomicConstraint () = default;
 
 private:
   NodeSpline::Ptr base_linear_;     	///< the linear position of the base.
   EulerConverter base_angular_; 		///< the orientation of the base.
   NodeSpline::Ptr ee_wheels_motion_;    ///< the linear position of the wheels.
+  PhaseDurations::Ptr durations_;
   int n_constraints_per_node_; 		  	///< number of constraint for each node.
   HeightMap::Ptr terrain_;    			///< the height map of the current terrain.
   EE ee_;

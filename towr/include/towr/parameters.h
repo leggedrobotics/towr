@@ -143,7 +143,8 @@ public:
                         Force,          ///< sets ForceConstraint
                         Swing,          ///< sets SwingConstraint
                         BaseRom,        ///< sets BaseMotionConstraint
-                        BaseAcc         ///< sets SplineAccConstraint
+                        BaseAcc,         ///< sets SplineAccConstraint
+			WheelsNonHolonomic
   };
 
   /**
@@ -179,6 +180,9 @@ public:
 
   /// Interval at which the dynamic constraint is enforced.
   double dt_constraint_dynamic_;
+
+  /// Interval at which the non-holonomic wheel constraint is enforced.
+  double dt_non_holonomic_;
 
   /// Interval at which the range of motion constraint is enforced.
   double dt_constraint_range_of_motion_;

@@ -4,9 +4,7 @@
  *  Created on: Apr 3, 2019
  *      Author: vivian
  */
-#include <iostream>
 #include <towr/constraints/wheels_non_holonomic_constraint.h>
-#include <towr/variables/variable_names.h>
 
 namespace towr {
 
@@ -18,7 +16,8 @@ WheelsNonHolonomicConstraint::WheelsNonHolonomicConstraint (const HeightMap::Ptr
   ee_ = ee;
   base_linear_  = spline_holder.base_linear_;
   base_angular_ = EulerConverter(spline_holder.base_angular_);
-  ee_wheels_motion_ = spline_holder.ee_wheels_motion_.at(ee_);
+  ee_wheels_motion_ = spline_holder.ee_motion_.at(ee_);
+  durations_ = spline_holder.phase_durations_.at(ee_);
 
   terrain_ = terrain;
 
@@ -37,7 +36,7 @@ WheelsNonHolonomicConstraint::UpdateConstraintAtInstance (double t, int k, Vecto
   Vector3d ee_acc_w = ee_wheels_motion_->GetPoint(t).a();
 
   Eigen::Matrix3d w_R_b = base_angular_.GetRotationMatrixBaseToWorld(t);
-  Eigen::Matrix3d b_R_w = w_R_b.transpose();
+  //Eigen::Matrix3d b_R_w = w_R_b.transpose();
 
   // rotation matrix from contact frame to world frame
   Eigen::Matrix3d c_R_w;
@@ -49,7 +48,7 @@ WheelsNonHolonomicConstraint::UpdateConstraintAtInstance (double t, int k, Vecto
   c_R_w << ex, ey, ez;
 
   Vector3d ee_vel_c = c_R_w * ee_vel_w;
-  Vector3d ee_acc_c = c_R_w * ee_acc_w;
+  //Vector3d ee_acc_c = c_R_w * ee_acc_w;
 
 //  std::cout << ee_ << ": vel_y = " << ee_vel_c(Y) << std::endl;
 
@@ -57,12 +56,19 @@ WheelsNonHolonomicConstraint::UpdateConstraintAtInstance (double t, int k, Vecto
 //  g(row++) = ee_acc_c(Y);
 }
 
-void
-WheelsNonHolonomicConstraint::UpdateBoundsAtInstance (double t, int k, VecBound& bounds) const
-{
-  int row = k*n_constraints_per_node_;
-  bounds.at(row++) = ifopt::Bounds(-0.01, 0.01);
-//  bounds.at(row++) = ifopt::BoundZero;
+void WheelsNonHolonomicConstraint::UpdateBoundsAtInstance(double t, int k, VecBound& bounds) const {
+  int row = k * n_constraints_per_node_;
+  double bound_if_not_contact = 1e20;
+  if ( durations_->IsContactPhase(t)){
+    bounds.at(row++) = ifopt::Bounds(-0.01, 0.01);
+
+  }else{
+    bounds.at(row++) = ifopt::Bounds(-bound_if_not_contact, bound_if_not_contact);
+
+  }
+
+
+  //  bounds.at(row++) = ifopt::BoundZero;
 }
 
 WheelsNonHolonomicConstraint::Jacobian
@@ -105,7 +111,7 @@ WheelsNonHolonomicConstraint::UpdateJacobianAtInstance(double t, int k, std::str
 {
   int row = k*n_constraints_per_node_;
 
-  if (var_set == id::EEWheelsMotionNodes(ee_)) {
+  if (var_set == id::EEMotionNodes(ee_)) {
 	Vector3d ee_pos_w = ee_wheels_motion_->GetPoint(t).p();
 	Vector3d ee_vel_w = ee_wheels_motion_->GetPoint(t).v();
 	Vector3d ee_acc_w = ee_wheels_motion_->GetPoint(t).a();
