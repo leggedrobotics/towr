@@ -206,6 +206,7 @@ NlpFormulation::GetConstraint (Parameters::ConstraintName name,
     case Parameters::Force:          return MakeForceConstraint();
     case Parameters::Swing:          return MakeSwingConstraint();
     case Parameters::BaseAcc:        return MakeBaseAccConstraint(s);
+    case Parameters::WheelsNonHolonomic:	return MakeWheelsNonHolonomicConstraint(s);
     default: throw std::runtime_error("constraint not defined!");
   }
 }
@@ -324,6 +325,20 @@ NlpFormulation::GetCosts() const
       costs.push_back(c);
 
   return costs;
+}
+
+NlpFormulation::ConstraintPtrVec
+NlpFormulation::MakeWheelsNonHolonomicConstraint (const SplineHolder& s) const
+{
+  ConstraintPtrVec c;
+
+  for (int ee=0; ee<params_.GetEECount(); ee++) {
+    auto constraint = std::make_shared<WheelsNonHolonomicConstraint>(terrain_, params_.GetTotalTime(),
+                                                                     params_.dt_non_holonomic_, ee, s);
+    c.push_back(constraint);
+  }
+
+  return c;
 }
 
 NlpFormulation::CostPtrVec
