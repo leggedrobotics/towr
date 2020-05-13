@@ -74,6 +74,18 @@ TowrRosInterface::GetGoalState(const TowrCommandMsg& msg) const
   return goal;
 }
 
+BaseState
+TowrRosInterface::GetGoalStatev(const TowrCommandMsg& msg) const
+{
+  BaseState goal;
+  goal.lin.at(kPos) = xpp::Convert::ToXpp(msg.goal_linv.pos);
+  goal.lin.at(kVel) = xpp::Convert::ToXpp(msg.goal_linv.vel);
+  goal.ang.at(kPos) = xpp::Convert::ToXpp(msg.goal_angv.pos);
+  goal.ang.at(kVel) = xpp::Convert::ToXpp(msg.goal_angv.vel);
+
+  return goal;
+}
+
 void
 TowrRosInterface::UserCommandCallback(const TowrCommandMsg& msg)
 {
@@ -89,6 +101,7 @@ TowrRosInterface::UserCommandCallback(const TowrCommandMsg& msg)
   int n_ee = formulation_.model_.kinematic_model_->GetNumberOfEndeffectors();
   formulation_.params_ = GetTowrParameters(n_ee, msg);
   formulation_.final_base_ = GetGoalState(msg);
+  formulation_.final_base_v_ = GetGoalStatev(msg);
 
   SetTowrInitialState();
 

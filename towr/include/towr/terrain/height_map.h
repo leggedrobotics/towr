@@ -93,6 +93,7 @@ public:
 		   SineLowFreqID,
 		   SineHighFreqID,
 		   RoughID,
+      RoundStairID,
                    TERRAIN_COUNT };
 
   static HeightMap::Ptr MakeTerrain(TerrainID type);
@@ -200,7 +201,8 @@ const static std::map<HeightMap::TerrainID, std::string> terrain_names =
   {HeightMap::FiveStepsID,      "FiveSteps"      },
   {HeightMap::SineLowFreqID,  	"SineLowFreq"    },
   {HeightMap::SineHighFreqID, 	"SineHighFreq"   },
-  {HeightMap::RoughID,        	"Rough"      	 }
+  {HeightMap::RoughID,        	"Rough"      	 },
+  {HeightMap::RoundStairID,        	"RoundStairID"      	 }
 };
 
 const static std::map<std::string, HeightMap::TerrainID> terrain_ids =
@@ -220,7 +222,8 @@ const static std::map<std::string, HeightMap::TerrainID> terrain_ids =
   {"FiveSteps", 	 HeightMap::FiveStepsID,      },
   {"SineLowFreq", 	 HeightMap::SineLowFreqID,    },
   {"SineHighFreq", 	 HeightMap::SineHighFreqID,   },
-  {"Rough", 		 HeightMap::RoughID,          }
+  {"Rough", 		 HeightMap::RoughID,          },
+  {"RoundStairID" ,HeightMap::RoundStairID	 }
 };
 
 } /* namespace towr */

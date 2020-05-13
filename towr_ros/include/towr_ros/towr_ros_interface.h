@@ -99,6 +99,7 @@ private:
   void UserCommandCallback(const TowrCommandMsg& msg);
   XppVec GetTrajectory() const;
   virtual BaseState GetGoalState(const TowrCommandMsg& msg) const;
+  virtual BaseState GetGoalStatev(const TowrCommandMsg& msg) const;
   void PublishInitialState();
   std::vector<XppVec>GetIntermediateSolutions();
   xpp_msgs::RobotParameters BuildRobotParametersMsg(const RobotModel& model) const;

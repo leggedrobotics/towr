@@ -31,6 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define TOWR_VARIABLES_NODE_VALUES_H_
 
 #include <ifopt/variable_set.h>
+#include <towr/terrain/height_map.h>
 
 #include "state.h"
 #include "nodes_observer.h"
@@ -184,7 +185,25 @@ public:
   void SetByLinearInterpolation(const VectorXd& initial_val,
                                 const VectorXd& final_val,
                                 double t_total);
-
+    void
+    SetByLinearInterpolation3(const VectorXd& initial_val,
+                                              const VectorXd& final_val,
+                                              double t_total,
+                                              double des_w,
+                                              double des_vx,
+                                              double des_vy,
+                                              double nominalStanceInBase,
+                              HeightMap::Ptr  terrain);
+    void
+    SetByLinearInterpolation55(const VectorXd& initial_val,
+                                               const VectorXd& final_val,
+                                               double t_total,
+                                               double des_w,
+                                               double des_vx,
+                                               double des_vy,
+                                               double nominalStanceInBase,
+                                               HeightMap::Ptr  terrain,
+                                               Eigen::Vector3d kinmodatee);
   /**
    * @brief Restricts the first node in the spline.
    * @param deriv Which derivative (pos,vel,...) should be restricted.

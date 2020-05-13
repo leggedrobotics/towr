@@ -329,21 +329,47 @@ private:
 /**
  * @brief Sample terrain with a slope and oscillations.
  */
-class Rough : public HeightMap {
-public:
-  double GetHeight(double x, double y) const override;
-  double GetHeightDerivWrtX(double x, double y) const override;
-  double GetHeightDerivWrtXX(double x, double y) const override;
+    class Rough : public HeightMap {
+    public:
+        double GetHeight(double x, double y) const override;
+        double GetHeightDerivWrtX(double x, double y) const override;
+        double GetHeightDerivWrtXX(double x, double y) const override;
 
-private:
-  const double rough_start_ = 0.5;
-  const double freq_  = 5.0;
-  const double amp_   = 0.1;
-  const double slope_ = 0.2;
-  const double n_cycles_ = 2.0;
-  const double rough_end_ = n_cycles_*2*M_PI/freq_ + rough_start_;
-  const double h_end_ = amp_*sin(freq_*(rough_end_-rough_start_))+slope_*(rough_end_-rough_start_);
-};
+    private:
+        const double rough_start_ = 0.5;
+        const double freq_  = 5.0;
+        const double amp_   = 0.1;
+        const double slope_ = 0.2;
+        const double n_cycles_ = 2.0;
+        const double rough_end_ = n_cycles_*2*M_PI/freq_ + rough_start_;
+        const double h_end_ = amp_*sin(freq_*(rough_end_-rough_start_))+slope_*(rough_end_-rough_start_);
+    };
+
+
+/**
+ * @brief Sample terrain with two steps in height with a linear transition.
+ */
+    class RoundStair : public HeightMap {
+    public:
+        double GetHeight(double x, double y) const override;
+        double GetHeightDerivWrtX(double x, double y) const override;
+
+    private:
+        double step_start = 1.0;
+        double step_end   = 1.1;
+        double height     = 0.3;
+
+        double dist_steps	= 1.5;
+        double slope = height/(step_end-step_start);
+
+        double step_start1 = 1.0;
+        double step_end1   = 1.1;
+        double height1     = 0.6;
+
+        double dist_steps1	= 1.5;
+        double slope1 = height1/(step_end1-step_start1);
+    };
+
 
 } /* namespace towr */
 

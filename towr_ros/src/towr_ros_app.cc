@@ -107,13 +107,13 @@ public:
     // deviation of 10e-4, which is fine. What to watch out for is deviations > 10e-2.
     // solver_->SetOption("derivative_test", "first-order");
 
-    solver_->SetOption("max_cpu_time", 40.0);
+    solver_->SetOption("max_cpu_time", 800.0);
     solver_->SetOption("print_level", 5);
 
     if (msg.play_initialization)
       solver_->SetOption("max_iter", 0);
     else
-      solver_->SetOption("max_iter", 3000);
+      solver_->SetOption("max_iter", 30000);
   }
 };
 

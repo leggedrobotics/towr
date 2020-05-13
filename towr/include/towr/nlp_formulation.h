@@ -119,6 +119,7 @@ public:
 
   BaseState initial_base_;
   BaseState final_base_;
+  BaseState final_base_v_;
   EEPos  initial_ee_W_;
   RobotModel model_;
   HeightMap::Ptr terrain_;

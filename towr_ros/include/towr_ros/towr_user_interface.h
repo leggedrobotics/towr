@@ -63,6 +63,7 @@ private:
   void PublishCommand();
 
   xpp::State3dEuler goal_geom_;
+  xpp::State3dEuler goal_geom_v_;
   double des_vx_;
   double des_vy_;
   double des_w_;

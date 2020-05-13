@@ -54,6 +54,7 @@ HeightMap::MakeTerrain (TerrainID type)
     case SineLowFreqID:	   return std::make_shared<SineLowFreq>(); break;
     case SineHighFreqID:   return std::make_shared<SineHighFreq>(); break;
     case RoughID:		   return std::make_shared<Rough>(); break;
+    case RoundStairID:		   return std::make_shared<RoundStair>(); break;
     default: assert(false); break;
   }
 }

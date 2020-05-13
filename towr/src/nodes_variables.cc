@@ -28,6 +28,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************/
 
 #include <towr/variables/nodes_variables.h>
+#include <iostream>
+#include <towr/variables/node_spline.h>
+#include <towr/variables/euler_converter.h>
 
 namespace towr {
 
@@ -121,6 +124,116 @@ const std::vector<Node>
 NodesVariables::GetNodes() const
 {
   return nodes_;
+}
+
+
+
+void
+NodesVariables::SetByLinearInterpolation55(const VectorXd& initial_val,
+                                         const VectorXd& final_val,
+                                         double t_total,
+                                           double des_w,
+                                           double des_vx,
+                                           double des_vy,
+                                           double nominalStanceInBase,
+                                           HeightMap::Ptr  terrain,
+                                           Eigen::Vector3d kinmodatee)
+{
+    // only set those that are part of optimization variables,
+    // do not overwrite phase-based parameterization
+    VectorXd dp = final_val-initial_val;
+    VectorXd average_velocity = dp / t_total;
+    int num_nodes = nodes_.size();
+
+    double theta0 = atan2(des_vy, des_vx);
+    double r = sqrt(des_vx * des_vx + des_vy * des_vy) / des_w;
+    assert (des_w != 0);
+
+    for (int idx=0; idx<GetRows(); ++idx) {
+        for (auto nvi : GetNodeValuesInfo(idx)) {
+            double t_current = (nvi.id_*t_total)/(num_nodes-1);
+            double thetaT = theta0 + des_w * t_current;
+            double goalx = -r * sin(theta0) + r * sin(thetaT);
+            double goaly = r * cos(theta0) - r * cos(thetaT);
+            double goalz = terrain->GetHeight(goalx,goaly) - nominalStanceInBase;
+            double goalvx = des_vx * cos(theta0 + thetaT);
+            double goalvy = des_vy * sin(theta0 + thetaT);
+            double goalvz = 0.0;
+
+            double yaw = thetaT;
+            Eigen::Vector3d euler(0.0, 0.0, yaw);
+            Eigen::Matrix3d w_R_b = EulerConverter::GetRotationMatrixBaseToWorld(euler);
+            if (nvi.deriv_ == kPos) {
+                Eigen::Vector3d pos;
+                pos.x()= goalx;
+                pos.y()= goaly;
+                pos.z()= goalz;
+                Eigen::Vector3d pos2 =pos + w_R_b*kinmodatee;
+                nodes_.at(nvi.id_).at(kPos)(nvi.dim_) =  pos2(nvi.dim_);
+            }
+
+            if (nvi.deriv_ == kVel) {
+                Eigen::Vector3d vel;
+                vel.x()= goalvx;
+                vel.y()= goalvy;
+                vel.z()= goalvz;
+                nodes_.at(nvi.id_).at(kVel)(nvi.dim_) = vel(nvi.dim_);
+            }
+        }
+    }
+}
+
+void
+NodesVariables::SetByLinearInterpolation3(const VectorXd& initial_val,
+                                         const VectorXd& final_val,
+                                         double t_total,
+                                          double des_w,
+                                          double des_vx,
+                                          double des_vy,
+                                          double nominalStanceInBase,
+                                          HeightMap::Ptr  terrain)
+{
+    double theta0 = atan2(des_vy, des_vx);
+    double r = sqrt(des_vx * des_vx + des_vy * des_vy) / des_w;
+    if (des_w != 0) {
+        // only set those that are part of optimization variables,
+        // do not overwrite phase-based parameterization
+        VectorXd dp = final_val-initial_val;
+        VectorXd average_velocity = dp / t_total;
+        int num_nodes = nodes_.size();
+
+        for (int idx=0; idx<GetRows(); ++idx) {
+            for (auto nvi : GetNodeValuesInfo(idx)) {
+                double t_current = (nvi.id_*t_total)/(num_nodes-1);
+                double thetaT = theta0 + des_w * t_current;
+                double goalx = -r * sin(theta0) + r * sin(thetaT);
+                double goaly = r * cos(theta0) - r * cos(thetaT);
+                double goalz = terrain->GetHeight(goalx,goaly) - nominalStanceInBase;
+                double goalvx = des_vx * cos(theta0 + thetaT);
+                double goalvy = des_vy * sin(theta0 + thetaT);
+                double goalvz = 0.0;
+
+                if (nvi.deriv_ == kPos) {
+                    Eigen::Vector3d pos;
+                    pos.x()= goalx;
+                    pos.y()= goaly;
+                    pos.z()= goalz;
+                    nodes_.at(nvi.id_).at(kPos)(nvi.dim_) = pos(nvi.dim_);
+                }
+
+                if (nvi.deriv_ == kVel) {
+                    Eigen::Vector3d vel;
+                    vel.x()= goalvx;
+                    vel.y()= goalvy;
+                    vel.z()= goalvz;
+                    nodes_.at(nvi.id_).at(kVel)(nvi.dim_) = vel(nvi.dim_);
+                }
+            }
+        }
+    } else {
+        SetByLinearInterpolation(initial_val,final_val,t_total);
+    }
+
 }
 
 void

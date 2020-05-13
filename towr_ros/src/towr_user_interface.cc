@@ -66,10 +66,16 @@ TowrUserInterface::TowrUserInterface ()
   goal_geom_.lin.p_.setZero();
   goal_geom_.lin.p_ << 2.1, 0.0, 0.0;
   goal_geom_.ang.p_ << 0.0, 0.0, 0.0; // roll, pitch, yaw angle applied Z->Y'->X''
+  goal_geom_v_.lin.p_.setZero();
+  goal_geom_v_.ang.p_.setZero();
+  goal_geom_v_.lin.p_ << 2.1, 0.0, 0.0;
+  goal_geom_v_.ang.p_ << 0.0, 0.0, 0.0; // roll, pitch, yaw angle applied Z->Y'->X''
 
-  robot_      = RobotModel::MonopedWheels;
-  terrain_    = HeightMap::FlatID;
-  gait_combo_ = GaitGenerator::C0;
+
+
+    robot_      = RobotModel::AnymalWheels;
+  terrain_    = HeightMap::RoundStairID;
+  gait_combo_ = GaitGenerator::C1;
   total_duration_ = 2.4;
   visualize_trajectory_ = false;
   plot_trajectory_ = false;
@@ -250,6 +256,14 @@ TowrUserInterface::CallbackKey (int c)
       goaly = des_vy_ * total_duration_;
     }
 
+
+    goal_geom_v_.lin.p_.x()=des_vx_;
+    goal_geom_v_.lin.p_.y()=des_vy_;
+    goal_geom_v_.lin.p_.z()=0.0;
+    goal_geom_v_.ang.p_.x()=0.0;
+    goal_geom_v_.ang.p_.y()=0.0;
+    goal_geom_v_.ang.p_.z()=des_w_;
+
     goal_geom_.lin.p_.x()=goalx;
     goal_geom_.lin.p_.y()=goaly;
     goal_geom_.lin.p_.z()=0.0;
@@ -374,6 +388,8 @@ void TowrUserInterface::PublishCommand()
   towr_ros::TowrCommand msg;
   msg.goal_lin                 = xpp::Convert::ToRos(goal_geom_.lin);
   msg.goal_ang                 = xpp::Convert::ToRos(goal_geom_.ang);
+  msg.goal_linv                 = xpp::Convert::ToRos(goal_geom_v_.lin);
+  msg.goal_angv                 = xpp::Convert::ToRos(goal_geom_v_.ang);
   msg.total_duration           = total_duration_;
   msg.replay_trajectory        = visualize_trajectory_;
   msg.play_initialization      = play_initialization_;

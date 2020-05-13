@@ -627,4 +627,53 @@ Rough::GetHeightDerivWrtXX(double x, double y) const
   return Dhdx;
 }
 
+// ROUNDSTAIR
+    double
+    RoundStair::GetHeight(double x, double y) const
+    {
+        double h = 0.0;
+
+        if (y >= 0) {
+            if (x >= step_start)
+                h = slope * (x - step_start);
+
+            if (x >= step_end)
+                h = height;
+
+        } else {
+            if (x >= step_start1)
+                h = slope1 * (x - step_start1);
+
+            if (x >= step_end1)
+                h = height1;
+        }
+        return h;
+    }
+
+    double
+    RoundStair::GetHeightDerivWrtX(double x, double y) const
+    {
+        double dhdx = 0.0;
+
+        if (y >= 0) {
+        if (x >= step_start)
+            dhdx = slope;
+
+        if (x >= step_end)
+            dhdx = 0.0;
+
+    } else {
+            if (x >= step_start1)
+                dhdx = slope1;
+
+            if (x >= step_end1)
+                dhdx = 0.0;
+
+        }
+
+        return dhdx;
+    }
+
+
+
 } /* namespace towr */
