@@ -43,7 +43,9 @@ public:
   MonopedKinematicModel () : KinematicModel(1)
   {
     nominal_stance_.at(0) = Eigen::Vector3d( 0.0, 0.0, -0.58);
-    max_dev_from_nominal_ << 0.25, 0.15, 0.2;
+
+    min_relativ_to_nominal_.at(0) << -0.25, -0.15, -0.2;
+    max_relativ_to_nominal_.at(0) << 0.25, 0.15, 0.2;
   }
 };
 

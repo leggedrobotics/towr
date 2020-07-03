@@ -31,9 +31,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <towr/variables/cartesian_dimensions.h>
 
 #include <algorithm>
-#include <numeric>      // std::accumulate
-#include <math.h>       // fabs
 #include <cassert>
+#include <iostream>
+#include <math.h>  // fabs
+#include <numeric> // std::accumulate
+
+
+
+#include <towr/variables/euler_converter.h>
 
 namespace towr {
 
@@ -41,33 +46,35 @@ Parameters::Parameters ()
 {
   // constructs optimization variables
   duration_base_polynomial_ = 0.1;
-  polynomials_force_per_stance_phase_ = 3;
-  polynomials_force_per_swing_phase_ = 1; // so step can at least lift leg
-  polynomials_motion_per_stance_phase_ = 1;
-  polynomials_motion_per_swing_phase_ = 2; // so step can at least lift leg
 
   // parameters related to specific constraints (only used when it is added as well)
-  force_limit_in_normal_direction_ = 1000;
-  dt_constraint_range_of_motion_ = 0.01;
-    dt_constraint_dynamic_ = 0.1;
-    dt_non_holonomic_ = 0.01;
+  force_limit_in_normal_direction_ = 200;//1000   good:130  soft:80
+
+  dt_constraint_range_of_motion_ = 0.01;//0.01
+  dt_constraint_dynamic_ = 0.1;//0.1
+  dt_non_holonomic_ = 0.01;//0.01
+  dt_force_ = 0.01;//0.03
+  dt_terrain_discretized_=0.01;//0.01
+
   dt_constraint_base_motion_ = duration_base_polynomial_/4.; // only for base RoM constraint
-  bound_phase_duration_ = std::make_pair(0.2, 10.0);  // used only when optimizing phase durations, so gait
+  bound_phase_duration_ = std::make_pair(0.3, 10.0);  // used only when optimizing phase durations, so gait
 
-  // a minimal set of basic constraints
+  motion_stance_nodes_per_s = 3;
+  force_stance_nodes_per_s = 3;
+  decision_stance_nodes_per_s = 10;
+
   constraints_.clear();
-  constraints_.push_back(Terrain);
+   constraints_.push_back(ForceDiscretized);//Make sure EE above terrain always
+   constraints_.push_back(WheelsNonHolonomic);//Make sure the wheels move only how they should
+   constraints_.push_back(TerrainDiscretized);//Make sure EE above terrain always
+   constraints_.push_back(Dynamic); //Ensures that the dynamic model is fullfilled at discrete times.
+   constraints_.push_back(BaseAcc); // so accelerations don't jump between polynomials
+   constraints_.push_back(EndeffectorRom); //Ensures that the range of motion is respected at discrete times.
 
-  constraints_.push_back(Dynamic); //Ensures that the dynamic model is fullfilled at discrete times.
-  constraints_.push_back(BaseAcc); // so accelerations don't jump between polynomials
-  constraints_.push_back(EndeffectorRom); //Ensures that the range of motion is respected at discrete times.
 
-  constraints_.push_back(Force); // ensures unilateral forces and inside the friction cone.
+   constraints_.push_back(TotalTime);//optimize timings
 
-  constraints_.push_back(Swing); // creates smoother swing motions, not absolutely required.
-  constraints_.push_back(TotalTime);//optimize timings
 
-  constraints_.push_back(WheelsNonHolonomic);//Make sure the wheels move only how they should
 
 
 

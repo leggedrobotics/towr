@@ -249,9 +249,13 @@ TowrUserInterface::CallbackKey (int c)
       double theta0 = atan2(des_vy_, des_vx_);
       double thetaT = theta0 + des_w_ * total_duration_;
       double r = sqrt(des_vx_ * des_vx_ + des_vy_ * des_vy_) / des_w_;
+      //goalx = -r * sin(theta0) + r * sin(thetaT)+.2;
+      //goaly = r * cos(theta0) - r * cos(thetaT)+.7;
       goalx = -r * sin(theta0) + r * sin(thetaT);
       goaly = r * cos(theta0) - r * cos(thetaT);
     } else {
+     //goalx = des_vx_ * total_duration_+.2;
+     //goaly = des_vy_ * total_duration_+.7;
       goalx = des_vx_ * total_duration_;
       goaly = des_vy_ * total_duration_;
     }

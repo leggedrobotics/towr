@@ -48,7 +48,9 @@ TerrainConstraint::InitVariableDependedQuantities (const VariablesPtr& x)
 
   // skip first node, b/c already constrained by initial stance
   for (int id=1; id<ee_motion_->GetNodes().size(); ++id)
-    node_ids_.push_back(id);
+      if (ee_motion_->IsContactNode(id)) {
+          node_ids_.push_back(id);
+      }
 
   int constraint_count = 2*node_ids_.size();
   SetRows(constraint_count);

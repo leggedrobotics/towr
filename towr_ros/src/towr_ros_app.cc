@@ -44,17 +44,19 @@ public:
   /**
    * @brief Sets the feet to nominal position on flat ground and base above.
    */
-  void SetTowrInitialState() override
+  void SetTowrInitialState(double x, double y) override
   {
     auto nominal_stance_B = formulation_.model_.kinematic_model_->GetNominalStanceInBase();
 
-    double z_ground = 0.0;
+    double z_ground = formulation_.terrain_->GetHeight(x,y);
     formulation_.initial_ee_W_ =  nominal_stance_B;
     std::for_each(formulation_.initial_ee_W_.begin(), formulation_.initial_ee_W_.end(),
-                  [&](Vector3d& p){ p.z() = z_ground; } // feet at 0 height
+                  [&](Vector3d& p){ p.z() = z_ground;p.x() +=x;p.y() += y; } // feet at 0 height
     );
 
     formulation_.initial_base_.lin.at(kPos).z() = - nominal_stance_B.front().z() + z_ground;
+    formulation_.initial_base_.lin.at(kPos).x() = x;
+    formulation_.initial_base_.lin.at(kPos).y() = y;
   }
 
   /**
@@ -71,8 +73,17 @@ public:
     auto id_gait   = static_cast<GaitGenerator::Combos>(msg.gait);
     gait_gen_->SetCombo(id_gait);
     for (int ee=0; ee<n_ee; ++ee) {
-      params.ee_phase_durations_.push_back(gait_gen_->GetPhaseDurations(msg.total_duration, ee));
-      params.ee_in_contact_at_start_.push_back(gait_gen_->IsInContactAtStart(ee));
+
+      int ee_actual;
+      if(msg.goal_angv.pos.z == 0 && msg.goal_linv.pos.y == 0){
+        ee_actual = 0;
+      }
+      else{
+        ee_actual = ee;
+      }
+      params.ee_phase_durations_.push_back(gait_gen_->GetPhaseDurations(msg.total_duration, ee_actual));
+        //params.ee_phase_durations_.push_back(gait_gen_->GetPhaseDurations2(msg.total_duration, ee_actual));
+      params.ee_in_contact_at_start_.push_back(gait_gen_->IsInContactAtStart(ee_actual));
     }
 
     // Here you can also add other constraints or change parameters
@@ -107,13 +118,27 @@ public:
     // deviation of 10e-4, which is fine. What to watch out for is deviations > 10e-2.
     // solver_->SetOption("derivative_test", "first-order");
 
-    solver_->SetOption("max_cpu_time", 800.0);
+    solver_->SetOption("max_cpu_time", 8000.0);
     solver_->SetOption("print_level", 5);
 
     if (msg.play_initialization)
       solver_->SetOption("max_iter", 0);
     else
       solver_->SetOption("max_iter", 30000);
+
+
+      // derivative test
+    if (true) {
+      // solver_->SetOption("max_iter", 0);
+      // solver_->SetOption("derivative_test", "first-order");
+      // solver_->SetOption("print_level", 4);
+      // solver_->SetOption("derivative_test_tol", 1e-3);
+
+      //solver_->SetOption("derivative_test_perturbation", 1e-4);
+      //solver_->SetOption("derivative_test_perturbation", 1e1);
+
+       // solver_->SetOption("derivative_test_print_all", "yes");
+    }
   }
 };
 

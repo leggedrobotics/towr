@@ -144,7 +144,9 @@ public:
                         Swing,          ///< sets SwingConstraint
                         BaseRom,        ///< sets BaseMotionConstraint
                         BaseAcc,         ///< sets SplineAccConstraint
-			WheelsNonHolonomic
+			WheelsNonHolonomic,
+    TerrainDiscretized,
+    ForceDiscretized
   };
 
   /**
@@ -169,6 +171,10 @@ public:
   /// Number and initial duration of each foot's swing and stance phases.
   std::vector<VecTimes> ee_phase_durations_;
 
+  int motion_stance_nodes_per_s;
+  int force_stance_nodes_per_s;
+  int decision_stance_nodes_per_s;
+
   /// True if the foot is initially in contact with the terrain.
   std::vector<bool> ee_in_contact_at_start_;
 
@@ -184,6 +190,12 @@ public:
   /// Interval at which the non-holonomic wheel constraint is enforced.
   double dt_non_holonomic_;
 
+  /// Interval at which the force constraint is enforced.
+  double dt_force_;
+
+  /// Interval at which the terrain constraint is enforced.
+  double dt_terrain_discretized_;
+
   /// Interval at which the range of motion constraint is enforced.
   double dt_constraint_range_of_motion_;
 
@@ -192,17 +204,6 @@ public:
 
   /// Fixed duration of each cubic polynomial describing the base motion.
   double duration_base_polynomial_;
-
-    int polynomials_force_per_stance_phase_;
-    int polynomials_force_per_swing_phase_;
-    int polynomials_motion_per_stance_phase_;
-    int polynomials_motion_per_swing_phase_;
-
-    /// Number of polynomials to parameterize each variable  during swing phases.
-  //int polynomials_per_swing_phase_;
-
-  /// Number of polynomials to parameterize each variable  during stance phase.
-  //int polynomials_per_stance_phase_;
 
   /// The maximum allowable force [N] in normal direction
   double force_limit_in_normal_direction_;

@@ -52,6 +52,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <towr/constraints/total_duration_constraint.h>
 #include <towr/constraints/spline_acc_constraint.h>
 #include <towr/constraints/wheels_non_holonomic_constraint.h>
+#include <towr/constraints/terrain_constraint_discretized.h>
+#include <towr/constraints/force_constraint_discretized.h>
+
 
 
 #include <towr/costs/node_cost.h>
@@ -117,6 +120,9 @@ public:
   ConstraintPtrVec GetCosts() const;
 
 
+  std::vector<std::vector<int>> number_of_polys_per_phase_motion_ = {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}};
+  std::vector<std::vector<int>> number_of_polys_per_phase_force_ = {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}};
+  std::vector<std::vector<int>> number_of_polys_per_phase_decision_ = {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}};
   BaseState initial_base_;
   BaseState final_base_;
   BaseState final_base_v_;
@@ -125,13 +131,23 @@ public:
   HeightMap::Ptr terrain_;
   Parameters params_;
 
+  std::vector<std::vector<int>> swing_nodes_;
+
+  std::vector<int> endeffector_swing0;
+  std::vector<int> endeffector_swing1;
+  std::vector<int> endeffector_swing2;
+  std::vector<int> endeffector_swing3;
+
 private:
   ConstraintPtrVec MakeWheelsNonHolonomicConstraint(const SplineHolder& s) const;
+  ConstraintPtrVec MakeDiscretizedTerrainConstraint(const SplineHolder& s) const;
+  ConstraintPtrVec MakeDiscretizedForceConstraint(const SplineHolder& s) const;
 
   // variables
   std::vector<NodesVariables::Ptr> MakeBaseVariables() const;
-  std::vector<NodesVariablesPhaseBased::Ptr> MakeEndeffectorVariables() const;
+  std::vector<NodesVariablesPhaseBased::Ptr> MakeEndeffectorVariables();
   std::vector<NodesVariablesPhaseBased::Ptr> MakeForceVariables() const;
+  std::vector<NodesVariablesPhaseBased::Ptr> MakeDecisionVariables() const;
   std::vector<PhaseDurations::Ptr> MakeContactScheduleVariables() const;
 
   // constraints

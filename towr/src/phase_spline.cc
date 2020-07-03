@@ -74,6 +74,16 @@ PhaseSpline::GetJacobianOfPosWrtDurations (double t_global) const
   return phase_durations_->GetJacobianOfPos(current_phase, dx_dT, xd);
 }
 
+PhaseSpline::Jacobian
+PhaseSpline::GetJacobianOfVelWrtDurations (double t_global) const
+{
+  VectorXd dv_dT  = GetDerivativeOfVelWrtPhaseDuration(t_global);
+  VectorXd vd     = GetPoint(t_global).a();
+  int current_phase = GetSegmentID(t_global, phase_durations_->GetPhaseDurations());
+
+  return phase_durations_->GetJacobianOfPos(current_phase, dv_dT, vd);
+}
+
 Eigen::VectorXd
 PhaseSpline::GetDerivativeOfPosWrtPhaseDuration (double t_global) const
 {
@@ -90,6 +100,25 @@ PhaseSpline::GetDerivativeOfPosWrtPhaseDuration (double t_global) const
   // from number of polynomials before current polynomial that
   // cause shifting of entire spline
   return inner_derivative*(dxdT - prev_polys_in_phase*vel);
+}
+
+
+Eigen::VectorXd
+PhaseSpline::GetDerivativeOfVelWrtPhaseDuration (double t_global) const
+{
+  int poly_id; double t_local;
+  std::tie(poly_id, t_local) = GetLocalTime(t_global, GetPolyDurations());
+
+  VectorXd acc  = GetPoint(t_global).a();
+  VectorXd dvdT = cubic_polys_.at(poly_id).GetDerivativeOfVelWrtDuration(t_local);
+
+  double inner_derivative = phase_nodes_->GetDerivativeOfPolyDurationWrtPhaseDuration(poly_id);
+  double prev_polys_in_phase = phase_nodes_->GetNumberOfPrevPolynomialsInPhase(poly_id);
+
+  // where this minus term comes from:
+  // from number of polynomials before current polynomial that
+  // cause shifting of entire spline
+  return inner_derivative*(dvdT - prev_polys_in_phase*acc);
 }
 
 

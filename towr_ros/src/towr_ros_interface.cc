@@ -35,6 +35,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <xpp_msgs/topic_names.h>
 #include <xpp_msgs/TerrainInfo.h>
 
+#include "../../towr/include/towr/nlp_formulation.h"
 #include <towr/terrain/height_map.h>
 #include <towr/variables/euler_converter.h>
 #include <towr_ros/topic_names.h>
@@ -59,7 +60,7 @@ TowrRosInterface::TowrRosInterface ()
 
   solver_ = std::make_shared<ifopt::IpoptSolver>();
 
-  visualization_dt_ = 0.01;
+  visualization_dt_ = 0.001;
 }
 
 BaseState
@@ -103,7 +104,8 @@ TowrRosInterface::UserCommandCallback(const TowrCommandMsg& msg)
   formulation_.final_base_ = GetGoalState(msg);
   formulation_.final_base_v_ = GetGoalStatev(msg);
 
-  SetTowrInitialState();
+  //SetTowrInitialState(0.2, .7);
+  SetTowrInitialState(0.0, 0.0);
 
   // solver parameters
   SetIpoptParameters(msg);
@@ -124,6 +126,7 @@ TowrRosInterface::UserCommandCallback(const TowrCommandMsg& msg)
 
     solver_->Solve(nlp_);
     SaveOptimizationAsRosbag(bag_file, robot_params_msg, msg, false);
+    nlp_.PrintCurrent();
   }
 
   // playback using terminal commands
@@ -199,6 +202,47 @@ TowrRosInterface::GetTrajectory () const
       state.ee_contact_.at(ee_xpp) = solution.phase_durations_.at(ee_towr)->IsContactPhase(t);
       state.ee_motion_.at(ee_xpp)  = ToXpp(solution.ee_motion_.at(ee_towr)->GetPoint(t));
       state.ee_forces_ .at(ee_xpp) = solution.ee_force_.at(ee_towr)->GetPoint(t).p();
+      state.ee_decision_.at(ee_xpp) = solution.ee_decision_.at(ee_towr)->GetPoint(t).p();
+
+
+      Vector3d ee_d = solution.ee_decision_.at(ee_towr)->GetPoint(t).p();
+      Vector3d p = solution.ee_motion_.at(ee_towr)->GetPoint(t).p(); // doesn't change during stance phase
+      Vector3d n = formulation_.terrain_->GetNormalizedBasis(HeightMap::Normal, p.x(), p.y());
+      Vector3d f = solution.ee_force_.at(ee_towr)->GetPoint(t).p();
+
+      double mu_ = formulation_.terrain_->GetFrictionCoeff();
+
+      Vector3d asdf1 = {0.0 ,0.0 ,0.0};
+      Vector3d asdf2 = {0.0 ,0.0 ,0.0};
+
+      // unilateral force
+      double fn = f.transpose() * n;
+      asdf1.x() = ee_d.x() * fn; // >0 (unilateral forces)
+
+      // frictional pyramid
+      Vector3d t1 = formulation_.terrain_->GetNormalizedBasis(HeightMap::Tangent1, p.x(), p.y());
+      double t1mu1 = f.transpose() * (t1 - mu_ * n);
+      double t1mu2 = f.transpose() * (t1 + mu_ * n);
+      asdf1.y() = -ee_d.x() * t1mu1 ; // t1 < mu*n
+      asdf1.z() = ee_d.x() * t1mu2; // t1 > -mu*n
+
+      Vector3d t2 = formulation_.terrain_->GetNormalizedBasis(HeightMap::Tangent2, p.x(), p.y());
+      double t2mu1 = f.transpose() * (t2 - mu_ * n);
+      double t2mu2 = f.transpose() * (t2 + mu_ * n);
+      asdf2.x() = -ee_d.x() * t2mu1; // t2 < mu*n
+      asdf2.y() = ee_d.x() * t2mu2; // t2 > -mu*n
+
+
+      state.ee_f_c_1.at(ee_xpp) = asdf1;
+      state.ee_f_c_2.at(ee_xpp) = asdf2;
+
+
+
+        EulerConverter::MatrixSXd w_C_b = base_angular.GetRotationMatrixBaseToWorld(t).transpose();
+        Vector3d v_wrt_b = w_C_b*solution.ee_motion_.at(ee_towr)->GetPoint(t).v();
+        Vector3d v_b_y = {0, v_wrt_b(1), 0};
+
+      state.ee_vel_loc_.at(ee_xpp) = v_b_y;
     }
 
     state.t_global_ = t;
@@ -213,8 +257,33 @@ xpp_msgs::RobotParameters
 TowrRosInterface::BuildRobotParametersMsg(const RobotModel& model) const
 {
   xpp_msgs::RobotParameters params_msg;
-  auto max_dev_xyz = model.kinematic_model_->GetMaximumDeviationFromNominal();
-  params_msg.ee_max_dev = xpp::Convert::ToRos<geometry_msgs::Vector3>(max_dev_xyz);
+  int n_ee_2 = model.kinematic_model_->GetNumberOfEndeffectors();
+  for ( int ee = 0; ee < n_ee_2; ee++) {
+    auto max_rel_xyz = model.kinematic_model_->GetMaximumRelativToNominal(ee);
+    auto min_rel_xyz = model.kinematic_model_->GetMinimumRelativToNominal(ee);
+
+    switch(ee)
+    {
+    case 0:
+      params_msg.ee_max_rel_0 = xpp::Convert::ToRos<geometry_msgs::Vector3>(max_rel_xyz);
+      params_msg.ee_min_rel_0 = xpp::Convert::ToRos<geometry_msgs::Vector3>(min_rel_xyz);
+      break;
+    case 1:
+      params_msg.ee_max_rel_1 = xpp::Convert::ToRos<geometry_msgs::Vector3>(max_rel_xyz);
+      params_msg.ee_min_rel_1 = xpp::Convert::ToRos<geometry_msgs::Vector3>(min_rel_xyz);
+      break;
+    case 2:
+      params_msg.ee_max_rel_2 = xpp::Convert::ToRos<geometry_msgs::Vector3>(max_rel_xyz);
+      params_msg.ee_min_rel_2 = xpp::Convert::ToRos<geometry_msgs::Vector3>(min_rel_xyz);
+      break;
+    case 3:
+      params_msg.ee_max_rel_3 = xpp::Convert::ToRos<geometry_msgs::Vector3>(max_rel_xyz);
+      params_msg.ee_min_rel_3 = xpp::Convert::ToRos<geometry_msgs::Vector3>(min_rel_xyz);
+      break;
+    default:
+      break;
+    }
+  }
 
   auto nominal_B = model.kinematic_model_->GetNominalStanceInBase();
   int n_ee = nominal_B.size();

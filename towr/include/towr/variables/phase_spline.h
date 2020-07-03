@@ -72,6 +72,15 @@ public:
    */
   Jacobian GetJacobianOfPosWrtDurations(double t) const override;
 
+  /**
+   * @brief How the spline velocity changes when the polynomial durations change.
+   * @param t  The time along the spline at which the sensitivity is required.
+   * @return the pxn Jacobian, where:
+   *             p: Number of dimensions of the spline
+   *             n: Number of optimized durations.
+   */
+  Jacobian GetJacobianOfVelWrtDurations(double t) const override;
+
 private:
   /**
    * @brief How the position at time t changes with current phase duration.
@@ -79,6 +88,12 @@ private:
    * @return How a duration change affects the x,y,z position.
    */
   Eigen::VectorXd GetDerivativeOfPosWrtPhaseDuration (double t) const;
+  /**
+   * @brief How the velocity at time t changes with current phase duration.
+   * @param t The global time along the spline.
+   * @return How a duration change affects the x,y,z position.
+   */
+  Eigen::VectorXd GetDerivativeOfVelWrtPhaseDuration (double t) const;
 
   NodesVariablesPhaseBased::Ptr phase_nodes_; // retain pointer for extended functionality
 };

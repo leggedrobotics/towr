@@ -101,6 +101,9 @@ public:
   virtual Jacobian
   GetJacobianOfPosWrtDurations(double t) const { assert(false); } // durations are fixed here
 
+  virtual Jacobian
+  GetJacobianOfVelWrtDurations(double t) const { assert(false); } // durations are fixed here
+
 protected:
   /**
    * The size and non-zero elements of the Jacobian of the position w.r.t nodes.

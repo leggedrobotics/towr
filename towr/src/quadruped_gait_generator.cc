@@ -78,7 +78,7 @@ QuadrupedGaitGenerator::SetCombo (Combos combo)
 {
   switch (combo) {
     case C0: SetGaits({Stand, Walk2, Walk2, Walk2, Walk2E, Stand}); break; // overlap-walk
-    case C1: SetGaits({Stand, Run2, Run2, Run2, Run2E, Stand});     break; // fly trot
+    case C1: SetGaits({Run1, Run1, Run1, Run1, Run1, Run1, Run1, Run1, Run1, Run1});     break; // fly trot
     case C2: SetGaits({Stand, Run3, Run3, Run3, Run3E, Stand}); break; // pace
     case C3: SetGaits({Stand, Hop1, Hop1, Hop1, Hop1E, Stand}); break; // bound
     case C4: SetGaits({Stand, Hop3, Hop3, Hop3, Hop3E, Stand}); break; // gallop
@@ -206,15 +206,14 @@ QuadrupedGaitGenerator::GetStrideWalkOverlap () const
 QuadrupedGaitGenerator::GaitInfo
 QuadrupedGaitGenerator::GetStrideTrot () const
 {
-  double t_step = 0.3;
-  double t_stand = 0.2;
+  double t_step = 0.25;
   auto times =
   {
-      t_step, t_stand, t_step, t_stand,
+      t_step, t_step,
   };
   auto phase_contacts =
   {
-      bP_, BB_, Pb_, BB_,
+      bP_, Pb_,
   };
 
   return std::make_pair(times, phase_contacts);
@@ -223,8 +222,8 @@ QuadrupedGaitGenerator::GetStrideTrot () const
 QuadrupedGaitGenerator::GaitInfo
 QuadrupedGaitGenerator::GetStrideTrotFly () const
 {
-  double stand   = 0.4;
-  double flight = 0.1;
+  double stand   = 0.25;//0.1
+  double flight = 0.25;//0.1
   auto times =
   {
       stand, flight,

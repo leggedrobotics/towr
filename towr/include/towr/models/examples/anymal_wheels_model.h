@@ -25,21 +25,24 @@ public:
     const double y_nominal_b = 0.235; // 0.21;
     const double z_nominal_b = -0.44;
 
-    nominal_stance_.at(LF) <<  x_nominal_b,   y_nominal_b, z_nominal_b;
-    nominal_stance_.at(RF) <<  x_nominal_b,  -y_nominal_b, z_nominal_b;
-    nominal_stance_.at(LH) << -x_nominal_b,   y_nominal_b, z_nominal_b;
-    nominal_stance_.at(RH) << -x_nominal_b,  -y_nominal_b, z_nominal_b;
+    double offsets = 0.1;
 
-    max_dev_from_nominal_ << 0.15, 0.1, 0.10;
+    nominal_stance_.at(LF) <<  x_nominal_b - offsets,   y_nominal_b, z_nominal_b;
+    nominal_stance_.at(RF) <<  x_nominal_b + offsets,  -y_nominal_b, z_nominal_b;
+    nominal_stance_.at(LH) << -x_nominal_b + offsets,   y_nominal_b, z_nominal_b;
+    nominal_stance_.at(RH) << -x_nominal_b - offsets,  -y_nominal_b, z_nominal_b;
+
+    //max_dev_from_nominal_ << 0.15, 0.1, 0.10;
+    max_relativ_to_nominal_.resize(4);
+    min_relativ_to_nominal_.resize(4);
+    for (int ee = 0; ee < 4; ee++) {
+      max_relativ_to_nominal_.at(ee) << 0.225-offsets, 0.095, 0.095;
+      min_relativ_to_nominal_.at(ee) = -max_relativ_to_nominal_.at(ee);
+    }
 
     const double x_nominal_hip = 0.3405;
     const double y_nominal_hip = y_nominal_b; //0.1710;
     const double z_nominal_hip = 0.0;
-
-   //hip_pos_wrt_base_.at(LF) <<  x_nominal_hip,  y_nominal_hip, z_nominal_hip;
-   //hip_pos_wrt_base_.at(RF) <<  x_nominal_hip, -y_nominal_hip, z_nominal_hip;
-   //hip_pos_wrt_base_.at(LH) << -x_nominal_hip,  y_nominal_hip, z_nominal_hip;
-   //hip_pos_wrt_base_.at(RH) << -x_nominal_hip, -y_nominal_hip, z_nominal_hip;
   }
 
 };

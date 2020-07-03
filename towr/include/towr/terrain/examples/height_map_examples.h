@@ -179,7 +179,7 @@ public:
 private:
   double slope_		 = -std::tan(45*M_PI/180.0); //std::tan(1.141096660643472);
   double height_     = -0.2;
-  double step_start_ = 0.6; //1.0;
+  double step_start_ = 1.0; //1.0;
   double step_end_   = step_start_ + height_/slope_;
 
 //  Eigen::Vector4d coeff {-400, 1260, -1320, 460}; // block from 1.0 to 1.1

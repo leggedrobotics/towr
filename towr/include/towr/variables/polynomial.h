@@ -136,6 +136,12 @@ public:
   VectorXd GetDerivativeOfPosWrtDuration(double t) const;
 
   /**
+   * @brief How the total duration affect the value ("vel") of the polynomial.
+   * @param t  The time [0,T] at which the change in value should be observed.
+   */
+  VectorXd GetDerivativeOfVelWrtDuration(double t) const;
+
+  /**
    * @brief The derivative of the polynomial when changing the start node.
    * @param dxdt  Which polynomial derivative f(t), fd(t) function to use.
    * @param node_deriv  Whether derivative should be w.r.t start-node position or velocity.
