@@ -46,6 +46,12 @@ Parameters::Parameters ()
 {
   // constructs optimization variables
   duration_base_polynomial_ = 0.1;
+  polynomials2_force_per_stance_phase_ = 3;
+  polynomials2_force_per_swing_phase_ = 1; // so step can at least lift leg
+  polynomials2_motion_per_stance_phase_ = 3;
+  polynomials2_motion_per_swing_phase_ = 2; // so step can at least lift leg
+  polynomials2_decision_per_stance_phase_ = 7;
+  polynomials2_decision_per_swing_phase_ = 7; // so step can at least lift leg
 
   // parameters related to specific constraints (only used when it is added as well)
   force_limit_in_normal_direction_ = 200;//1000   good:130  soft:80

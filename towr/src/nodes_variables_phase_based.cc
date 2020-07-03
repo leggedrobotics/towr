@@ -249,10 +249,6 @@ NodesVariablesEEMotion::NodesVariablesEEMotion(
   index_to_node_value_info_ = GetPhaseBasedEEParameterization();
   SetNumberOfVariables(index_to_node_value_info_.size());
 }
-void NodesVariablesEEMotion::NodesVariablesEEMotionReInit() {
-  index_to_node_value_info_ = GetPhaseBasedEEParameterization();
-  SetNumberOfVariables(index_to_node_value_info_.size());
-}
 
 NodesVariablesEEForce::OptIndexMap
 NodesVariablesEEMotion::GetPhaseBasedEEParameterization ()
@@ -274,10 +270,6 @@ NodesVariablesEEMotion::GetPhaseBasedEEParameterization ()
 NodesVariablesEEForce::NodesVariablesEEForce(
     int phase_count, bool is_in_contact_at_start, const std::string &name,std::vector<int> number_of_polys_per_phase)
     : NodesVariablesPhaseBased(phase_count, is_in_contact_at_start, name, number_of_polys_per_phase) {
-  index_to_node_value_info_ = GetPhaseBasedEEParameterization();
-  SetNumberOfVariables(index_to_node_value_info_.size());
-}
-void NodesVariablesEEForce::NodesVariablesEEForceReInit() {
   index_to_node_value_info_ = GetPhaseBasedEEParameterization();
   SetNumberOfVariables(index_to_node_value_info_.size());
 }
@@ -313,11 +305,6 @@ NodesVariablesEEForce::GetPhaseBasedEEParameterization ()
 NodesVariablesEEDecision::NodesVariablesEEDecision(
     int phase_count, bool is_in_contact_at_start, const std::string &name, std::vector<int> number_of_polys_per_phase)
     : NodesVariablesPhaseBased(phase_count, is_in_contact_at_start, name, number_of_polys_per_phase) {
-  index_to_node_value_info_ = GetPhaseBasedEEParameterization();
-  SetNumberOfVariables(index_to_node_value_info_.size());
-}
-
-void NodesVariablesEEDecision::NodesVariablesEEDecisionReInit() {
   index_to_node_value_info_ = GetPhaseBasedEEParameterization();
   SetNumberOfVariables(index_to_node_value_info_.size());
 }
