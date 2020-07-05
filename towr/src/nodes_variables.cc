@@ -227,10 +227,6 @@ NodesVariables::AdvancedInititialisationEE(const VectorXd& initial_val,
   }
 }
 
-
-
-
-
 void
 NodesVariables::AdvancedInititialisationBase(const VectorXd& initial_val,
                                           const VectorXd& final_val,

@@ -68,6 +68,7 @@ DynamicConstraint::UpdateBoundsAtInstance(double t, int k, VecBound& bounds) con
 {
   for (auto dim : AllDim6D)
   // bounds.at(GetRow(k,dim)) = ifopt::BoundZero;
+  // this allows for higher sampling rate, without rendering the problem infeasible
   bounds.at(GetRow(k, dim)) = ifopt::Bounds(-0.001, 0.001);
 }
 

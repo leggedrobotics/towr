@@ -44,19 +44,17 @@ public:
   /**
    * @brief Sets the feet to nominal position on flat ground and base above.
    */
-  void SetTowrInitialState(double x, double y) override
+  void SetTowrInitialState() override
   {
     auto nominal_stance_B = formulation_.model_.kinematic_model_->GetNominalStanceInBase();
 
-    double z_ground = formulation_.terrain_->GetHeight(x,y);
+    double z_ground = 0.0;
     formulation_.initial_ee_W_ =  nominal_stance_B;
     std::for_each(formulation_.initial_ee_W_.begin(), formulation_.initial_ee_W_.end(),
-                  [&](Vector3d& p){ p.z() = z_ground;p.x() +=x;p.y() += y; } // feet at 0 height
+                  [&](Vector3d& p){ p.z() = z_ground; } // feet at 0 height
     );
 
     formulation_.initial_base_.lin.at(kPos).z() = - nominal_stance_B.front().z() + z_ground;
-    formulation_.initial_base_.lin.at(kPos).x() = x;
-    formulation_.initial_base_.lin.at(kPos).y() = y;
   }
 
   /**
@@ -73,40 +71,20 @@ public:
     auto id_gait   = static_cast<GaitGenerator::Combos>(msg.gait);
     gait_gen_->SetCombo(id_gait);
     for (int ee=0; ee<n_ee; ++ee) {
-
-      int ee_actual;
-      if(msg.goal_angv.pos.z == 0 && msg.goal_linv.pos.y == 0){
-        ee_actual = 0;
-      }
-      else{
-        ee_actual = ee;
-      }
-      params.ee_phase_durations_.push_back(gait_gen_->GetPhaseDurations(msg.total_duration, ee_actual));
-        //params.ee_phase_durations_.push_back(gait_gen_->GetPhaseDurations2(msg.total_duration, ee_actual));
-
-
-      params.ee_in_contact_at_start_.push_back(gait_gen_->IsInContactAtStart(ee_actual));
+      params.ee_phase_durations_.push_back(gait_gen_->GetPhaseDurations(msg.total_duration, ee));
+      params.ee_in_contact_at_start_.push_back(gait_gen_->IsInContactAtStart(ee));
     }
 
     params.number_of_polys_per_phase_motion_.clear();
     params.number_of_polys_per_phase_force_.clear();
     params.number_of_polys_per_phase_decision_.clear();
+
     for (int ee=0; ee<n_ee; ++ee) {
-      int ee_actual;
-      if(msg.goal_angv.pos.z == 0 && msg.goal_linv.pos.y == 0){
-        ee_actual = 0;
-      }
-      else{
-        ee_actual = ee;
-      }
-      bool contact = gait_gen_->IsInContactAtStart(ee_actual);
+      bool contact = gait_gen_->IsInContactAtStart(ee);
       std::vector<int> temp_motion;
       std::vector<int> temp_force;
       std::vector<int> temp_decision;
-      int counter = 0;
-
       for (auto const &value : params.ee_phase_durations_.at(ee)) {
-        std::cout << counter++ << std::endl;
         if (contact) {
           temp_motion.push_back(params.polynomials2_motion_per_stance_phase_);
           temp_force.push_back(params.polynomials2_force_per_stance_phase_);

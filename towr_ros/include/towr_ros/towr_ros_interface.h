@@ -67,7 +67,7 @@ protected:
   /**
    * @brief Sets the base state and end-effector position.
    */
-  virtual void SetTowrInitialState(double x, double y) = 0;
+  virtual void SetTowrInitialState() = 0;
 
   /**
    * @brief Formulates the actual TOWR problem to be solved

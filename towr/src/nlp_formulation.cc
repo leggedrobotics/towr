@@ -386,9 +386,6 @@ std::vector<NodesVariablesPhaseBased::Ptr>
 NlpFormulation::MakeDecisionVariables() const {
   std::vector<NodesVariablesPhaseBased::Ptr> vars;
 
-  bool always_contact =
-      (final_base_v_.ang.p().z() == 0 && final_base_v_.lin.p().y() == 0);
-  double T = params_.GetTotalTime();
   for (int ee = 0; ee < params_.GetEECount(); ee++) {
     auto nodes = std::make_shared<NodesVariablesEEDecision>(
         params_.GetPhaseCount(ee), params_.ee_in_contact_at_start_.at(ee),

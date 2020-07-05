@@ -35,7 +35,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <xpp_msgs/topic_names.h>
 #include <xpp_msgs/TerrainInfo.h>
 
-#include "../../towr/include/towr/nlp_formulation.h"
 #include <towr/terrain/height_map.h>
 #include <towr/variables/euler_converter.h>
 #include <towr_ros/topic_names.h>
@@ -104,8 +103,7 @@ TowrRosInterface::UserCommandCallback(const TowrCommandMsg& msg)
   formulation_.final_base_ = GetGoalState(msg);
   formulation_.final_base_v_ = GetGoalStatev(msg);
 
-  //SetTowrInitialState(0.2, .7);
-  SetTowrInitialState(0.0, 0.0);
+  SetTowrInitialState();
 
   // solver parameters
   SetIpoptParameters(msg);
@@ -202,6 +200,8 @@ TowrRosInterface::GetTrajectory () const
       state.ee_contact_.at(ee_xpp) = solution.phase_durations_.at(ee_towr)->IsContactPhase(t);
       state.ee_motion_.at(ee_xpp)  = ToXpp(solution.ee_motion_.at(ee_towr)->GetPoint(t));
       state.ee_forces_ .at(ee_xpp) = solution.ee_force_.at(ee_towr)->GetPoint(t).p();
+
+      //debug output, enable plots
       state.ee_decision_.at(ee_xpp) = solution.ee_decision_.at(ee_towr)->GetPoint(t).p(); // comment out when working with xpp/master
 
 

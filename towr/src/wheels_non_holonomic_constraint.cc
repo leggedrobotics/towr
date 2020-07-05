@@ -24,7 +24,7 @@ WheelsNonHolonomicConstraint::WheelsNonHolonomicConstraint (const HeightMap::Ptr
 
   n_constraints_per_node_ = 1;  // lateral velocity and acceleration
 
-    T_ = ee_wheels_motion_->GetPolyDurations();
+  T_ = ee_wheels_motion_->GetPolyDurations();
   SetRows(GetNumberOfNodes()*n_constraints_per_node_);
 }
 

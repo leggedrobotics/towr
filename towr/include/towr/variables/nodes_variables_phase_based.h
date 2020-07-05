@@ -243,6 +243,8 @@ public:
 
 /**
  * @brief Variables fully defining the endeffector contact state scalarly.
+ * implemented as 3d vector to use existing structure. All components should be
+ * exaclty equal. They are not optimized so no aditional burden for solver.
  *
  * @ingroup Variables
  */

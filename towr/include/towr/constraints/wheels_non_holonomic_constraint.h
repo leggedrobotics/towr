@@ -42,7 +42,7 @@ private:
   HeightMap::Ptr terrain_;    			///< the height map of the current terrain.
   EE ee_;
 
-    std::vector<double> T_;
+  std::vector<double> T_;
   void UpdateConstraintAtInstance(double t, int k, VectorXd& g) const override;
   void UpdateBoundsAtInstance(double t, int k, VecBound& bounds) const override;
   void UpdateJacobianAtInstance(double t, int k, std::string var_set, Jacobian& jac) const override;

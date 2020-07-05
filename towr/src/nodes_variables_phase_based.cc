@@ -27,12 +27,13 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************/
 
-#include <towr/variables/cartesian_dimensions.h>
 #include <towr/variables/nodes_variables_phase_based.h>
+#include <towr/variables/cartesian_dimensions.h>
 
 #include <iostream>
 
 namespace towr {
+
 
 std::vector<NodesVariablesPhaseBased::PolyInfo>
 BuildPolyInfos(int phase_count, bool first_poly_in_contact,
