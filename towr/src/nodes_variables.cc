@@ -148,116 +148,189 @@ NodesVariables::SetByLinearInterpolation3(const VectorXd& initial_val,
                                           double z_offset,
                                           const VectorXd& offset_full,
                                           HeightMap::Ptr  terrain,
-                                          std::vector<int> poly_per_phase)
+                                          std::vector<int> poly_per_phase,
+                                          double angle_init,
+                                          bool incontact_start)
 {
-    double theta0 = atan2(des_vy, des_vx);
-    double r = sqrt(des_vx * des_vx + des_vy * des_vy) / des_w;
-    double t_current2 = 0.0;
-    double t_current3 = 0.0;
-    int id_prev_ = 0;
-    bool poly_contact=true;
-    int contactswitch = 0;
-    int contact_node_it=0;
-    int flight_node_it=0;
-    assert (des_w != 0);
+  double theta0 = atan2(des_vy, des_vx);
+  double r = sqrt(des_vx * des_vx + des_vy * des_vy) / des_w;
+  double t_current3 = 0.0;
+  int id_prev_ = 0;
 
-    int lastnodeadded = -10;
+  int lastnodeadded = -10;
   double goalz_terrain_last= terrain->GetHeight(initial_val.x(),initial_val.y()) - z_offset;
-  double goalz_terrain_lastforpurpose2= terrain->GetHeight(initial_val.x(),initial_val.y()) - z_offset;
 
 
   std::vector<int> swing_polys;
 
-    int num_nodes = nodes_.size();
-    int phase = 0;
-    int polycumulative= poly_per_phase[0];
-    bool contact = true;
+  int phase = 0;
+  int polycumulative= poly_per_phase[0];
+  bool contact = incontact_start;
 
-    for (int idx=0; idx<GetRows(); ++idx) {
-        for (auto nvi : GetNodeValuesInfo(idx)) {
-            if ( id_prev_!=nvi.id_){
-              if(nvi.id_> polycumulative){
-                phase+=1;
-                contact=!contact;
-                polycumulative+= poly_per_phase[phase];
-              }
-              t_current3 += (1.0/poly_per_phase[phase])*timings[phase];
-                id_prev_ = nvi.id_;
-            }
-
-            double thetaT = theta0 + des_w * t_current3;
-            double thetaT2222 = des_w * t_current3;
-            double goalx;
-            double goaly;
-            double goalvx;
-            double goalvy;
-
-            double yaw=thetaT2222;
-
-
-            Eigen::Vector3d euler(0.0, 0.0, yaw);
-            Eigen::Vector3d deswvector(0.0, 0.0, des_w);
-            Eigen::Matrix3d w_R_b = EulerConverter::GetRotationMatrixBaseToWorld(euler);
-
-            Eigen::Vector3d ofsetre = offset_full;
-            Eigen::Vector3d desv(des_vx, des_vy, 0.0);
-
-            VectorXd offset_rotated = w_R_b*offset_full;
-            VectorXd desv_rotated = w_R_b*(desv+deswvector.cross(ofsetre));
-
-            if(des_w==0){
-                goalx = initial_val.x() + (t_current3*(final_val.x()-initial_val.x()))/t_total;
-                goaly = initial_val.y() + (t_current3*(final_val.y()-initial_val.y()))/t_total;
-                goalvx = desv_rotated.x();
-                goalvy = desv_rotated.y();
-            }else{
-              goalx = offset_rotated.x() + -r * sin(theta0) + r * sin(thetaT);
-              goaly = offset_rotated.y() +  r * cos(theta0) - r * cos(thetaT);
-                goalvx = desv_rotated.x();
-                goalvy = desv_rotated.y();
-            }
-
-            double goalz_terrain_ = terrain->GetHeight(goalx,goaly) - z_offset;
-            if (fabs(goalz_terrain_last - goalz_terrain_) > .1) {
-              goalz_terrain_last=goalz_terrain_;
-              if (lastnodeadded != nvi.id_) {
-                swing_polys.push_back(nvi.id_);
-                lastnodeadded = nvi.id_;
-              }
-            }
-
-          goalz_terrain_lastforpurpose2= goalz_terrain_;
-
-          double goalz = initial_val.z() + (t_current3*(final_val.z()-initial_val.z()))/t_total+.05;
-          double goalvz =(final_val.z()-initial_val.z())/t_total;
-
-           if(contact){
-             goalz = goalz_terrain_;
-             double dzdx = terrain->GetDerivativeOfHeightWrt(X_,goalx,goaly);
-             double dzdy = terrain->GetDerivativeOfHeightWrt(Y_,goalx,goaly);
-             double dzdt = dzdx * goalvx + dzdy * goalvy;
-             goalvz = dzdt;//terrain gradient
-
-           }
-
-            if (nvi.deriv_ == kPos) {
-                Eigen::Vector3d pos;
-                pos.x()= goalx;
-                pos.y()= goaly;
-                pos.z()= goalz;
-                nodes_.at(nvi.id_).at(kPos)(nvi.dim_) = pos(nvi.dim_);
-            }
-
-            if (nvi.deriv_ == kVel) {
-                Eigen::Vector3d vel;
-                vel.x()= goalvx;
-                vel.y()= goalvy;
-                vel.z()= goalvz;
-                nodes_.at(nvi.id_).at(kVel)(nvi.dim_) = vel(nvi.dim_);
-            }
+  for (int idx=0; idx<GetRows(); ++idx) {
+    for (auto nvi : GetNodeValuesInfo(idx)) {
+      if ( id_prev_!=nvi.id_){
+        if(nvi.id_> polycumulative){
+          phase+=1;
+          contact=!contact;
+          polycumulative+= poly_per_phase[phase];
         }
+        t_current3 += (1.0/poly_per_phase[phase])*timings[phase];
+        id_prev_ = nvi.id_;
+      }
+
+      double thetaT = theta0 + des_w * t_current3;
+      double yaw=angle_init+ des_w * t_current3;
+      double goalx;
+      double goaly;
+      double goalvx;
+      double goalvy;
+
+
+
+      Eigen::Vector3d euler(0.0, 0.0, yaw);
+      Eigen::Vector3d deswvector(0.0, 0.0, des_w);
+      Eigen::Matrix3d w_R_b = EulerConverter::GetRotationMatrixBaseToWorld(euler);
+
+      Eigen::Vector3d ofsetre = offset_full;
+      Eigen::Vector3d desv(des_vx, des_vy, 0.0);
+
+      VectorXd offset_rotated = w_R_b*offset_full;
+      VectorXd desv_rotated = w_R_b*(desv+deswvector.cross(ofsetre));
+
+     // std::cout<<"  t_current3 "<<t_current3<<"  t_total "<<t_total<<std::endl;
+
+      if(des_w==0){
+        goalx = initial_val.x() + (t_current3*(final_val.x()-initial_val.x()))/t_total;
+        goaly = initial_val.y() + (t_current3*(final_val.y()-initial_val.y()))/t_total;
+        goalvx = desv_rotated.x();
+        goalvy = desv_rotated.y();
+      }else{
+        goalx = offset_rotated.x() -r * sin(theta0) + r * sin(thetaT);
+        goaly = offset_rotated.y() + r * cos(theta0) - r * cos(thetaT);
+        goalvx = desv_rotated.x();
+        goalvy = desv_rotated.y();
+      }
+
+      std::cout<<"  t_current3 "<<t_current3<<"  goalx "<<goalx<<std::endl;
+      double goalz_terrain_ = terrain->GetHeight(goalx,goaly) - z_offset;
+      if (fabs(goalz_terrain_last - goalz_terrain_) > .1) {
+        goalz_terrain_last=goalz_terrain_;
+        if (lastnodeadded != nvi.id_) {
+          swing_polys.push_back(nvi.id_);
+          lastnodeadded = nvi.id_;
+        }
+      }
+
+
+      double goalz = initial_val.z() + (t_current3*(final_val.z()-initial_val.z()))/t_total+.05;
+      double goalvz =(final_val.z()-initial_val.z())/t_total;
+
+      if(contact){
+        goalz = goalz_terrain_;
+        double dzdx = terrain->GetDerivativeOfHeightWrt(X_,goalx,goaly);
+        double dzdy = terrain->GetDerivativeOfHeightWrt(Y_,goalx,goaly);
+        double dzdt = dzdx * goalvx + dzdy * goalvy;
+        goalvz = dzdt;//terrain gradient
+
+      }
+
+      if (nvi.deriv_ == kPos) {
+        Eigen::Vector3d pos;
+        pos.x()= goalx;
+        pos.y()= goaly;
+        pos.z()= goalz;
+        nodes_.at(nvi.id_).at(kPos)(nvi.dim_) = pos(nvi.dim_);
+      }
+
+      if (nvi.deriv_ == kVel) {
+        Eigen::Vector3d vel;
+        vel.x()= goalvx;
+        vel.y()= goalvy;
+        vel.z()= goalvz;
+        nodes_.at(nvi.id_).at(kVel)(nvi.dim_) = vel(nvi.dim_);
+      }
     }
-return swing_polys;
+  }
+  return swing_polys;
+}
+
+
+
+
+
+void
+NodesVariables::SetByLinearInterpolation33(const VectorXd& initial_val,
+                                          const VectorXd& final_val,
+                                          double t_total,
+                                          double constant_timings,
+                                          double des_w,
+                                          double des_vx,
+                                          double des_vy,
+                                          double z_offset,
+                                          HeightMap::Ptr  terrain,
+                                          double angle_init)
+{
+  double theta0 = atan2(des_vy, des_vx);
+  double r = sqrt(des_vx * des_vx + des_vy * des_vy) / des_w;
+  double t_current3 = 0.0;
+  int id_prev_ = 0;
+
+  for (int idx=0; idx<GetRows(); ++idx) {
+    for (auto nvi : GetNodeValuesInfo(idx)) {
+      if ( id_prev_!=nvi.id_){
+        t_current3 += constant_timings;
+        id_prev_ = nvi.id_;
+      }
+
+      double thetaT = theta0 + des_w * t_current3;
+      double yaw=angle_init+ des_w * t_current3;
+      double goalx;
+      double goaly;
+      double goalvx;
+      double goalvy;
+
+      Eigen::Vector3d euler(0.0, 0.0, yaw);
+      Eigen::Vector3d deswvector(0.0, 0.0, des_w);
+      Eigen::Matrix3d w_R_b = EulerConverter::GetRotationMatrixBaseToWorld(euler);
+
+      Eigen::Vector3d desv(des_vx, des_vy, 0.0);
+
+      VectorXd desv_rotated = w_R_b*desv;
+
+      if(des_w==0){
+        goalx = initial_val.x() + (t_current3*(final_val.x()-initial_val.x()))/t_total;
+        goaly = initial_val.y() + (t_current3*(final_val.y()-initial_val.y()))/t_total;
+        goalvx = desv_rotated.x();
+        goalvy = desv_rotated.y();
+      }else{
+        goalx = -r * sin(theta0) + r * sin(thetaT);
+        goaly =  r * cos(theta0) - r * cos(thetaT);
+        goalvx = desv_rotated.x();
+        goalvy = desv_rotated.y();
+      }
+
+      double goalz = initial_val.z() + (t_current3*(final_val.z()-initial_val.z()))/t_total;
+      double goalvz =(final_val.z()-initial_val.z())/t_total;
+
+
+      if (nvi.deriv_ == kPos) {
+        Eigen::Vector3d pos;
+        pos.x()= goalx;
+        pos.y()= goaly;
+        pos.z()= goalz;
+        nodes_.at(nvi.id_).at(kPos)(nvi.dim_) = pos(nvi.dim_);
+      }
+
+      if (nvi.deriv_ == kVel) {
+        Eigen::Vector3d vel;
+        vel.x()= goalvx;
+        vel.y()= goalvy;
+        vel.z()= goalvz;
+        nodes_.at(nvi.id_).at(kVel)(nvi.dim_) = vel(nvi.dim_);
+      }
+    }
+  }
 }
 
 void

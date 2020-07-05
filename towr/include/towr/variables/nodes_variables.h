@@ -187,17 +187,31 @@ public:
                                 double t_total);
 
   std::vector<int>
-    SetByLinearInterpolation3(const VectorXd& initial_val,
+  SetByLinearInterpolation3(const VectorXd& initial_val,
+                            const VectorXd& final_val,
+                            double t_total,
+                            std::vector<double> timings,
+                            double des_w,
+                            double des_vx,
+                            double des_vy,
+                            double z_offset,
+                            const VectorXd& offset_full,
+                            HeightMap::Ptr  terrain,
+                            std::vector<int> poly_per_phase,
+                            double angle_init,
+                            bool incontact_start);
+  void
+    SetByLinearInterpolation33(const VectorXd& initial_val,
                                               const VectorXd& final_val,
                                               double t_total,
-                                              std::vector<double> timings,
+                                              double const_time,
                                               double des_w,
                                               double des_vx,
                                               double des_vy,
                                               double z_offset,
-                              const VectorXd& offset_full,
                               HeightMap::Ptr  terrain,
-                              std::vector<int> poly_per_phase);
+                               double angle_init);
+
   /**
    * @brief Restricts the first node in the spline.
    * @param deriv Which derivative (pos,vel,...) should be restricted.

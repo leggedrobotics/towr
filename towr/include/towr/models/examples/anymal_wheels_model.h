@@ -25,7 +25,7 @@ public:
     const double y_nominal_b = 0.235; // 0.21;
     const double z_nominal_b = -0.44;
 
-    double offsets = 0.1;
+    double offsets = 0.0;// 0.1;
 
     nominal_stance_.at(LF) <<  x_nominal_b - offsets,   y_nominal_b, z_nominal_b;
     nominal_stance_.at(RF) <<  x_nominal_b + offsets,  -y_nominal_b, z_nominal_b;

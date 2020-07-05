@@ -83,7 +83,45 @@ public:
       }
       params.ee_phase_durations_.push_back(gait_gen_->GetPhaseDurations(msg.total_duration, ee_actual));
         //params.ee_phase_durations_.push_back(gait_gen_->GetPhaseDurations2(msg.total_duration, ee_actual));
+
+
       params.ee_in_contact_at_start_.push_back(gait_gen_->IsInContactAtStart(ee_actual));
+    }
+
+    params.number_of_polys_per_phase_motion_.clear();
+    params.number_of_polys_per_phase_force_.clear();
+    params.number_of_polys_per_phase_decision_.clear();
+    for (int ee=0; ee<n_ee; ++ee) {
+      int ee_actual;
+      if(msg.goal_angv.pos.z == 0 && msg.goal_linv.pos.y == 0){
+        ee_actual = 0;
+      }
+      else{
+        ee_actual = ee;
+      }
+      bool contact = gait_gen_->IsInContactAtStart(ee_actual);
+      std::vector<int> temp_motion;
+      std::vector<int> temp_force;
+      std::vector<int> temp_decision;
+      int counter = 0;
+
+      for (auto const &value : params.ee_phase_durations_.at(ee)) {
+        std::cout << counter++ << std::endl;
+        if (contact) {
+          temp_motion.push_back(params.polynomials2_motion_per_stance_phase_);
+          temp_force.push_back(params.polynomials2_force_per_stance_phase_);
+          temp_decision.push_back(params.polynomials2_decision_per_stance_phase_);
+          contact = false;
+        } else {
+          temp_motion.push_back(params.polynomials2_motion_per_swing_phase_);
+          temp_force.push_back(params.polynomials2_force_per_swing_phase_);
+          temp_decision.push_back(params.polynomials2_decision_per_swing_phase_);
+          contact = true;
+        }
+      }
+      params.number_of_polys_per_phase_motion_.push_back(temp_motion);
+      params.number_of_polys_per_phase_force_.push_back(temp_force);
+      params.number_of_polys_per_phase_decision_.push_back(temp_decision);
     }
 
     // Here you can also add other constraints or change parameters

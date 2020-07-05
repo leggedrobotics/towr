@@ -63,7 +63,7 @@ Parameters::Parameters ()
   dt_terrain_discretized_=0.01;//0.01
 
   dt_constraint_base_motion_ = duration_base_polynomial_/4.; // only for base RoM constraint
-  bound_phase_duration_ = std::make_pair(0.3, 10.0);  // used only when optimizing phase durations, so gait
+  bound_phase_duration_ = std::make_pair(0.2, 10.0);  // used only when optimizing phase durations, so gait
 
   motion_stance_nodes_per_s = 3;
   force_stance_nodes_per_s = 3;
@@ -77,12 +77,7 @@ Parameters::Parameters ()
    constraints_.push_back(BaseAcc); // so accelerations don't jump between polynomials
    constraints_.push_back(EndeffectorRom); //Ensures that the range of motion is respected at discrete times.
 
-
    constraints_.push_back(TotalTime);//optimize timings
-
-
-
-
 
   // optional costs to e.g penalize endeffector forces
   // costs_.push_back({ForcesCostID, 1.0}); weighed by 1.0 relative to other costs

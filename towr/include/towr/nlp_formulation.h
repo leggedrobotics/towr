@@ -120,9 +120,6 @@ public:
   ConstraintPtrVec GetCosts() const;
 
 
-  std::vector<std::vector<int>> number_of_polys_per_phase_motion_ = {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}};
-  std::vector<std::vector<int>> number_of_polys_per_phase_force_ = {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}};
-  std::vector<std::vector<int>> number_of_polys_per_phase_decision_ = {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}};
   BaseState initial_base_;
   BaseState final_base_;
   BaseState final_base_v_;

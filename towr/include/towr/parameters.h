@@ -144,9 +144,9 @@ public:
                         Swing,          ///< sets SwingConstraint
                         BaseRom,        ///< sets BaseMotionConstraint
                         BaseAcc,         ///< sets SplineAccConstraint
-			WheelsNonHolonomic,
-    TerrainDiscretized,
-    ForceDiscretized
+			            WheelsNonHolonomic,
+                        TerrainDiscretized,
+                        ForceDiscretized
   };
 
   /**
@@ -170,6 +170,10 @@ public:
 
   /// Number and initial duration of each foot's swing and stance phases.
   std::vector<VecTimes> ee_phase_durations_;
+
+  std::vector<std::vector<int>> number_of_polys_per_phase_motion_;
+  std::vector<std::vector<int>> number_of_polys_per_phase_force_;
+  std::vector<std::vector<int>> number_of_polys_per_phase_decision_;
 
   int motion_stance_nodes_per_s;
   int force_stance_nodes_per_s;
