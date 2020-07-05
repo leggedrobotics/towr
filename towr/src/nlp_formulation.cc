@@ -95,7 +95,7 @@ NlpFormulation::MakeBaseVariables () const
   Vector3d final_pos(x, y, z);
   double x2 = initial_base_.lin.p().x();
   double y2 = initial_base_.lin.p().y();
-  double z2 = terrain_->GetHeight(x,y) - model_.kinematic_model_->GetNominalStanceInBase().front().z();
+  double z2 = terrain_->GetHeight(x2,y2) - model_.kinematic_model_->GetNominalStanceInBase().front().z();
   Vector3d init_pos(x2, y2, z2);
 
   //spline_lin->SetByLinearInterpolation(initial_base_.lin.p(), final_pos, params_.GetTotalTime());
@@ -159,7 +159,7 @@ NlpFormulation::MakeEndeffectorVariables ()
 
     double x2 = initial_base_.lin.p().x();
     double y2 = initial_base_.lin.p().y();
-    double z2 = terrain_->GetHeight(x,y) - model_.kinematic_model_->GetNominalStanceInBase().front().z();
+    double z2 = terrain_->GetHeight(x2,y2) - model_.kinematic_model_->GetNominalStanceInBase().front().z();
     Vector3d init_pos_base(x2, y2, z2);
 
     Eigen::Vector3d desv(final_base_v_.lin.p().x(), final_base_v_.lin.p().y(), 0.0);
