@@ -187,42 +187,55 @@ public:
                                 double t_total);
 
   /**
-   * @brief Sets nodes pos/vel equally spaced from initial to final position.
+   * @brief Sets nodes for the endeffector position andvance. follows curve. z at
+   * terrain or above in swing.
    * @param initial_val  value of the first node.
    * @param final_val  value of the final node.
-   * @param t_total  The total duration to reach final node (to set velocities).
+   * @param t_total  total duration
+   * @param timings  duration of each phase
+   * @param poly_per_phase  amount of polynomials per phase
+   * @param des_w  desired roation speed
+   * @param des_vx  desired speed in x direction (body coordinates)
+   * @param des_vy  desired speed in y direction (body coordinates)
+   * @param offset_full  offset of ee with respect to base
+   * @param terrain  terrain to get height
+   * @param angle_init initial yaw angle
+   * @param incontact_start  true if the ee is in contact at the start of simulation
    */
   void
   AdvancedInititialisationEE(const VectorXd& initial_val,
-                            const VectorXd& final_val,
-                            double t_total,
-                            std::vector<double> timings,
-                            double des_w,
-                            double des_vx,
-                            double des_vy,
-                            double z_offset,
-                            const VectorXd& offset_full,
-                            HeightMap::Ptr  terrain,
-                            std::vector<int> poly_per_phase,
-                            double angle_init,
-                            bool incontact_start);
+                             const VectorXd& final_val,
+                             double t_total,
+                             std::vector<double> timings,
+                             std::vector<int> poly_per_phase,
+                             double des_w,
+                             double des_vx,
+                             double des_vy,
+                             const VectorXd& offset_full,
+                             HeightMap::Ptr  terrain,
+                             double angle_init,
+                             bool incontact_start);
 
   /**
-   * @brief Sets nodes pos/vel equally spaced from initial to final position.
+   * @brief Sets nodes for the base position andvance. follows curve.
    * @param initial_val  value of the first node.
    * @param final_val  value of the final node.
-   * @param t_total  The total duration to reach final node (to set velocities).
+   * @param t_total  total duration
+   * @param const_time  duration of a phase
+   * @param des_w  desired roation speed
+   * @param des_vx  desired speed in x direction (body coordinates)
+   * @param des_vy  desired speed in y direction (body coordinates)
+   * @param angle_init initial yaw angle
+   * @param incontact_start  true if the ee is in contact at the start of simulation
    */
   void
   AdvancedInititialisationBase(const VectorXd& initial_val,
-                                              const VectorXd& final_val,
-                                              double t_total,
-                                              double const_time,
-                                              double des_w,
-                                              double des_vx,
-                                              double des_vy,
-                                              double z_offset,
-                              HeightMap::Ptr  terrain,
+                               const VectorXd& final_val,
+                               double t_total,
+                               double constant_timings,
+                               double des_w,
+                               double des_vx,
+                               double des_vy,
                                double angle_init);
 
   /**

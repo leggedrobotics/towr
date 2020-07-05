@@ -131,13 +131,12 @@ NodesVariables::AdvancedInititialisationEE(const VectorXd& initial_val,
                                           const VectorXd& final_val,
                                           double t_total,
                                           std::vector<double> timings,
+                                          std::vector<int> poly_per_phase,
                                           double des_w,
                                           double des_vx,
                                           double des_vy,
-                                          double z_offset,
                                           const VectorXd& offset_full,
                                           HeightMap::Ptr  terrain,
-                                          std::vector<int> poly_per_phase,
                                           double angle_init,
                                           bool incontact_start)
 {
@@ -147,7 +146,7 @@ NodesVariables::AdvancedInititialisationEE(const VectorXd& initial_val,
   int id_prev_ = 0;
 
   int lastnodeadded = -10;
-  double goalz_terrain_last= terrain->GetHeight(initial_val.x(),initial_val.y()) - z_offset;
+  double goalz_terrain_last= terrain->GetHeight(initial_val.x(),initial_val.y());
 
   int phase = 0;
   int polycumulative= poly_per_phase[0];
@@ -196,7 +195,7 @@ NodesVariables::AdvancedInititialisationEE(const VectorXd& initial_val,
         goalvy = desv_rotated.y();
       }
 
-      double goalz_terrain_ = terrain->GetHeight(goalx,goaly) - z_offset;
+      double goalz_terrain_ = terrain->GetHeight(goalx,goaly);
 
       if(contact){
         goalz = goalz_terrain_;
@@ -235,8 +234,6 @@ NodesVariables::AdvancedInititialisationBase(const VectorXd& initial_val,
                                           double des_w,
                                           double des_vx,
                                           double des_vy,
-                                          double z_offset,
-                                          HeightMap::Ptr  terrain,
                                           double angle_init)
 {
   double theta0 = atan2(des_vy, des_vx);
