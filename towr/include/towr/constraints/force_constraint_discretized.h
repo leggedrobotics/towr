@@ -38,20 +38,13 @@ private:
   HeightMap::Ptr terrain_;    			///< the height map of the current terrain.
   EE ee_;
   int n_constraints_per_node_; 		  	///< number of constraint for each node.
-  NodeSpline::Ptr decision_;    ///< the linear position of the wheels.
+  NodeSpline::Ptr decision_;    ///< the contact state of the wheels.
   double mu_;              ///< friction coeff between robot feet and terrain.
   double fn_max_;          ///< force limit in normal direction.
   void UpdateConstraintAtInstance(double t, int k, VectorXd& g) const override;
   void UpdateBoundsAtInstance(double t, int k, VecBound& bounds) const override;
   void UpdateJacobianAtInstance(double t, int k, std::string var_set, Jacobian& jac) const override;
-
-  Eigen::Matrix3d GetJacobianTerrainBasis(HeightMap::Direction basis, double x, double y) const;
-
-
 };
-
 } /* namespace towr */
-
-
 
 #endif /* TOWR_INCLUDE_TOWR_CONSTRAINTS_WHEELS_NON_HOLONOMIC_CONSTRAINT_H_ */

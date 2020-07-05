@@ -16,19 +16,21 @@ ForceConstraintDiscretized::ForceConstraintDiscretized(
   ee_ = ee;
   ee_wheels_motion_ = spline_holder.ee_motion_.at(ee_);
   ee_force_ = spline_holder.ee_force_.at(ee_);
+  decision_ = spline_holder.ee_decision_.at(ee_);
   terrain_ = terrain;
 
-  decision_ = spline_holder.ee_decision_.at(ee_);
-
-  n_constraints_per_node_ = 5; // lateral velocity and acceleration
+  n_constraints_per_node_ = 5; // normal and two per x y direction
   mu_ = terrain->GetFrictionCoeff();
   fn_max_ = force_limit;
+
   SetRows(GetNumberOfNodes() * n_constraints_per_node_);
 }
 
 void ForceConstraintDiscretized::UpdateConstraintAtInstance(double t, int k,
                                                             VectorXd &g) const {
   Vector3d ee_d = decision_->GetPoint(t).p();
+  //mulitply by decision variable, such that constraint is only enforced in contact
+
   int row = k * n_constraints_per_node_;
   Vector3d p = ee_wheels_motion_->GetPoint(t).p(); // doesn't change during stance phase
   Vector3d n = terrain_->GetNormalizedBasis(HeightMap::Normal, p.x(), p.y());
@@ -37,7 +39,7 @@ void ForceConstraintDiscretized::UpdateConstraintAtInstance(double t, int k,
 
   // unilateral force
   g(row++) = ee_d.x() * (f.x() * n.x() + f.y() * n.y() +
-                         f.z() * n.z()); // >0 (unilateral forces)
+                         f.z() * n.z()); // >0 <fn_max_(unilateral forces)
 
   // frictional pyramid
   Vector3d t1 = terrain_->GetNormalizedBasis(HeightMap::Tangent1, p.x(), p.y());
@@ -72,7 +74,6 @@ void ForceConstraintDiscretized::UpdateJacobianAtInstance(double t, int k,
                                                           std::string var_set,
                                                           Jacobian &jac) const {
 
-
   int n_jac = jac.cols();
   int row = k * n_constraints_per_node_;
   Vector3d ee_d = decision_->GetPoint(t).p();
@@ -82,8 +83,6 @@ void ForceConstraintDiscretized::UpdateJacobianAtInstance(double t, int k,
 
   Vector3d t1 = terrain_->GetNormalizedBasis(HeightMap::Tangent1, p.x(), p.y());
   Vector3d t2 = terrain_->GetNormalizedBasis(HeightMap::Tangent2, p.x(), p.y());
-
-
 
 
   Vector3d dndx = terrain_->GetDerivativeOfNormalizedBasisWrt(
@@ -102,7 +101,7 @@ void ForceConstraintDiscretized::UpdateJacobianAtInstance(double t, int k,
   Vector3d dt2dy = terrain_->GetDerivativeOfNormalizedBasisWrt(
       HeightMap::Tangent2, Y_, p.x(), p.y());
 
-
+  //derrivatives of the constraint wrt variables
   if (var_set == id::EEForceNodes(ee_)) {
 
     Jacobian dforce_dforcenode_x(1, n_jac);
@@ -155,8 +154,6 @@ void ForceConstraintDiscretized::UpdateJacobianAtInstance(double t, int k,
         dndx.y() * dmotion_dmotionnode_x + dndy.y() * dmotion_dmotionnode_y;
     dn_dmotionnode_z =
         dndx.z() * dmotion_dmotionnode_x + dndy.z() * dmotion_dmotionnode_y;
-
-
 
 
     Jacobian dt1_dmotionnode_x(1, n_jac);
@@ -226,13 +223,8 @@ void ForceConstraintDiscretized::UpdateJacobianAtInstance(double t, int k,
         decision_->GetJacobianWrtNodes(t, kPos).row(X) *
         static_cast<double>(f.transpose() * (t2 + mu_ * n)); // t2 > -mu*n
   }
+
   if (var_set == id::EESchedule(ee_)) {
-
-
-
-
-
-
     Jacobian dforce_dduration_x(1, n_jac);
     Jacobian dforce_dduration_y(1, n_jac);
     Jacobian dforce_dduration_z(1, n_jac);

@@ -186,8 +186,14 @@ public:
                                 const VectorXd& final_val,
                                 double t_total);
 
-  std::vector<int>
-  SetByLinearInterpolation3(const VectorXd& initial_val,
+  /**
+   * @brief Sets nodes pos/vel equally spaced from initial to final position.
+   * @param initial_val  value of the first node.
+   * @param final_val  value of the final node.
+   * @param t_total  The total duration to reach final node (to set velocities).
+   */
+  void
+  AdvancedInititialisationEE(const VectorXd& initial_val,
                             const VectorXd& final_val,
                             double t_total,
                             std::vector<double> timings,
@@ -200,8 +206,15 @@ public:
                             std::vector<int> poly_per_phase,
                             double angle_init,
                             bool incontact_start);
+
+  /**
+   * @brief Sets nodes pos/vel equally spaced from initial to final position.
+   * @param initial_val  value of the first node.
+   * @param final_val  value of the final node.
+   * @param t_total  The total duration to reach final node (to set velocities).
+   */
   void
-    SetByLinearInterpolation33(const VectorXd& initial_val,
+  AdvancedInititialisationBase(const VectorXd& initial_val,
                                               const VectorXd& final_val,
                                               double t_total,
                                               double const_time,

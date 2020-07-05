@@ -88,6 +88,7 @@ private:
    * @return How a duration change affects the x,y,z position.
    */
   Eigen::VectorXd GetDerivativeOfPosWrtPhaseDuration (double t) const;
+
   /**
    * @brief How the velocity at time t changes with current phase duration.
    * @param t The global time along the spline.

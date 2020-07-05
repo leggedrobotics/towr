@@ -128,13 +128,6 @@ public:
   HeightMap::Ptr terrain_;
   Parameters params_;
 
-  std::vector<std::vector<int>> swing_nodes_;
-
-  std::vector<int> endeffector_swing0;
-  std::vector<int> endeffector_swing1;
-  std::vector<int> endeffector_swing2;
-  std::vector<int> endeffector_swing3;
-
 private:
   ConstraintPtrVec MakeWheelsNonHolonomicConstraint(const SplineHolder& s) const;
   ConstraintPtrVec MakeDiscretizedTerrainConstraint(const SplineHolder& s) const;

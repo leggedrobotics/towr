@@ -210,11 +210,13 @@ QuadrupedGaitGenerator::GetStrideTrot () const
   double t_stand = 0.2;
   auto times =
   {
-      t_step, t_step,
+      t_step, t_stand, t_step, t_stand,
+      // ev try this: t_step, t_step, (and change bellow here1 and here2
   };
   auto phase_contacts =
   {
-      bP_, Pb_,
+      //here1: bP_, Pb_,
+      bP_, BB_, Pb_, BB_,
   };
 
   return std::make_pair(times, phase_contacts);
@@ -223,8 +225,11 @@ QuadrupedGaitGenerator::GetStrideTrot () const
 QuadrupedGaitGenerator::GaitInfo
 QuadrupedGaitGenerator::GetStrideTrotFly () const
 {
-  double stand   = 0.25;//0.1
-  double flight = 0.25;//0.1
+  //here2:
+  //  double stand   = 0.25;//0.1
+  //  double flight = 0.25;//0.1
+  double stand   = 0.4;
+  double flight = 0.1;
   auto times =
   {
       stand, flight,

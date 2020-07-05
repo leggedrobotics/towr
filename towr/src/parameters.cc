@@ -31,14 +31,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <towr/variables/cartesian_dimensions.h>
 
 #include <algorithm>
+#include <numeric>      // std::accumulate
+#include <math.h>       // fabs
 #include <cassert>
-#include <iostream>
-#include <math.h>  // fabs
-#include <numeric> // std::accumulate
-
-
-
-#include <towr/variables/euler_converter.h>
 
 namespace towr {
 
@@ -63,21 +58,22 @@ Parameters::Parameters ()
   dt_terrain_discretized_=0.01;//0.01
 
   dt_constraint_base_motion_ = duration_base_polynomial_/4.; // only for base RoM constraint
-  bound_phase_duration_ = std::make_pair(0.2, 10.0);  // used only when optimizing phase durations, so gait
+  bound_phase_duration_ = std::make_pair(0.2, 10.0);  // used only when optimizing phase durations, so gait (putting minimum to low -> spikey,
+  // putting to high->problem with initialisation (when initialisation is lower then minimum)
 
   motion_stance_nodes_per_s = 3;
   force_stance_nodes_per_s = 3;
   decision_stance_nodes_per_s = 10;
 
   constraints_.clear();
-   constraints_.push_back(ForceDiscretized);//Make sure EE above terrain always
-   constraints_.push_back(WheelsNonHolonomic);//Make sure the wheels move only how they should
-   constraints_.push_back(TerrainDiscretized);//Make sure EE above terrain always
-   constraints_.push_back(Dynamic); //Ensures that the dynamic model is fullfilled at discrete times.
-   constraints_.push_back(BaseAcc); // so accelerations don't jump between polynomials
-   constraints_.push_back(EndeffectorRom); //Ensures that the range of motion is respected at discrete times.
+  constraints_.push_back(ForceDiscretized);//Make sure EE above terrain always
+  constraints_.push_back(WheelsNonHolonomic);//Make sure the wheels move only how they should
+  constraints_.push_back(TerrainDiscretized);//Make sure EE above terrain always
+  constraints_.push_back(Dynamic); //Ensures that the dynamic model is fullfilled at discrete times.
+  constraints_.push_back(BaseAcc); // so accelerations don't jump between polynomials
+  constraints_.push_back(EndeffectorRom); //Ensures that the range of motion is respected at discrete times.
 
-   constraints_.push_back(TotalTime);//optimize timings
+  constraints_.push_back(TotalTime);//optimize timings
 
   // optional costs to e.g penalize endeffector forces
   // costs_.push_back({ForcesCostID, 1.0}); weighed by 1.0 relative to other costs

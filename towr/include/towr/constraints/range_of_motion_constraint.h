@@ -76,8 +76,7 @@ private:
   EulerConverter base_angular_; ///< the orientation of the base.
   NodeSpline::Ptr ee_motion_;       ///< the linear position of the endeffectors.
 
-  Eigen::Vector3d min_relativ_to_nominal_;
-  Eigen::Vector3d max_relativ_to_nominal_;
+  Eigen::Vector3d max_deviation_from_nominal_;
   Eigen::Vector3d nominal_ee_pos_B_;
   EE ee_;
 

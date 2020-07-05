@@ -28,7 +28,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************/
 
 #include <towr/nlp_formulation.h>
-#include <towr/variables/phase_spline.h>
 
 namespace towr {
 
@@ -66,7 +65,6 @@ NlpFormulation::GetVariableSets (SplineHolder& spline_holder)
   }
 
   auto ee_decision = MakeDecisionVariables();
-  // vars.insert(vars.end(), ee_decision.begin(), ee_decision.end());
 
   // stores these readily constructed spline
   spline_holder = SplineHolder(base_motion.at(0), // linear
@@ -98,9 +96,7 @@ NlpFormulation::MakeBaseVariables () const
   double z2 = terrain_->GetHeight(x2,y2) - model_.kinematic_model_->GetNominalStanceInBase().front().z();
   Vector3d init_pos(x2, y2, z2);
 
-  //spline_lin->SetByLinearInterpolation(initial_base_.lin.p(), final_pos, params_.GetTotalTime());
-
-  spline_lin->SetByLinearInterpolation33(
+  spline_lin->AdvancedInititialisationBase(
       init_pos, final_pos, params_.GetTotalTime(),
       params_.duration_base_polynomial_, final_base_v_.ang.p().z(),
       final_base_v_.lin.p().x(),
@@ -134,7 +130,6 @@ NlpFormulation::MakeEndeffectorVariables ()
 {
   std::vector<NodesVariablesPhaseBased::Ptr> vars;
 
-  swing_nodes_.clear();
   // Endeffector Motions
   double T = params_.GetTotalTime();
   for (int ee=0; ee<params_.GetEECount(); ee++) {
@@ -342,7 +337,7 @@ NlpFormulation::MakeEndeffectorVariables ()
         params_.ee_in_contact_at_start_.at(ee),
         id::EEMotionNodes(ee),        params_.number_of_polys_per_phase_motion_.at(ee));
 
-    std::vector<int> temp = nodes->SetByLinearInterpolation3(
+    nodes->AdvancedInititialisationEE(
         init_ee_pos_W, final_ee_pos_W, params_.GetTotalTime(),
         params_.ee_phase_durations_.at(ee), final_base_v_.ang.p().z(),
         final_base_v_.lin.p().x(),
@@ -437,17 +432,17 @@ NlpFormulation::GetConstraint (Parameters::ConstraintName name,
                            const SplineHolder& s) const
 {
   switch (name) {
-    case Parameters::Dynamic:        return MakeDynamicConstraint(s);
-    case Parameters::EndeffectorRom: return MakeRangeOfMotionBoxConstraint(s);
-    case Parameters::BaseRom:        return MakeBaseRangeOfMotionConstraint(s);
-    case Parameters::TotalTime:      return MakeTotalTimeConstraint();
-    case Parameters::Terrain:        return MakeTerrainConstraint();
-    case Parameters::Force:          return MakeForceConstraint();
-    case Parameters::Swing:          return MakeSwingConstraint();
-    case Parameters::BaseAcc:        return MakeBaseAccConstraint(s);
+    case Parameters::Dynamic:                   return MakeDynamicConstraint(s);
+    case Parameters::EndeffectorRom:            return MakeRangeOfMotionBoxConstraint(s);
+    case Parameters::BaseRom:                   return MakeBaseRangeOfMotionConstraint(s);
+    case Parameters::TotalTime:                 return MakeTotalTimeConstraint();
+    case Parameters::Terrain:                   return MakeTerrainConstraint();
+    case Parameters::Force:                     return MakeForceConstraint();
+    case Parameters::Swing:                     return MakeSwingConstraint();
+    case Parameters::BaseAcc:                   return MakeBaseAccConstraint(s);
     case Parameters::WheelsNonHolonomic:	return MakeWheelsNonHolonomicConstraint(s);
-  case Parameters::TerrainDiscretized:        return MakeDiscretizedTerrainConstraint(s);
-  case Parameters::ForceDiscretized:        return MakeDiscretizedForceConstraint(s);
+    case Parameters::TerrainDiscretized:        return MakeDiscretizedTerrainConstraint(s);
+    case Parameters::ForceDiscretized:          return MakeDiscretizedForceConstraint(s);
     default: throw std::runtime_error("constraint not defined!");
   }
 }

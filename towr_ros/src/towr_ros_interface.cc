@@ -202,7 +202,7 @@ TowrRosInterface::GetTrajectory () const
       state.ee_contact_.at(ee_xpp) = solution.phase_durations_.at(ee_towr)->IsContactPhase(t);
       state.ee_motion_.at(ee_xpp)  = ToXpp(solution.ee_motion_.at(ee_towr)->GetPoint(t));
       state.ee_forces_ .at(ee_xpp) = solution.ee_force_.at(ee_towr)->GetPoint(t).p();
-      state.ee_decision_.at(ee_xpp) = solution.ee_decision_.at(ee_towr)->GetPoint(t).p();
+      state.ee_decision_.at(ee_xpp) = solution.ee_decision_.at(ee_towr)->GetPoint(t).p(); // comment out when working with xpp/master
 
 
       Vector3d ee_d = solution.ee_decision_.at(ee_towr)->GetPoint(t).p();
@@ -233,8 +233,8 @@ TowrRosInterface::GetTrajectory () const
       asdf2.y() = ee_d.x() * t2mu2; // t2 > -mu*n
 
 
-      state.ee_f_c_1.at(ee_xpp) = asdf1;
-      state.ee_f_c_2.at(ee_xpp) = asdf2;
+      state.ee_f_c_1.at(ee_xpp) = asdf1; // comment out when working with xpp/master
+      state.ee_f_c_2.at(ee_xpp) = asdf2; // comment out when working with xpp/master
 
 
 
@@ -242,7 +242,7 @@ TowrRosInterface::GetTrajectory () const
         Vector3d v_wrt_b = w_C_b*solution.ee_motion_.at(ee_towr)->GetPoint(t).v();
         Vector3d v_b_y = {0, v_wrt_b(1), 0};
 
-      state.ee_vel_loc_.at(ee_xpp) = v_b_y;
+      state.ee_vel_loc_.at(ee_xpp) = v_b_y; // comment out when working with xpp/master
     }
 
     state.t_global_ = t;
@@ -257,33 +257,8 @@ xpp_msgs::RobotParameters
 TowrRosInterface::BuildRobotParametersMsg(const RobotModel& model) const
 {
   xpp_msgs::RobotParameters params_msg;
-  int n_ee_2 = model.kinematic_model_->GetNumberOfEndeffectors();
-  for ( int ee = 0; ee < n_ee_2; ee++) {
-    auto max_rel_xyz = model.kinematic_model_->GetMaximumRelativToNominal(ee);
-    auto min_rel_xyz = model.kinematic_model_->GetMinimumRelativToNominal(ee);
-
-    switch(ee)
-    {
-    case 0:
-      params_msg.ee_max_rel_0 = xpp::Convert::ToRos<geometry_msgs::Vector3>(max_rel_xyz);
-      params_msg.ee_min_rel_0 = xpp::Convert::ToRos<geometry_msgs::Vector3>(min_rel_xyz);
-      break;
-    case 1:
-      params_msg.ee_max_rel_1 = xpp::Convert::ToRos<geometry_msgs::Vector3>(max_rel_xyz);
-      params_msg.ee_min_rel_1 = xpp::Convert::ToRos<geometry_msgs::Vector3>(min_rel_xyz);
-      break;
-    case 2:
-      params_msg.ee_max_rel_2 = xpp::Convert::ToRos<geometry_msgs::Vector3>(max_rel_xyz);
-      params_msg.ee_min_rel_2 = xpp::Convert::ToRos<geometry_msgs::Vector3>(min_rel_xyz);
-      break;
-    case 3:
-      params_msg.ee_max_rel_3 = xpp::Convert::ToRos<geometry_msgs::Vector3>(max_rel_xyz);
-      params_msg.ee_min_rel_3 = xpp::Convert::ToRos<geometry_msgs::Vector3>(min_rel_xyz);
-      break;
-    default:
-      break;
-    }
-  }
+  auto max_dev_xyz = model.kinematic_model_->GetMaximumDeviationFromNominal();
+  params_msg.ee_max_dev = xpp::Convert::ToRos<geometry_msgs::Vector3>(max_dev_xyz);
 
   auto nominal_B = model.kinematic_model_->GetNominalStanceInBase();
   int n_ee = nominal_B.size();

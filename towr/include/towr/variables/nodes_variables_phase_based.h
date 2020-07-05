@@ -85,7 +85,8 @@ public:
    */
   NodesVariablesPhaseBased (int phase_count,
                             bool first_phase_contact,
-                            const std::string& var_name, std::vector<int> number_of_polys_per_phase);
+                            const std::string& var_name,
+                            std::vector<int> number_of_polys_per_phase);
 
   virtual ~NodesVariablesPhaseBased() = default;
 
@@ -217,7 +218,8 @@ class NodesVariablesEEMotion : public NodesVariablesPhaseBased {
 public:
   NodesVariablesEEMotion(int phase_count,
                          bool is_in_contact_at_start,
-                         const std::string& name, std::vector<int> number_of_polys_per_phase);
+                         const std::string& name,
+                         std::vector<int> number_of_polys_per_phase);
   virtual ~NodesVariablesEEMotion() = default;
   OptIndexMap GetPhaseBasedEEParameterization ();
 };
@@ -231,15 +233,16 @@ public:
 class NodesVariablesEEForce : public NodesVariablesPhaseBased {
 public:
   NodesVariablesEEForce(int phase_count,
-                         bool is_in_contact_at_start,
-                         const std::string& name, std::vector<int> number_of_polys_per_phase);
+                        bool is_in_contact_at_start,
+                        const std::string& name,
+                        std::vector<int> number_of_polys_per_phase);
   virtual ~NodesVariablesEEForce() = default;
   OptIndexMap GetPhaseBasedEEParameterization ();
 };
 
 
 /**
- * @brief Variables fully defining the endeffector speed scalarly.
+ * @brief Variables fully defining the endeffector contact state scalarly.
  *
  * @ingroup Variables
  */

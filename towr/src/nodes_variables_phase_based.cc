@@ -35,13 +35,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace towr {
 
 std::vector<NodesVariablesPhaseBased::PolyInfo>
-BuildPolyInfos(int phase_count, bool first_poly_in_contact, std::vector<int> number_of_polys_per_phase) {
+BuildPolyInfos(int phase_count, bool first_poly_in_contact,
+    std::vector<int> number_of_polys_per_phase) {
   using PolyInfo = NodesVariablesPhaseBased::PolyInfo;
   std::vector<PolyInfo> polynomial_info;
 
   bool poly_contact = first_poly_in_contact;
 
   for (int i = 0; i < phase_count; ++i) {
+    // last phase is always contact
     if (poly_contact || i==phase_count-1) {
       for (int j = 0; j < number_of_polys_per_phase[i]; ++j)
         polynomial_info.push_back(PolyInfo(i, j, number_of_polys_per_phase[i], true));
@@ -55,15 +57,17 @@ BuildPolyInfos(int phase_count, bool first_poly_in_contact, std::vector<int> num
   return polynomial_info;
 }
 
-NodesVariablesPhaseBased::NodesVariablesPhaseBased(
-    int phase_count, bool first_phase_contact, const std::string &name,std::vector<int> number_of_polys_per_phase)
-    : NodesVariables(name) {
-  polynomial_info_ =
-      BuildPolyInfos(phase_count, first_phase_contact, number_of_polys_per_phase);
+NodesVariablesPhaseBased::NodesVariablesPhaseBased (int phase_count,
+                                                    bool first_phase_contact,
+                                                    const std::string& name,
+                                                    std::vector<int> number_of_polys_per_phase)
+    :NodesVariables(name)
+{
+  polynomial_info_ = BuildPolyInfos(phase_count, first_phase_contact, number_of_polys_per_phase);
 
   n_dim_ = k3D;
-  int n_nodes = polynomial_info_.size() + 1;
-  nodes_ = std::vector<Node>(n_nodes, Node(n_dim_));
+  int n_nodes = polynomial_info_.size()+1;
+  nodes_  = std::vector<Node>(n_nodes, Node(n_dim_));
 }
 
 NodesVariablesPhaseBased::VecDurations
@@ -240,12 +244,14 @@ NodesVariablesPhaseBased::SetNumberOfVariables(int n_variables)
   SetRows(n_variables);
 }
 
-NodesVariablesEEMotion::NodesVariablesEEMotion(
-    int phase_count, bool is_in_contact_at_start, const std::string &name,std::vector<int> number_of_polys_per_phase)
-    : NodesVariablesPhaseBased(
-          phase_count,
-          is_in_contact_at_start, // contact phase for motion is constant
-          name, number_of_polys_per_phase) {
+NodesVariablesEEMotion::NodesVariablesEEMotion(int phase_count,
+                                               bool is_in_contact_at_start,
+                                               const std::string& name,
+                                               std::vector<int> number_of_polys_per_phase)
+    :NodesVariablesPhaseBased(phase_count,
+                              is_in_contact_at_start, // contact phase for motion is constant
+                              name,
+                              number_of_polys_per_phase) {
   index_to_node_value_info_ = GetPhaseBasedEEParameterization();
   SetNumberOfVariables(index_to_node_value_info_.size());
 }
@@ -267,9 +273,14 @@ NodesVariablesEEMotion::GetPhaseBasedEEParameterization ()
   return index_map;
 }
 
-NodesVariablesEEForce::NodesVariablesEEForce(
-    int phase_count, bool is_in_contact_at_start, const std::string &name,std::vector<int> number_of_polys_per_phase)
-    : NodesVariablesPhaseBased(phase_count, is_in_contact_at_start, name, number_of_polys_per_phase) {
+NodesVariablesEEForce::NodesVariablesEEForce(int phase_count,
+                                              bool is_in_contact_at_start,
+                                              const std::string& name,
+                                             std::vector<int> number_of_polys_per_phase)
+    :NodesVariablesPhaseBased(phase_count,
+                              is_in_contact_at_start,
+                              name,
+                              number_of_polys_per_phase) {
   index_to_node_value_info_ = GetPhaseBasedEEParameterization();
   SetNumberOfVariables(index_to_node_value_info_.size());
 }
@@ -298,13 +309,17 @@ NodesVariablesEEForce::GetPhaseBasedEEParameterization ()
       nodes_.at(id).at(kVel).setZero();
     }
   }
-
   return index_map;
 }
 
-NodesVariablesEEDecision::NodesVariablesEEDecision(
-    int phase_count, bool is_in_contact_at_start, const std::string &name, std::vector<int> number_of_polys_per_phase)
-    : NodesVariablesPhaseBased(phase_count, is_in_contact_at_start, name, number_of_polys_per_phase) {
+NodesVariablesEEDecision::NodesVariablesEEDecision(int phase_count,
+                                                   bool is_in_contact_at_start,
+                                                   const std::string& name,
+                                                   std::vector<int> number_of_polys_per_phase)
+    :NodesVariablesPhaseBased(phase_count,
+                              is_in_contact_at_start,
+                              name,
+                              number_of_polys_per_phase) {
   index_to_node_value_info_ = GetPhaseBasedEEParameterization();
   SetNumberOfVariables(index_to_node_value_info_.size());
 }
@@ -312,29 +327,20 @@ NodesVariablesEEDecision::NodesVariablesEEDecision(
 NodesVariablesEEDecision::OptIndexMap
 NodesVariablesEEDecision::GetPhaseBasedEEParameterization() {
   OptIndexMap index_map;
-
-  std::cout << std::endl;
-  // std::cout<<"NodesVariablesEEDecision::GetPhaseBasedEEParameterization"<<std::endl;
   int idx = 0; // index in variables set
   for (int id = 0; id < nodes_.size(); ++id) {
     // stance node:
-    // forces can be created during stance, so these nodes are optimized over.
-    // if (IsContactNode(id)) {
-    //  std::cout<<"id "<<id<<"IsContactNode "<<IsContactNode(id)<<std::endl;
+    // set contact state to one
     if (IsContactNode(id)) {
       for (int dim = 0; dim < GetDim(); ++dim) {
-        // index_map[idx++].push_back(NodeValueInfo(id, kPos, dim));
-
         nodes_.at(id).at(kPos).setOnes();
         nodes_.at(id).at(kVel).setZero();
       }
     }
-    // swing node (next one will also be swing, so handle that one too)
+    // stance node:
+    // set contact state to zero
     else {
-      // forces can't exist during swing phase, so no need to be optimized
-      // -> all node values simply set to zero.
       nodes_.at(id).at(kPos).setZero();
-
       nodes_.at(id).at(kVel).setZero();
     }
   }

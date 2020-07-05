@@ -49,10 +49,7 @@ public:
     nominal_stance_.at(L) << 0.0,  y_nominal_b, z_nominal_b;
     nominal_stance_.at(R) << 0.0, -y_nominal_b, z_nominal_b;
 
-    for (int ee = 0; ee < 2; ee++) {
-      min_relativ_to_nominal_.at(ee)<< -0.25, -0.15, -0.15;
-      max_relativ_to_nominal_.at(ee) << 0.25, 0.15, 0.15;
-    }
+    max_dev_from_nominal_  << 0.25, 0.15, 0.15;
   }
 };
 

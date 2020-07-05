@@ -126,19 +126,8 @@ NodesVariables::GetNodes() const
   return nodes_;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-std::vector<int>
-NodesVariables::SetByLinearInterpolation3(const VectorXd& initial_val,
+void
+NodesVariables::AdvancedInititialisationEE(const VectorXd& initial_val,
                                           const VectorXd& final_val,
                                           double t_total,
                                           std::vector<double> timings,
@@ -160,9 +149,6 @@ NodesVariables::SetByLinearInterpolation3(const VectorXd& initial_val,
   int lastnodeadded = -10;
   double goalz_terrain_last= terrain->GetHeight(initial_val.x(),initial_val.y()) - z_offset;
 
-
-  std::vector<int> swing_polys;
-
   int phase = 0;
   int polycumulative= poly_per_phase[0];
   bool contact = incontact_start;
@@ -183,10 +169,10 @@ NodesVariables::SetByLinearInterpolation3(const VectorXd& initial_val,
       double yaw=angle_init+ des_w * t_current3;
       double goalx;
       double goaly;
+      double goalz;
       double goalvx;
       double goalvy;
-
-
+      double goalvz;
 
       Eigen::Vector3d euler(0.0, 0.0, yaw);
       Eigen::Vector3d deswvector(0.0, 0.0, des_w);
@@ -197,8 +183,6 @@ NodesVariables::SetByLinearInterpolation3(const VectorXd& initial_val,
 
       VectorXd offset_rotated = w_R_b*offset_full;
       VectorXd desv_rotated = w_R_b*(desv+deswvector.cross(ofsetre));
-
-     // std::cout<<"  t_current3 "<<t_current3<<"  t_total "<<t_total<<std::endl;
 
       if(des_w==0){
         goalx = initial_val.x() + (t_current3*(final_val.x()-initial_val.x()))/t_total;
@@ -212,28 +196,17 @@ NodesVariables::SetByLinearInterpolation3(const VectorXd& initial_val,
         goalvy = desv_rotated.y();
       }
 
-      std::cout<<"  t_current3 "<<t_current3<<"  goalx "<<goalx<<std::endl;
       double goalz_terrain_ = terrain->GetHeight(goalx,goaly) - z_offset;
-      if (fabs(goalz_terrain_last - goalz_terrain_) > .1) {
-        goalz_terrain_last=goalz_terrain_;
-        if (lastnodeadded != nvi.id_) {
-          swing_polys.push_back(nvi.id_);
-          lastnodeadded = nvi.id_;
-        }
-      }
-
-
-      double goalz = initial_val.z() + (t_current3*(final_val.z()-initial_val.z()))/t_total+.05;
-      double goalvz =(final_val.z()-initial_val.z())/t_total;
 
       if(contact){
         goalz = goalz_terrain_;
-        double dzdx = terrain->GetDerivativeOfHeightWrt(X_,goalx,goaly);
-        double dzdy = terrain->GetDerivativeOfHeightWrt(Y_,goalx,goaly);
-        double dzdt = dzdx * goalvx + dzdy * goalvy;
-        goalvz = dzdt;//terrain gradient
-
+      }else{
+        goalz = goalz_terrain_+0.1;
       }
+      double dzdx = terrain->GetDerivativeOfHeightWrt(X_,goalx,goaly);
+      double dzdy = terrain->GetDerivativeOfHeightWrt(Y_,goalx,goaly);
+      double dzdt = dzdx * goalvx + dzdy * goalvy;
+      goalvz = dzdt;//terrain gradient
 
       if (nvi.deriv_ == kPos) {
         Eigen::Vector3d pos;
@@ -252,7 +225,6 @@ NodesVariables::SetByLinearInterpolation3(const VectorXd& initial_val,
       }
     }
   }
-  return swing_polys;
 }
 
 
@@ -260,7 +232,7 @@ NodesVariables::SetByLinearInterpolation3(const VectorXd& initial_val,
 
 
 void
-NodesVariables::SetByLinearInterpolation33(const VectorXd& initial_val,
+NodesVariables::AdvancedInititialisationBase(const VectorXd& initial_val,
                                           const VectorXd& final_val,
                                           double t_total,
                                           double constant_timings,

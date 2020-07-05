@@ -144,7 +144,7 @@ public:
                         Swing,          ///< sets SwingConstraint
                         BaseRom,        ///< sets BaseMotionConstraint
                         BaseAcc,         ///< sets SplineAccConstraint
-			            WheelsNonHolonomic,
+                        WheelsNonHolonomic,
                         TerrainDiscretized,
                         ForceDiscretized
   };
@@ -171,10 +171,15 @@ public:
   /// Number and initial duration of each foot's swing and stance phases.
   std::vector<VecTimes> ee_phase_durations_;
 
+  /// Number of polynomials per phase (swing, contact) for the motion,
+  /// force and decision spline respectively.
   std::vector<std::vector<int>> number_of_polys_per_phase_motion_;
   std::vector<std::vector<int>> number_of_polys_per_phase_force_;
   std::vector<std::vector<int>> number_of_polys_per_phase_decision_;
 
+  /// spline dencity in nodes per second for the motion,
+  /// force and decision spline respectively. This is to make long phases possible
+  /// without sacrificing resolution.
   int motion_stance_nodes_per_s;
   int force_stance_nodes_per_s;
   int decision_stance_nodes_per_s;
@@ -209,6 +214,9 @@ public:
   /// Fixed duration of each cubic polynomial describing the base motion.
   double duration_base_polynomial_;
 
+  /// standar amout of nodes per phase for the motion,
+  /// force and decision spline respectively. They are potentially different for
+  /// swing and stance phases.
   int polynomials2_force_per_stance_phase_;
   int polynomials2_force_per_swing_phase_;
   int polynomials2_motion_per_stance_phase_;
