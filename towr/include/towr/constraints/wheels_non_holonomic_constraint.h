@@ -36,7 +36,7 @@ private:
   NodeSpline::Ptr base_linear_;     	///< the linear position of the base.
   EulerConverter base_angular_; 		///< the orientation of the base.
   NodeSpline::Ptr ee_wheels_motion_;    ///< the linear position of the wheels.
-  NodeSpline::Ptr decision_;    ///< the linear position of the wheels.
+  NodeSpline::Ptr decision_;      ///< the contact state of the wheels.
   PhaseDurations::Ptr durations_;
   int n_constraints_per_node_; 		  	///< number of constraint for each node.
   HeightMap::Ptr terrain_;    			///< the height map of the current terrain.

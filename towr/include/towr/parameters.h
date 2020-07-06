@@ -144,9 +144,9 @@ public:
                         Swing,          ///< sets SwingConstraint
                         BaseRom,        ///< sets BaseMotionConstraint
                         BaseAcc,         ///< sets SplineAccConstraint
-                        WheelsNonHolonomic,
-                        TerrainDiscretized,
-                        ForceDiscretized
+                        WheelsNonHolonomic,///< sets WheelsNonHolonomic
+                        TerrainDiscretized,///< sets TerrainDiscretized
+                        ForceDiscretized///< sets ForceDiscretized
   };
 
   /**
@@ -214,7 +214,7 @@ public:
   /// Fixed duration of each cubic polynomial describing the base motion.
   double duration_base_polynomial_;
 
-  /// standar amout of nodes per phase for the motion,
+  /// standard amount of nodes per phase for the motion,
   /// force and decision spline respectively. They are potentially different for
   /// swing and stance phases.
   int polynomials2_force_per_stance_phase_;

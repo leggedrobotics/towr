@@ -99,7 +99,6 @@ HeightMap::GetDerivativeOfNormalizedBasisWrt (Direction basis, Dim2D dim,
 
   Matrix3d dn_norm = GetDerivativeOfNormalizedVector(v);
   return dn_norm * dv_wrt_dim;
-//Todo Find out what chane here
 //  Vector3d dn_norm_wrt_n = GetDerivativeOfNormalizedVectorWrtNonNormalizedIndex(v, dim);
 //  return dn_norm_wrt_n.cwiseProduct(dv_wrt_dim);
 }
