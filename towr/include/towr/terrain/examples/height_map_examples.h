@@ -167,6 +167,210 @@ private:
 
 /** @}*/
 
+/**
+ * @brief Sample terrain with a step in height with a linear transition.
+ */
+class Step : public HeightMap {
+public:
+  double GetHeight(double x, double y) const override;
+  double GetHeightDerivWrtX(double x, double y) const override;
+  double GetHeightDerivWrtXX(double x, double y) const override;
+
+private:
+  double slope_		 = -std::tan(45*M_PI/180.0); //std::tan(1.141096660643472);
+  double height_     = -0.2;
+  double step_start_ = 0.6; //1.0;
+  double step_end_   = step_start_ + height_/slope_;
+
+//  Eigen::Vector4d coeff {-400, 1260, -1320, 460}; // block from 1.0 to 1.1
+};
+
+/**
+ * @brief Sample terrain with two steps in height with a linear transition.
+ */
+class TwoStep : public HeightMap {
+public:
+  double GetHeight(double x, double y) const override;
+  double GetHeightDerivWrtX(double x, double y) const override;
+
+private:
+  double step_start = 1.0;
+  double step_end   = 1.1;
+  double height     = 0.2;
+
+  double dist_steps	= 0.5;
+  double slope = 2;
+};
+
+/**
+ * @brief Sample terrain with two steps in height with a linear transition.
+ */
+class FiveSteps : public HeightMap {
+public:
+  double GetHeight(double x, double y) const override;
+  double GetHeightDerivWrtX(double x, double y) const override;
+
+private:
+  double step_start  = 1.0;
+  double step_width  = 0.1;
+  double step_height = 0.2;
+  double dist_steps	 = 0.5; //0.4
+  double slope = 2;
+  int num_steps = 5;
+};
+
+/**
+ * @brief Sample terrain with one small slope on the left and another on the right.
+ */
+class TwoSlope : public HeightMap {
+public:
+  double GetHeight(double x, double y) const override;
+  double GetHeightDerivWrtX(double x, double y) const override;
+  double GetHeightDerivWrtXX(double x, double y) const override;
+
+private:
+  double dx = 0.025; //0.0326352;
+  double dh = 0.05;  //0.05;
+
+  double step_up_start   = 1.0;
+  double step_up_end     = 1.1 - dx;
+  double step_down_start = 1.2 - dx;
+  double step_down_end   = 1.3 - 2*dx;
+  double height          = 0.2 - dh;
+  double dist_steps		 = 1.0;
+
+  double slope = 2;
+//  Eigen::Vector4d coeff {-400, 1260, -1320, 460}; // block from 1.0 to 1.1
+//  Eigen::Vector4d coeff {-400, 60, 0, 0};
+};
+
+/**
+ * @brief Sample terrain with an increasing and then decreasing slope.
+ */
+class SlopePlat : public HeightMap {
+public:
+  double GetHeight(double x, double y) const override;
+  double GetHeightDerivWrtX(double x, double y) const override;
+
+private:
+  const double slope_start_   = 1.0;
+  const double up_length_     = 0.2; //0.1; //0.091651513899117; //0.101905089898886; // 0.2;
+  const double down_length_   = 0.2;
+  const double plat_length_   = 1.216; //1.216; //1.2; //1.0;
+  const double height_center_ = 0.2;
+  const double slope_up_	  = height_center_/up_length_;
+  const double slope_down_	  = height_center_/down_length_;
+
+  const double x_plat_start_ = slope_start_ + up_length_;
+  const double x_down_start_ = x_plat_start_ + plat_length_;
+  const double x_flat_start_ = x_down_start_ + down_length_;
+};
+
+/**
+ * @brief Sample terrain with an increasing and then decreasing slope.
+ */
+class MultipleSlopes : public HeightMap {
+public:
+  double GetHeight(double x, double y) const override;
+  double GetHeightDerivWrtX(double x, double y) const override;
+
+private:
+  const double slope_start_   = 1.0;
+  const double up_length_     = 0.2; //0.091651513899117; //0.101905089898886;
+  const double down_length_   = 0.2;
+  const double plat_length_   = 1.216; //1.2; //1.216; //1.0;
+  const double height_center_ = 0.2;
+  const double slope_up_	  = height_center_/up_length_;
+  const double slope_down_	  = height_center_/down_length_;
+
+  const double x_plat_start_ = slope_start_ + up_length_;
+  const double x_down_start_ = x_plat_start_ + plat_length_;
+  const double x_flat_start_ = x_down_start_ + down_length_;
+
+  const double dist_slopes_ = 6.0;
+};
+
+/**
+ * @brief Sample terrain with a low frequency sine profile.
+ */
+class SineLowFreq : public HeightMap {
+public:
+  double GetHeight(double x, double y) const override;
+  double GetHeightDerivWrtX(double x, double y) const override;
+  double GetHeightDerivWrtXX(double x, double y) const override;
+
+private:
+  const double sine_start_ = 0.5;
+  const double freq_ = 2.0;
+  const double amp_  = 0.2;
+  const double h_offset_ = amp_;
+  const double n_cycles_ = 2.0;
+  const double sine_end_ = n_cycles_*2*M_PI/freq_ + sine_start_;
+};
+
+/**
+ * @brief Sample terrain with a low frequency sine profile.
+ */
+class SineHighFreq : public HeightMap {
+public:
+  double GetHeight(double x, double y) const override;
+  double GetHeightDerivWrtX(double x, double y) const override;
+  double GetHeightDerivWrtXX(double x, double y) const override;
+
+private:
+  const double sine_start_ = 0.5;
+  const double freq_ = 2.0*M_PI/0.7;
+  const double amp_  = 0.06;
+  const double h_offset_ = amp_;
+  const double n_cycles_ = 3.0;
+  const double sine_end_ = n_cycles_*2*M_PI/freq_ + sine_start_;
+};
+
+/**
+ * @brief Sample terrain with a slope and oscillations.
+ */
+    class Rough : public HeightMap {
+    public:
+        double GetHeight(double x, double y) const override;
+        double GetHeightDerivWrtX(double x, double y) const override;
+        double GetHeightDerivWrtXX(double x, double y) const override;
+
+    private:
+        const double rough_start_ = 0.5;
+        const double freq_  = 5.0;
+        const double amp_   = 0.1;
+        const double slope_ = 0.2;
+        const double n_cycles_ = 2.0;
+        const double rough_end_ = n_cycles_*2*M_PI/freq_ + rough_start_;
+        const double h_end_ = amp_*sin(freq_*(rough_end_-rough_start_))+slope_*(rough_end_-rough_start_);
+    };
+
+
+/**
+ * @brief Sample terrain with two steps in height with a linear transition.
+ */
+    class RoundStair : public HeightMap {
+    public:
+        double GetHeight(double x, double y) const override;
+        double GetHeightDerivWrtX(double x, double y) const override;
+
+    private:
+        double step_start = 1.0;
+        double step_end   = 1.1;
+        double height     = 0.3;
+
+        double dist_steps	= 1.5;
+        double slope = height/(step_end-step_start);
+
+        double step_start1 = 1.0;
+        double step_end1   = 1.1;
+        double height1     = 0.6;
+
+        double dist_steps1	= 1.5;
+        double slope1 = height1/(step_end1-step_start1);
+    };
+
+
 } /* namespace towr */
 
 #endif /* TOWR_TOWR_ROS_INCLUDE_TOWR_ROS_HEIGHT_MAP_EXAMPLES_H_ */

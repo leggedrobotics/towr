@@ -101,6 +101,16 @@ public:
   virtual Jacobian
   GetJacobianOfPosWrtDurations(double t) const { assert(false); } // durations are fixed here
 
+  /**
+   * @brief How the spline velocity changes when the polynomial durations change.
+   * @param t  The time along the spline at which the sensitivity is required.
+   * @return the pxn Jacobian, where:
+   *             p: Number of dimensions of the spline
+   *             n: Number of optimized durations.
+   */
+  virtual Jacobian
+  GetJacobianOfVelWrtDurations(double t) const { assert(false); } // durations are fixed here
+
 protected:
   /**
    * The size and non-zero elements of the Jacobian of the position w.r.t nodes.

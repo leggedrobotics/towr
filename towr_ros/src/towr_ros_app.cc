@@ -75,13 +75,40 @@ public:
       params.ee_in_contact_at_start_.push_back(gait_gen_->IsInContactAtStart(ee));
     }
 
+    params.number_of_polys_per_phase_motion_.clear();
+    params.number_of_polys_per_phase_force_.clear();
+    params.number_of_polys_per_phase_decision_.clear();
+
+    for (int ee=0; ee<n_ee; ++ee) {
+      bool contact = gait_gen_->IsInContactAtStart(ee);
+      std::vector<int> temp_motion;
+      std::vector<int> temp_force;
+      std::vector<int> temp_decision;
+      for (auto const &value : params.ee_phase_durations_.at(ee)) {
+        if (contact) {
+          temp_motion.push_back(params.polynomials2_motion_per_stance_phase_);
+          temp_force.push_back(params.polynomials2_force_per_stance_phase_);
+          temp_decision.push_back(params.polynomials2_decision_per_stance_phase_);
+          contact = false;
+        } else {
+          temp_motion.push_back(params.polynomials2_motion_per_swing_phase_);
+          temp_force.push_back(params.polynomials2_force_per_swing_phase_);
+          temp_decision.push_back(params.polynomials2_decision_per_swing_phase_);
+          contact = true;
+        }
+      }
+      params.number_of_polys_per_phase_motion_.push_back(temp_motion);
+      params.number_of_polys_per_phase_force_.push_back(temp_force);
+      params.number_of_polys_per_phase_decision_.push_back(temp_decision);
+    }
+
     // Here you can also add other constraints or change parameters
     // params.constraints_.push_back(Parameters::BaseRom);
 
     // increases optimization time, but sometimes helps find a solution for
     // more difficult terrain.
     if (msg.optimize_phase_durations)
-      params.OptimizePhaseDurations();
+      params.OptimizePhaseDurations();//does not do anything at the moment. Phase durations are always optimized
 
     return params;
   }
@@ -92,7 +119,7 @@ public:
   void SetIpoptParameters(const TowrCommandMsg& msg) override
   {
     // the HA-L solvers are alot faster, so consider installing and using
-    solver_->SetOption("linear_solver", "mumps"); // ma27, ma57
+    solver_->SetOption("linear_solver", "ma57"); // ma27, ma57, mumps
 
     // Analytically defining the derivatives in IFOPT as we do it, makes the
     // problem a lot faster. However, if this becomes too difficult, we can also
@@ -107,13 +134,27 @@ public:
     // deviation of 10e-4, which is fine. What to watch out for is deviations > 10e-2.
     // solver_->SetOption("derivative_test", "first-order");
 
-    solver_->SetOption("max_cpu_time", 40.0);
+    solver_->SetOption("max_cpu_time", 8000.0);
     solver_->SetOption("print_level", 5);
 
     if (msg.play_initialization)
       solver_->SetOption("max_iter", 0);
     else
-      solver_->SetOption("max_iter", 3000);
+      solver_->SetOption("max_iter", 30000);
+
+
+      // derivative test
+    if (true) {
+      // solver_->SetOption("max_iter", 0);
+      // solver_->SetOption("derivative_test", "first-order");
+      // solver_->SetOption("print_level", 4);
+      // solver_->SetOption("derivative_test_tol", 1e-3);
+
+      //solver_->SetOption("derivative_test_perturbation", 1e-4);
+      //solver_->SetOption("derivative_test_perturbation", 1e1);
+
+       // solver_->SetOption("derivative_test_print_all", "yes");
+    }
   }
 };
 

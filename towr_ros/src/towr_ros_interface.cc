@@ -59,7 +59,7 @@ TowrRosInterface::TowrRosInterface ()
 
   solver_ = std::make_shared<ifopt::IpoptSolver>();
 
-  visualization_dt_ = 0.01;
+  visualization_dt_ = 0.001;
 }
 
 BaseState
@@ -70,6 +70,18 @@ TowrRosInterface::GetGoalState(const TowrCommandMsg& msg) const
   goal.lin.at(kVel) = xpp::Convert::ToXpp(msg.goal_lin.vel);
   goal.ang.at(kPos) = xpp::Convert::ToXpp(msg.goal_ang.pos);
   goal.ang.at(kVel) = xpp::Convert::ToXpp(msg.goal_ang.vel);
+
+  return goal;
+}
+
+BaseState
+TowrRosInterface::GetGoalStatev(const TowrCommandMsg& msg) const
+{
+  BaseState goal;
+  goal.lin.at(kPos) = xpp::Convert::ToXpp(msg.goal_linv.pos);
+  goal.lin.at(kVel) = xpp::Convert::ToXpp(msg.goal_linv.vel);
+  goal.ang.at(kPos) = xpp::Convert::ToXpp(msg.goal_angv.pos);
+  goal.ang.at(kVel) = xpp::Convert::ToXpp(msg.goal_angv.vel);
 
   return goal;
 }
@@ -89,6 +101,7 @@ TowrRosInterface::UserCommandCallback(const TowrCommandMsg& msg)
   int n_ee = formulation_.model_.kinematic_model_->GetNumberOfEndeffectors();
   formulation_.params_ = GetTowrParameters(n_ee, msg);
   formulation_.final_base_ = GetGoalState(msg);
+  formulation_.final_base_v_ = GetGoalStatev(msg);
 
   SetTowrInitialState();
 
@@ -111,6 +124,7 @@ TowrRosInterface::UserCommandCallback(const TowrCommandMsg& msg)
 
     solver_->Solve(nlp_);
     SaveOptimizationAsRosbag(bag_file, robot_params_msg, msg, false);
+    nlp_.PrintCurrent();
   }
 
   // playback using terminal commands
@@ -186,6 +200,49 @@ TowrRosInterface::GetTrajectory () const
       state.ee_contact_.at(ee_xpp) = solution.phase_durations_.at(ee_towr)->IsContactPhase(t);
       state.ee_motion_.at(ee_xpp)  = ToXpp(solution.ee_motion_.at(ee_towr)->GetPoint(t));
       state.ee_forces_ .at(ee_xpp) = solution.ee_force_.at(ee_towr)->GetPoint(t).p();
+
+      //debug output, enable plots
+      state.ee_decision_.at(ee_xpp) = solution.ee_decision_.at(ee_towr)->GetPoint(t).p(); // comment out when working with xpp/master
+
+
+      Vector3d ee_d = solution.ee_decision_.at(ee_towr)->GetPoint(t).p();
+      Vector3d p = solution.ee_motion_.at(ee_towr)->GetPoint(t).p(); // doesn't change during stance phase
+      Vector3d n = formulation_.terrain_->GetNormalizedBasis(HeightMap::Normal, p.x(), p.y());
+      Vector3d f = solution.ee_force_.at(ee_towr)->GetPoint(t).p();
+
+      double mu_ = formulation_.terrain_->GetFrictionCoeff();
+
+      Vector3d asdf1 = {0.0 ,0.0 ,0.0};
+      Vector3d asdf2 = {0.0 ,0.0 ,0.0};
+
+      // unilateral force
+      double fn = f.transpose() * n;
+      asdf1.x() = ee_d.x() * fn; // >0 (unilateral forces)
+
+      // frictional pyramid
+      Vector3d t1 = formulation_.terrain_->GetNormalizedBasis(HeightMap::Tangent1, p.x(), p.y());
+      double t1mu1 = f.transpose() * (t1 - mu_ * n);
+      double t1mu2 = f.transpose() * (t1 + mu_ * n);
+      asdf1.y() = -ee_d.x() * t1mu1 ; // t1 < mu*n
+      asdf1.z() = ee_d.x() * t1mu2; // t1 > -mu*n
+
+      Vector3d t2 = formulation_.terrain_->GetNormalizedBasis(HeightMap::Tangent2, p.x(), p.y());
+      double t2mu1 = f.transpose() * (t2 - mu_ * n);
+      double t2mu2 = f.transpose() * (t2 + mu_ * n);
+      asdf2.x() = -ee_d.x() * t2mu1; // t2 < mu*n
+      asdf2.y() = ee_d.x() * t2mu2; // t2 > -mu*n
+
+
+      state.ee_f_c_1.at(ee_xpp) = asdf1; // comment out when working with xpp/master
+      state.ee_f_c_2.at(ee_xpp) = asdf2; // comment out when working with xpp/master
+
+
+
+        EulerConverter::MatrixSXd w_C_b = base_angular.GetRotationMatrixBaseToWorld(t).transpose();
+        Vector3d v_wrt_b = w_C_b*solution.ee_motion_.at(ee_towr)->GetPoint(t).v();
+        Vector3d v_b_y = {0, v_wrt_b(1), 0};
+
+      state.ee_vel_loc_.at(ee_xpp) = v_b_y; // comment out when working with xpp/master
     }
 
     state.t_global_ = t;

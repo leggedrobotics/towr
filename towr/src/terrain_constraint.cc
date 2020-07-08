@@ -50,7 +50,7 @@ TerrainConstraint::InitVariableDependedQuantities (const VariablesPtr& x)
   for (int id=1; id<ee_motion_->GetNodes().size(); ++id)
     node_ids_.push_back(id);
 
-  int constraint_count = node_ids_.size();
+  int constraint_count = 2*node_ids_.size();
   SetRows(constraint_count);
 }
 
@@ -63,7 +63,10 @@ TerrainConstraint::GetValues () const
   int row = 0;
   for (int id : node_ids_) {
     Vector3d p = nodes.at(id).p();
+    Vector3d v = nodes.at(id).v();
     g(row++) = p.z() - terrain_->GetHeight(p.x(), p.y());
+    Vector3d terrain_normal = terrain_->GetNormalizedBasis(HeightMap::Direction::Normal, p.x(), p.y());
+    g(row++) = terrain_normal.x() * v.x() + terrain_normal.y() * v.y() + terrain_normal.z() * v.z();
   }
 
   return g;
@@ -74,14 +77,17 @@ TerrainConstraint::GetBounds () const
 {
   VecBound bounds(GetRows());
   double max_distance_above_terrain = 1e20; // [m]
+  double max_velocity_normal_to_terrain = 1e20; // [m/s]
 
   int row = 0;
   for (int id : node_ids_) {
-    if (ee_motion_->IsConstantNode(id))
-      bounds.at(row) = ifopt::BoundZero;
-    else
-      bounds.at(row) = ifopt::Bounds(0.0, max_distance_above_terrain);
-    row++;
+    if (ee_motion_->IsContactNode(id)) {
+      bounds.at(row++) = ifopt::BoundZero;
+      bounds.at(row++) = ifopt::BoundZero;
+    } else {
+      bounds.at(row++) = ifopt::Bounds(0.0, max_distance_above_terrain);
+      bounds.at(row++) = ifopt::Bounds(-max_velocity_normal_to_terrain, max_velocity_normal_to_terrain);
+    }
   }
 
   return bounds;
@@ -101,6 +107,21 @@ TerrainConstraint::FillJacobianBlock (std::string var_set, Jacobian& jac) const
       for (auto dim : {X,Y}) {
         int idx = ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(id, kPos, dim));
         jac.coeffRef(row, idx) = -terrain_->GetDerivativeOfHeightWrt(To2D(dim), p.x(), p.y());
+      }
+      row++;
+
+      Vector3d v = nodes.at(id).v();
+      Vector3d terrain_normal = terrain_->GetNormalizedBasis(HeightMap::Direction::Normal, p.x(), p.y());
+      int idvz = ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(id, kVel, X));
+      jac.coeffRef(row, idvz) =  terrain_normal.x();
+      int idvy = ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(id, kVel, Y));
+      jac.coeffRef(row, idvy) =  terrain_normal.y();
+      int idvx = ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(id, kVel, Z));
+      jac.coeffRef(row, idvx) =  terrain_normal.z();
+      for (auto dim : {X,Y}) {
+        int idx = ee_motion_->GetOptIndex(NodesVariables::NodeValueInfo(id, kPos, dim));
+        Vector3d terrain_normal_derivative = terrain_->GetDerivativeOfNormalizedBasisWrt(HeightMap::Direction::Normal, To2D(dim), p.x(), p.y());
+        jac.coeffRef(row, idx) = terrain_normal_derivative.x() * v.x() + terrain_normal_derivative.y() * v.y() + terrain_normal_derivative.z() * v.z();
       }
       row++;
     }

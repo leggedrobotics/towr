@@ -50,7 +50,7 @@ int main()
   formulation.terrain_ = std::make_shared<FlatGround>(0.0);
 
   // Kinematic limits and dynamic parameters of the hopper
-  formulation.model_ = RobotModel(RobotModel::Monoped);
+  formulation.model_ = RobotModel(RobotModel::MonopedWheels);
 
   // set the initial position of the hopper
   formulation.initial_base_.lin.at(kPos).z() = 0.5;
@@ -65,6 +65,28 @@ int main()
   // by the optimizer. The number of swing and stance phases however is fixed.
   // alternating stance and swing:     ____-----_____-----_____-----_____
   formulation.params_.ee_phase_durations_.push_back({0.4, 0.2, 0.4, 0.2, 0.4, 0.2, 0.2});
+  bool contact = true;
+  std::vector<int> temp_motion;
+  std::vector<int> temp_force;
+  std::vector<int> temp_decision;
+
+  for(auto const& value: formulation.params_.ee_phase_durations_) {
+    if (contact) {
+      temp_motion.push_back(formulation.params_.polynomials2_motion_per_stance_phase_);
+      temp_force.push_back(formulation.params_.polynomials2_force_per_stance_phase_);
+      temp_decision.push_back(formulation.params_.polynomials2_decision_per_stance_phase_);
+      contact=false;
+    }else{
+      temp_motion.push_back(formulation.params_.polynomials2_motion_per_swing_phase_);
+      temp_force.push_back(formulation.params_.polynomials2_force_per_swing_phase_);
+      temp_decision.push_back(formulation.params_.polynomials2_decision_per_swing_phase_);
+      contact=true;
+    }
+  }
+  formulation.params_.number_of_polys_per_phase_motion_.push_back(temp_motion);
+  formulation.params_.number_of_polys_per_phase_force_.push_back(temp_force);
+  formulation.params_.number_of_polys_per_phase_decision_.push_back(temp_decision);
+
   formulation.params_.ee_in_contact_at_start_.push_back(true);
 
   // Initialize the nonlinear-programming problem with the variables,

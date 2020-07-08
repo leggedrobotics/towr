@@ -43,7 +43,7 @@ towr::SwingConstraint::InitVariableDependedQuantities (const VariablesPtr& x)
 {
   ee_motion_ = x->GetComponent<NodesVariablesPhaseBased>(ee_motion_id_);
 
-  pure_swing_node_ids_ = ee_motion_->GetIndicesOfNonConstantNodes();
+  pure_swing_node_ids_ = ee_motion_->GetIndicesOfNonContactNodes();
 
   // constrain xy position and velocity of every swing node
   int constraint_count =  pure_swing_node_ids_.size()*Node::n_derivatives*k2D;

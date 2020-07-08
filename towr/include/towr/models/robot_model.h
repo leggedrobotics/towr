@@ -32,9 +32,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <map>
 #include <string>
+#include <iostream>
 
 #include <towr/models/dynamic_model.h>
 #include <towr/models/kinematic_model.h>
+#include <towr/models/examples/monoped_model.h>
+#include <towr/models/examples/biped_model.h>
+#include <towr/models/examples/hyq_model.h>
+#include <towr/models/examples/anymal_model.h>
+#include <towr/models/examples/anymal_wheels_model.h>
+#include <towr/parameters.h>
 
 namespace towr {
 
@@ -67,10 +74,10 @@ struct RobotModel {
    * See folder: \ref include/towr/models/examples for more information.
    * @ingroup Robots
    */
-  enum Robot { Monoped, ///< one-legged hopper
-               Biped,   ///< two-legged
-               Hyq,     ///< four-legged robot from IIT
-               Anymal,  ///< four-legged robot from Anybotics
+  enum Robot { MonopedWheels, ///< one-legged hopper with wheels
+               BipedWheels,   ///< two-legged with wheels
+               HyqWheels,     ///< four-legged robot from IIT with wheels
+               AnymalWheels,  ///< Anymal with wheels
                ROBOT_COUNT };
 
 
@@ -84,10 +91,10 @@ struct RobotModel {
 
 const static std::map<RobotModel::Robot, std::string> robot_names =
 {
-  {RobotModel::Monoped, "Monoped"},
-  {RobotModel::Biped,   "Biped"},
-  {RobotModel::Hyq,     "Hyq"},
-  {RobotModel::Anymal,  "Anymal"}
+    {RobotModel::MonopedWheels, "MonopedWheels"},
+    {RobotModel::BipedWheels,   "BipedWheels"},
+    {RobotModel::HyqWheels,     "HyqWheels"},
+    {RobotModel::AnymalWheels,  "AnymalWheels"}
 };
 
 } /* namespace towr */

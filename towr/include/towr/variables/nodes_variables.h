@@ -31,6 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define TOWR_VARIABLES_NODE_VALUES_H_
 
 #include <ifopt/variable_set.h>
+#include <towr/terrain/height_map.h>
 
 #include "state.h"
 #include "nodes_observer.h"
@@ -184,6 +185,58 @@ public:
   void SetByLinearInterpolation(const VectorXd& initial_val,
                                 const VectorXd& final_val,
                                 double t_total);
+
+  /**
+   * @brief Sets nodes for the endeffector position andvance. follows curve. z at
+   * terrain or above in swing.
+   * @param initial_val  value of the first node.
+   * @param final_val  value of the final node.
+   * @param t_total  total duration
+   * @param timings  duration of each phase
+   * @param poly_per_phase  amount of polynomials per phase
+   * @param des_w  desired roation speed
+   * @param des_vx  desired speed in x direction (body coordinates)
+   * @param des_vy  desired speed in y direction (body coordinates)
+   * @param offset_full  offset of ee with respect to base
+   * @param terrain  terrain to get height
+   * @param angle_init initial yaw angle
+   * @param incontact_start  true if the ee is in contact at the start of simulation
+   */
+  void
+  AdvancedInititialisationEE(const VectorXd& initial_val,
+                             const VectorXd& final_val,
+                             double t_total,
+                             std::vector<double> timings,
+                             std::vector<int> poly_per_phase,
+                             double des_w,
+                             double des_vx,
+                             double des_vy,
+                             const VectorXd& offset_full,
+                             HeightMap::Ptr  terrain,
+                             double angle_init,
+                             bool incontact_start);
+
+  /**
+   * @brief Sets nodes for the base position andvance. follows curve.
+   * @param initial_val  value of the first node.
+   * @param final_val  value of the final node.
+   * @param t_total  total duration
+   * @param const_time  duration of a phase
+   * @param des_w  desired roation speed
+   * @param des_vx  desired speed in x direction (body coordinates)
+   * @param des_vy  desired speed in y direction (body coordinates)
+   * @param angle_init initial yaw angle
+   * @param incontact_start  true if the ee is in contact at the start of simulation
+   */
+  void
+  AdvancedInititialisationBase(const VectorXd& initial_val,
+                               const VectorXd& final_val,
+                               double t_total,
+                               double constant_timings,
+                               double des_w,
+                               double des_vx,
+                               double des_vy,
+                               double angle_init);
 
   /**
    * @brief Restricts the first node in the spline.

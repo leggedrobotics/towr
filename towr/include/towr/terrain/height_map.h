@@ -72,6 +72,7 @@ class HeightMap {
 public:
   using Ptr      = std::shared_ptr<HeightMap>;
   using Vector3d = Eigen::Vector3d;
+  using Matrix3d = Eigen::Matrix3d;
 
   /**
    * @brief Terrains IDs corresponding for factory method.
@@ -83,6 +84,16 @@ public:
                    SlopeID,
                    ChimneyID,
                    ChimneyLRID,
+		   SlopePlatID,
+		   MultipleSlopesID,
+		   StepID,
+		   TwoSlopeID,
+		   TwoStepID,
+		   FiveStepsID,
+		   SineLowFreqID,
+		   SineHighFreqID,
+		   RoughID,
+      RoundStairID,
                    TERRAIN_COUNT };
 
   static HeightMap::Ptr MakeTerrain(TerrainID type);
@@ -159,6 +170,8 @@ private:
   Vector3d GetDerivativeOfNormalizedVectorWrtNonNormalizedIndex(
       const Vector3d& non_normalized, int index) const;
 
+  Matrix3d GetDerivativeOfNormalizedVector (const Vector3d& v) const;
+
   // first derivatives that must be implemented by the user
   virtual double GetHeightDerivWrtX(double x, double y) const { return 0.0; };
   virtual double GetHeightDerivWrtY(double x, double y) const { return 0.0; };
@@ -173,13 +186,44 @@ private:
 
 const static std::map<HeightMap::TerrainID, std::string> terrain_names =
 {
-  {HeightMap::FlatID,        "Flat"       },
-  {HeightMap::BlockID,       "Block"      },
-  {HeightMap::StairsID,      "Stairs"     },
-  {HeightMap::GapID,         "Gap"        },
-  {HeightMap::SlopeID,       "Slope"      },
-  {HeightMap::ChimneyID,     "Chimney"    },
-  {HeightMap::ChimneyLRID,   "ChimenyLR"  }
+  {HeightMap::FlatID,         	"Flat"           },
+  {HeightMap::BlockID,        	"Block"          },
+  {HeightMap::StairsID,       	"Stairs"         },
+  {HeightMap::GapID,          	"Gap"            },
+  {HeightMap::SlopeID,        	"Slope"          },
+  {HeightMap::ChimneyID,      	"Chimney"        },
+  {HeightMap::ChimneyLRID,    	"ChimenyLR"      },
+  {HeightMap::SlopePlatID,    	"SlopePlat"      },
+  {HeightMap::MultipleSlopesID, "MultipleSlopes" },
+  {HeightMap::StepID,         	"Step"           },
+  {HeightMap::TwoSlopeID,      	"TwoSlope"       },
+  {HeightMap::TwoStepID,      	"TwoStep"        },
+  {HeightMap::FiveStepsID,      "FiveSteps"      },
+  {HeightMap::SineLowFreqID,  	"SineLowFreq"    },
+  {HeightMap::SineHighFreqID, 	"SineHighFreq"   },
+  {HeightMap::RoughID,        	"Rough"      	 },
+  {HeightMap::RoundStairID,        	"RoundStairID"      	 }
+};
+
+const static std::map<std::string, HeightMap::TerrainID> terrain_ids =
+{
+  {"Flat", 			 HeightMap::FlatID         	  },
+  {"Block", 		 HeightMap::BlockID        	  },
+  {"Stairs", 		 HeightMap::StairsID       	  },
+  {"Gap", 			 HeightMap::GapID          	  },
+  {"Slope", 		 HeightMap::SlopeID        	  },
+  {"Chimney", 		 HeightMap::ChimneyID      	  },
+  {"ChimenyLR", 	 HeightMap::ChimneyLRID       },
+  {"SlopePlat", 	 HeightMap::SlopePlatID    	  },
+  {"MultipleSlopes", HeightMap::MultipleSlopesID  },
+  {"Step", 			 HeightMap::StepID         	  },
+  {"TwoSlope", 		 HeightMap::TwoSlopeID        },
+  {"TwoStep", 		 HeightMap::TwoStepID,        },
+  {"FiveSteps", 	 HeightMap::FiveStepsID,      },
+  {"SineLowFreq", 	 HeightMap::SineLowFreqID,    },
+  {"SineHighFreq", 	 HeightMap::SineHighFreqID,   },
+  {"Rough", 		 HeightMap::RoughID,          },
+  {"RoundStairID" ,HeightMap::RoundStairID	 }
 };
 
 } /* namespace towr */

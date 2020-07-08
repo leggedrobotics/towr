@@ -53,7 +53,7 @@ ForceConstraint::InitVariableDependedQuantities (const VariablesPtr& x)
   ee_force_  = x->GetComponent<NodesVariablesPhaseBased>(id::EEForceNodes(ee_));
   ee_motion_ = x->GetComponent<NodesVariablesPhaseBased>(id::EEMotionNodes(ee_));
 
-  pure_stance_force_node_ids_ = ee_force_->GetIndicesOfNonConstantNodes();
+  pure_stance_force_node_ids_ = ee_force_->GetIndicesOfNonSwingNodes();
 
   int constraint_count = pure_stance_force_node_ids_.size()*n_constraints_per_node_;
   SetRows(constraint_count);

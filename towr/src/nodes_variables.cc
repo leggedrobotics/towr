@@ -28,6 +28,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************/
 
 #include <towr/variables/nodes_variables.h>
+#include <iostream>
+#include <towr/variables/node_spline.h>
+#include <towr/variables/euler_converter.h>
 
 namespace towr {
 
@@ -121,6 +124,178 @@ const std::vector<Node>
 NodesVariables::GetNodes() const
 {
   return nodes_;
+}
+
+void
+NodesVariables::AdvancedInititialisationEE(const VectorXd& initial_val,
+                                          const VectorXd& final_val,
+                                          double t_total,
+                                          std::vector<double> timings,
+                                          std::vector<int> poly_per_phase,
+                                          double des_w,
+                                          double des_vx,
+                                          double des_vy,
+                                          const VectorXd& offset_full,
+                                          HeightMap::Ptr  terrain,
+                                          double angle_init,
+                                          bool incontact_start)
+{
+  double theta0 = atan2(des_vy, des_vx);
+  double r = sqrt(des_vx * des_vx + des_vy * des_vy) / des_w;
+  double t_current3 = 0.0;
+  int id_prev_ = 0;
+
+  int lastnodeadded = -10;
+  double goalz_terrain_last= terrain->GetHeight(initial_val.x(),initial_val.y());
+
+  int phase = 0;
+  int polycumulative= poly_per_phase[0];
+  bool contact = incontact_start;
+
+  for (int idx=0; idx<GetRows(); ++idx) {
+    for (auto nvi : GetNodeValuesInfo(idx)) {
+      if ( id_prev_!=nvi.id_){
+        if(nvi.id_> polycumulative){
+          phase+=1;
+          contact=!contact;
+          polycumulative+= poly_per_phase[phase];
+        }
+        t_current3 += (1.0/poly_per_phase[phase])*timings[phase];
+        id_prev_ = nvi.id_;
+      }
+
+      double thetaT = theta0 + des_w * t_current3;
+      double yaw=angle_init+ des_w * t_current3;
+      double goalx;
+      double goaly;
+      double goalz;
+      double goalvx;
+      double goalvy;
+      double goalvz;
+
+      Eigen::Vector3d euler(0.0, 0.0, yaw);
+      Eigen::Vector3d deswvector(0.0, 0.0, des_w);
+      Eigen::Matrix3d w_R_b = EulerConverter::GetRotationMatrixBaseToWorld(euler);
+
+      Eigen::Vector3d ofsetre = offset_full;
+      Eigen::Vector3d desv(des_vx, des_vy, 0.0);
+
+      VectorXd offset_rotated = w_R_b*offset_full;
+      VectorXd desv_rotated = w_R_b*(desv+deswvector.cross(ofsetre));
+
+      if(des_w==0){
+        goalx = initial_val.x() + (t_current3*(final_val.x()-initial_val.x()))/t_total;
+        goaly = initial_val.y() + (t_current3*(final_val.y()-initial_val.y()))/t_total;
+        goalvx = desv_rotated.x();
+        goalvy = desv_rotated.y();
+      }else{
+        goalx = offset_rotated.x() -r * sin(theta0) + r * sin(thetaT);
+        goaly = offset_rotated.y() + r * cos(theta0) - r * cos(thetaT);
+        goalvx = desv_rotated.x();
+        goalvy = desv_rotated.y();
+      }
+
+      double goalz_terrain_ = terrain->GetHeight(goalx,goaly);
+
+      if(contact){
+        goalz = goalz_terrain_;
+      }else{
+        goalz = goalz_terrain_+0.1;
+      }
+      double dzdx = terrain->GetDerivativeOfHeightWrt(X_,goalx,goaly);
+      double dzdy = terrain->GetDerivativeOfHeightWrt(Y_,goalx,goaly);
+      double dzdt = dzdx * goalvx + dzdy * goalvy;
+      goalvz = dzdt;//terrain gradient
+
+      if (nvi.deriv_ == kPos) {
+        Eigen::Vector3d pos;
+        pos.x()= goalx;
+        pos.y()= goaly;
+        pos.z()= goalz;
+        nodes_.at(nvi.id_).at(kPos)(nvi.dim_) = pos(nvi.dim_);
+      }
+
+      if (nvi.deriv_ == kVel) {
+        Eigen::Vector3d vel;
+        vel.x()= goalvx;
+        vel.y()= goalvy;
+        vel.z()= goalvz;
+        nodes_.at(nvi.id_).at(kVel)(nvi.dim_) = vel(nvi.dim_);
+      }
+    }
+  }
+}
+
+void
+NodesVariables::AdvancedInititialisationBase(const VectorXd& initial_val,
+                                          const VectorXd& final_val,
+                                          double t_total,
+                                          double constant_timings,
+                                          double des_w,
+                                          double des_vx,
+                                          double des_vy,
+                                          double angle_init)
+{
+  double theta0 = atan2(des_vy, des_vx);
+  double r = sqrt(des_vx * des_vx + des_vy * des_vy) / des_w;
+  double t_current3 = 0.0;
+  int id_prev_ = 0;
+
+  for (int idx=0; idx<GetRows(); ++idx) {
+    for (auto nvi : GetNodeValuesInfo(idx)) {
+      if ( id_prev_!=nvi.id_){
+        t_current3 += constant_timings;
+        id_prev_ = nvi.id_;
+      }
+
+      double thetaT = theta0 + des_w * t_current3;
+      double yaw=angle_init+ des_w * t_current3;
+      double goalx;
+      double goaly;
+      double goalvx;
+      double goalvy;
+
+      Eigen::Vector3d euler(0.0, 0.0, yaw);
+      Eigen::Vector3d deswvector(0.0, 0.0, des_w);
+      Eigen::Matrix3d w_R_b = EulerConverter::GetRotationMatrixBaseToWorld(euler);
+
+      Eigen::Vector3d desv(des_vx, des_vy, 0.0);
+
+      VectorXd desv_rotated = w_R_b*desv;
+
+      if(des_w==0){
+        goalx = initial_val.x() + (t_current3*(final_val.x()-initial_val.x()))/t_total;
+        goaly = initial_val.y() + (t_current3*(final_val.y()-initial_val.y()))/t_total;
+        goalvx = desv_rotated.x();
+        goalvy = desv_rotated.y();
+      }else{
+        goalx = -r * sin(theta0) + r * sin(thetaT);
+        goaly =  r * cos(theta0) - r * cos(thetaT);
+        goalvx = desv_rotated.x();
+        goalvy = desv_rotated.y();
+      }
+
+      double goalz = initial_val.z() + (t_current3*(final_val.z()-initial_val.z()))/t_total;
+      double goalvz =(final_val.z()-initial_val.z())/t_total;
+
+
+      if (nvi.deriv_ == kPos) {
+        Eigen::Vector3d pos;
+        pos.x()= goalx;
+        pos.y()= goaly;
+        pos.z()= goalz;
+        nodes_.at(nvi.id_).at(kPos)(nvi.dim_) = pos(nvi.dim_);
+      }
+
+      if (nvi.deriv_ == kVel) {
+        Eigen::Vector3d vel;
+        vel.x()= goalvx;
+        vel.y()= goalvy;
+        vel.z()= goalvz;
+        nodes_.at(nvi.id_).at(kVel)(nvi.dim_) = vel(nvi.dim_);
+      }
+    }
+  }
 }
 
 void

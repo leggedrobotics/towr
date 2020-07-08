@@ -44,7 +44,7 @@ namespace towr {
 
 
 enum YCursorRows {HEADING=6, OPTIMIZE=8, VISUALIZE, INITIALIZATION, PLOT,
-                  REPLAY_SPEED, GOAL_POS, GOAL_ORI, ROBOT,
+                  REPLAY_SPEED, GOAL_POS, GOAL_ORI, DES_VEL, DES_W, DES, ROBOT,
                   GAIT, OPTIMIZE_GAIT, TERRAIN, DURATION, CLOSE, END};
 static constexpr int Y_STATUS      = END+1;
 static constexpr int X_KEY         = 1;
@@ -66,17 +66,27 @@ TowrUserInterface::TowrUserInterface ()
   goal_geom_.lin.p_.setZero();
   goal_geom_.lin.p_ << 2.1, 0.0, 0.0;
   goal_geom_.ang.p_ << 0.0, 0.0, 0.0; // roll, pitch, yaw angle applied Z->Y'->X''
+  goal_geom_v_.lin.p_.setZero();
+  goal_geom_v_.ang.p_.setZero();
+  goal_geom_v_.lin.p_ << 2.1, 0.0, 0.0;
+  goal_geom_v_.ang.p_ << 0.0, 0.0, 0.0; // roll, pitch, yaw angle applied Z->Y'->X''
 
-  robot_      = RobotModel::Monoped;
-  terrain_    = HeightMap::FlatID;
-  gait_combo_ = GaitGenerator::C0;
+
+
+    robot_      = RobotModel::AnymalWheels;
+  terrain_    = HeightMap::RoundStairID;
+  gait_combo_ = GaitGenerator::C1;
   total_duration_ = 2.4;
   visualize_trajectory_ = false;
   plot_trajectory_ = false;
   replay_speed_ = 1.0; // realtime
   optimize_ = false;
   publish_optimized_trajectory_ = false;
-  optimize_phase_durations_ = false;
+  optimize_phase_durations_ = true;
+  using_des_vel_ = true;
+  des_vx_ = 2.1/2.4;
+  des_vy_ = 0.0;
+  des_w_ = 0.0;
 
   PrintScreen();
 }
@@ -142,6 +152,27 @@ TowrUserInterface::PrintScreen() const
   PrintVector(goal_geom_.ang.p_);
   printw(" [rad]");
 
+  wmove(stdscr, DES_VEL, X_KEY);
+  printw("arrow");
+  wmove(stdscr, DES_VEL, X_DESCRIPTION);
+  printw("Des Vel x-y");
+  wmove(stdscr, DES_VEL, X_VALUE);
+  printw("%s , %s [m/s]", std::to_string(des_vx_).c_str(), std::to_string(des_vy_).c_str());
+
+  wmove(stdscr, DES_W, X_KEY);
+  printw("1/9");
+  wmove(stdscr, DES_W, X_DESCRIPTION);
+  printw("Des Vel w");
+  wmove(stdscr, DES_W, X_VALUE);
+  printw("%s [1/s]", std::to_string(des_w_).c_str());
+
+  wmove(stdscr, DES, X_KEY);
+  printw("d");
+  wmove(stdscr, DES, X_DESCRIPTION);
+  printw("Use Des Vel");
+  wmove(stdscr, DES, X_VALUE);
+  using_des_vel_? printw("On\n") : printw("Off\n");
+
   wmove(stdscr, ROBOT, X_KEY);
   printw("r");
   wmove(stdscr, ROBOT, X_DESCRIPTION);
@@ -191,45 +222,99 @@ TowrUserInterface::CallbackKey (int c)
   const static double d_lin = 0.1;  // [m]
   const static double d_ang = 0.25; // [rad]
 
-  switch (c) {
-    case KEY_RIGHT:
-      goal_geom_.lin.p_.x() -= d_lin;
-      break;
-    case KEY_LEFT:
-      goal_geom_.lin.p_.x() += d_lin;
-      break;
-    case KEY_DOWN:
-      goal_geom_.lin.p_.y() += d_lin;
-      break;
-    case KEY_UP:
-      goal_geom_.lin.p_.y() -= d_lin;
-      break;
-    case KEY_PPAGE:
-      goal_geom_.lin.p_.z() += 0.5*d_lin;
-      break;
-    case KEY_NPAGE:
-      goal_geom_.lin.p_.z() -= 0.5*d_lin;
-      break;
+  if(using_des_vel_) {
+    switch (c) {
+      case KEY_RIGHT:
+        des_vx_ -= d_lin;
+        break;
+      case KEY_LEFT:
+        des_vx_ += d_lin;
+        break;
+      case KEY_DOWN:
+        des_vy_ += d_lin;
+        break;
+      case KEY_UP:
+        des_vy_ -= d_lin;
+        break;
+      case '1':
+        des_w_ += d_ang;  // yaw+
+        break;
+      case '9':
+        des_w_ -= d_ang;  // yaw-
+        break;
+    }
+    double goalx;
+    double goaly;
+    if (des_w_ != 0) {
+      double theta0 = atan2(des_vy_, des_vx_);
+      double thetaT = theta0 + des_w_ * total_duration_;
+      double r = sqrt(des_vx_ * des_vx_ + des_vy_ * des_vy_) / des_w_;
+      goalx = -r * sin(theta0) + r * sin(thetaT);
+      goaly = r * cos(theta0) - r * cos(thetaT);
+    } else {
+      goalx = des_vx_ * total_duration_;
+      goaly = des_vy_ * total_duration_;
+    }
 
-    // desired goal orientations
-    case '4':
-      goal_geom_.ang.p_.x() -= d_ang; // roll-
-      break;
-    case '6':
-      goal_geom_.ang.p_.x() += d_ang; // roll+
-      break;
-    case '8':
-      goal_geom_.ang.p_.y() += d_ang; // pitch+
-      break;
-    case '2':
-      goal_geom_.ang.p_.y() -= d_ang; // pitch-
-      break;
-    case '1':
-      goal_geom_.ang.p_.z() += d_ang; // yaw+
-      break;
-    case '9':
-      goal_geom_.ang.p_.z() -= d_ang; // yaw-
-      break;
+
+    goal_geom_v_.lin.p_.x()=des_vx_;
+    goal_geom_v_.lin.p_.y()=des_vy_;
+    goal_geom_v_.lin.p_.z()=0.0;
+    goal_geom_v_.ang.p_.x()=0.0;
+    goal_geom_v_.ang.p_.y()=0.0;
+    goal_geom_v_.ang.p_.z()=des_w_;
+
+    goal_geom_.lin.p_.x()=goalx;
+    goal_geom_.lin.p_.y()=goaly;
+    goal_geom_.lin.p_.z()=0.0;
+    goal_geom_.ang.p_.x()=0.0;
+    goal_geom_.ang.p_.y()=0.0;
+    goal_geom_.ang.p_.z()=des_w_*total_duration_;
+
+  } else {
+    switch (c) {
+      case KEY_RIGHT:
+        goal_geom_.lin.p_.x() -= d_lin;
+        break;
+      case KEY_LEFT:
+        goal_geom_.lin.p_.x() += d_lin;
+        break;
+      case KEY_DOWN:
+        goal_geom_.lin.p_.y() += d_lin;
+        break;
+      case KEY_UP:
+        goal_geom_.lin.p_.y() -= d_lin;
+        break;
+      case KEY_PPAGE:
+        goal_geom_.lin.p_.z() += 0.5 * d_lin;
+        break;
+      case KEY_NPAGE:
+        goal_geom_.lin.p_.z() -= 0.5 * d_lin;
+        break;
+
+      // desired goal orientations
+      case '4':
+        goal_geom_.ang.p_.x() -= d_ang;  // roll-
+        break;
+      case '6':
+        goal_geom_.ang.p_.x() += d_ang;  // roll+
+        break;
+      case '8':
+        goal_geom_.ang.p_.y() += d_ang;  // pitch+
+        break;
+      case '2':
+        goal_geom_.ang.p_.y() -= d_ang;  // pitch-
+        break;
+      case '1':
+        goal_geom_.ang.p_.z() += d_ang;  // yaw+
+        break;
+      case '9':
+        goal_geom_.ang.p_.z() -= d_ang;  // yaw-
+        break;
+    }
+  }
+
+  switch (c) {
 
     // terrains
     case 't':
@@ -259,6 +344,11 @@ TowrUserInterface::CallbackKey (int c)
     break;
     case 'y':
       optimize_phase_durations_ = !optimize_phase_durations_;
+      break;
+
+      //des vel
+    case 'd':
+      using_des_vel_ = !using_des_vel_;
       break;
 
 
@@ -298,6 +388,8 @@ void TowrUserInterface::PublishCommand()
   towr_ros::TowrCommand msg;
   msg.goal_lin                 = xpp::Convert::ToRos(goal_geom_.lin);
   msg.goal_ang                 = xpp::Convert::ToRos(goal_geom_.ang);
+  msg.goal_linv                 = xpp::Convert::ToRos(goal_geom_v_.lin);
+  msg.goal_angv                 = xpp::Convert::ToRos(goal_geom_v_.ang);
   msg.total_duration           = total_duration_;
   msg.replay_trajectory        = visualize_trajectory_;
   msg.play_initialization      = play_initialization_;

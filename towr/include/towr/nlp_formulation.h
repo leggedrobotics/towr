@@ -39,6 +39,29 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <towr/terrain/height_map.h>
 #include <towr/parameters.h>
 
+
+#include <towr/variables/variable_names.h>
+#include <towr/variables/phase_durations.h>
+
+#include <towr/constraints/base_motion_constraint.h>
+#include <towr/constraints/dynamic_constraint.h>
+#include <towr/constraints/force_constraint.h>
+#include <towr/constraints/range_of_motion_constraint.h>
+#include <towr/constraints/swing_constraint.h>
+#include <towr/constraints/terrain_constraint.h>
+#include <towr/constraints/total_duration_constraint.h>
+#include <towr/constraints/spline_acc_constraint.h>
+#include <towr/constraints/wheels_non_holonomic_constraint.h>
+#include <towr/constraints/terrain_constraint_discretized.h>
+#include <towr/constraints/force_constraint_discretized.h>
+
+
+
+#include <towr/costs/node_cost.h>
+#include <towr/variables/nodes_variables_all.h>
+
+#include <iostream>
+
 namespace towr {
 
 /**
@@ -73,7 +96,7 @@ namespace towr {
 class NlpFormulation {
 public:
   using VariablePtrVec   = std::vector<ifopt::VariableSet::Ptr>;
-  using ContraintPtrVec  = std::vector<ifopt::ConstraintSet::Ptr>;
+  using ConstraintPtrVec = std::vector<ifopt::ConstraintSet::Ptr>;
   using CostPtrVec       = std::vector<ifopt::CostTerm::Ptr>;
   using EEPos            = std::vector<Eigen::Vector3d>;
   using Vector3d         = Eigen::Vector3d;
@@ -91,37 +114,43 @@ public:
    * @brief The ifopt constraints that enforce feasible motions.
    * @param[in] uses the fully-constructed splines for initialization of constraints.
    */
-  ContraintPtrVec GetConstraints(const SplineHolder& spline_holder) const;
+  ConstraintPtrVec GetConstraints(const SplineHolder& spline_holder) const;
 
   /** @brief The ifopt costs to tune the motion. */
-  ContraintPtrVec GetCosts() const;
+  ConstraintPtrVec GetCosts() const;
 
 
   BaseState initial_base_;
   BaseState final_base_;
+  BaseState final_base_v_;
   EEPos  initial_ee_W_;
   RobotModel model_;
   HeightMap::Ptr terrain_;
   Parameters params_;
 
 private:
+  ConstraintPtrVec MakeWheelsNonHolonomicConstraint(const SplineHolder& s) const;
+  ConstraintPtrVec MakeDiscretizedTerrainConstraint(const SplineHolder& s) const;
+  ConstraintPtrVec MakeDiscretizedForceConstraint(const SplineHolder& s) const;
+
   // variables
   std::vector<NodesVariables::Ptr> MakeBaseVariables() const;
-  std::vector<NodesVariablesPhaseBased::Ptr> MakeEndeffectorVariables() const;
+  std::vector<NodesVariablesPhaseBased::Ptr> MakeEndeffectorVariables();
   std::vector<NodesVariablesPhaseBased::Ptr> MakeForceVariables() const;
+  std::vector<NodesVariablesPhaseBased::Ptr> MakeDecisionVariables() const;
   std::vector<PhaseDurations::Ptr> MakeContactScheduleVariables() const;
 
   // constraints
-  ContraintPtrVec GetConstraint(Parameters::ConstraintName name,
+  ConstraintPtrVec GetConstraint(Parameters::ConstraintName name,
                                 const SplineHolder& splines) const;
-  ContraintPtrVec MakeDynamicConstraint(const SplineHolder& s) const;
-  ContraintPtrVec MakeRangeOfMotionBoxConstraint(const SplineHolder& s) const;
-  ContraintPtrVec MakeTotalTimeConstraint() const;
-  ContraintPtrVec MakeTerrainConstraint() const;
-  ContraintPtrVec MakeForceConstraint() const;
-  ContraintPtrVec MakeSwingConstraint() const;
-  ContraintPtrVec MakeBaseRangeOfMotionConstraint(const SplineHolder& s) const;
-  ContraintPtrVec MakeBaseAccConstraint(const SplineHolder& s) const;
+  ConstraintPtrVec MakeDynamicConstraint(const SplineHolder& s) const;
+  ConstraintPtrVec MakeRangeOfMotionBoxConstraint(const SplineHolder& s) const;
+  ConstraintPtrVec MakeTotalTimeConstraint() const;
+  ConstraintPtrVec MakeTerrainConstraint() const;
+  ConstraintPtrVec MakeForceConstraint() const;
+  ConstraintPtrVec MakeSwingConstraint() const;
+  ConstraintPtrVec MakeBaseRangeOfMotionConstraint(const SplineHolder& s) const;
+  ConstraintPtrVec MakeBaseAccConstraint(const SplineHolder& s) const;
 
   // costs
   CostPtrVec GetCost(const Parameters::CostName& id, double weight) const;

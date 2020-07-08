@@ -63,6 +63,10 @@ private:
   void PublishCommand();
 
   xpp::State3dEuler goal_geom_;
+  xpp::State3dEuler goal_geom_v_;
+  double des_vx_;
+  double des_vy_;
+  double des_w_;
   int terrain_;
   int gait_combo_;
   int robot_;
@@ -74,6 +78,7 @@ private:
   bool publish_optimized_trajectory_;
   double total_duration_;
   bool optimize_phase_durations_;
+  bool using_des_vel_;
 
   int AdvanceCircularBuffer(int& curr, int max) const;
 
