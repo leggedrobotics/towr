@@ -100,7 +100,7 @@ NlpFormulation::MakeBaseVariables () const
       init_pos, final_pos, params_.GetTotalTime(),
       params_.duration_base_polynomial_, final_base_v_.ang.p().z(),
       final_base_v_.lin.p().x(),
-      final_base_v_.lin.p().y(), 0.0, terrain_, initial_base_.ang.p().z());//todo nicer
+      final_base_v_.lin.p().y(), initial_base_.ang.p().z());
 
 
   Eigen::Vector3d euler(0.0, 0.0, final_base_.ang.p().z());
@@ -339,11 +339,12 @@ NlpFormulation::MakeEndeffectorVariables ()
 
     nodes->AdvancedInititialisationEE(
         init_ee_pos_W, final_ee_pos_W, params_.GetTotalTime(),
-        params_.ee_phase_durations_.at(ee), final_base_v_.ang.p().z(),
+        params_.ee_phase_durations_.at(ee),
+        params_.number_of_polys_per_phase_motion_.at(ee),
+        final_base_v_.ang.p().z(),
         final_base_v_.lin.p().x(),
-        final_base_v_.lin.p().y(), 0.0,
-        model_.kinematic_model_->GetNominalStanceInBase().at(ee), terrain_,
-        params_.number_of_polys_per_phase_motion_.at(ee), initial_base_.ang.p().z(),
+        final_base_v_.lin.p().y(),
+        model_.kinematic_model_->GetNominalStanceInBase().at(ee), terrain_, initial_base_.ang.p().z(),
         params_.ee_in_contact_at_start_.at(ee));
 
 
