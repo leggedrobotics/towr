@@ -29,6 +29,10 @@
   <depend>rosbag</depend>
   <depend>xpp_states</depend>
   <depend>xpp_msgs</depend>
+  <depend>grid_map_core</depend>
+  <depend>grid_map_msgs</depend>
+  <depend>grid_map_ros</depend>
+  <depend>grid_map_visualization</depend>
   <depend>towr</depend>
   
   <exec_depend>xterm</exec_depend>

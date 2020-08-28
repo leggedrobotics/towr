@@ -140,7 +140,7 @@ public:
     if (msg.play_initialization)
       solver_->SetOption("max_iter", 0);
     else
-      solver_->SetOption("max_iter", 30000);
+      solver_->SetOption("max_iter", 1000);
 
 
       // derivative test

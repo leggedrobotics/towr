@@ -83,6 +83,15 @@ Stairs::GetHeight (double x, double y) const
   return h;
 }
 
+// StepFlat
+double StepFlat::GetHeight(double x, double y) const {
+  double h = 0.0;
+
+  if (x>=step_start_)
+    h = step_height_;
+
+  return h;
+}
 
 // GAP
 double

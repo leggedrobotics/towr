@@ -80,6 +80,7 @@ public:
   enum TerrainID { FlatID,
                    BlockID,
                    StairsID,
+                   StepFlatID,
                    GapID,
                    SlopeID,
                    ChimneyID,
@@ -189,6 +190,7 @@ const static std::map<HeightMap::TerrainID, std::string> terrain_names =
   {HeightMap::FlatID,         	"Flat"           },
   {HeightMap::BlockID,        	"Block"          },
   {HeightMap::StairsID,       	"Stairs"         },
+  {HeightMap::StepFlatID,            "StepFlat"       },
   {HeightMap::GapID,          	"Gap"            },
   {HeightMap::SlopeID,        	"Slope"          },
   {HeightMap::ChimneyID,      	"Chimney"        },
@@ -208,22 +210,23 @@ const static std::map<HeightMap::TerrainID, std::string> terrain_names =
 const static std::map<std::string, HeightMap::TerrainID> terrain_ids =
 {
   {"Flat", 			 HeightMap::FlatID         	  },
-  {"Block", 		 HeightMap::BlockID        	  },
+  {"Block", 		         HeightMap::BlockID        	  },
   {"Stairs", 		 HeightMap::StairsID       	  },
+  {"StepFlat",                HeightMap::StepFlatID         },
   {"Gap", 			 HeightMap::GapID          	  },
-  {"Slope", 		 HeightMap::SlopeID        	  },
+  {"Slope", 		         HeightMap::SlopeID        	  },
   {"Chimney", 		 HeightMap::ChimneyID      	  },
-  {"ChimenyLR", 	 HeightMap::ChimneyLRID       },
-  {"SlopePlat", 	 HeightMap::SlopePlatID    	  },
-  {"MultipleSlopes", HeightMap::MultipleSlopesID  },
+  {"ChimenyLR", 	         HeightMap::ChimneyLRID        },
+  {"SlopePlat", 	         HeightMap::SlopePlatID    	  },
+  {"MultipleSlopes",          HeightMap::MultipleSlopesID   },
   {"Step", 			 HeightMap::StepID         	  },
   {"TwoSlope", 		 HeightMap::TwoSlopeID        },
   {"TwoStep", 		 HeightMap::TwoStepID,        },
-  {"FiveSteps", 	 HeightMap::FiveStepsID,      },
-  {"SineLowFreq", 	 HeightMap::SineLowFreqID,    },
-  {"SineHighFreq", 	 HeightMap::SineHighFreqID,   },
-  {"Rough", 		 HeightMap::RoughID,          },
-  {"RoundStairID" ,HeightMap::RoundStairID	 }
+  {"FiveSteps", 	         HeightMap::FiveStepsID,      },
+  {"SineLowFreq", 	         HeightMap::SineLowFreqID,    },
+  {"SineHighFreq", 	         HeightMap::SineHighFreqID,   },
+  {"Rough", 		         HeightMap::RoughID,          },
+  {"RoundStairID" ,           HeightMap::RoundStairID	 }
 };
 
 } /* namespace towr */

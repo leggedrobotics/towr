@@ -24,7 +24,7 @@
   </node>
   
   <!-- Launch rviz with specific configuration -->
-  <node name="rviz_xpp" pkg="rviz" type="rviz" args="-d $(find towr_ros)/rviz/xpp_towr_drive.rviz">
+  <node name="rviz_xpp" pkg="rviz" type="rviz" args="-d $(find towr_ros)/rviz/xpp_towr_drive_.rviz">
   </node>
   
   <!--  Launches the URDF visualizers  -->

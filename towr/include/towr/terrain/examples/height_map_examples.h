@@ -84,6 +84,17 @@ private:
 };
 
 /**
+ * @brief Sample terrain with a one-step in height in x-direction.
+ */
+ class StepFlat : public HeightMap{
+ public:
+   double GetHeight(double x, double y) const override;
+
+ private:
+   double step_start_ = 0.7;
+   double step_height_ = 0.05;  //0.1
+ };
+/**
  * @brief Sample terrain with parabola-modeled gap in x-direction.
  */
 class Gap : public HeightMap {
