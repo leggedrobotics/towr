@@ -64,7 +64,7 @@ Visualization Manager:
       Marker Topic: /xpp/terrain
       Name: Terrain (approximated)
       Namespaces:
-        terrain: true
+        {}
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -87,15 +87,7 @@ Visualization Manager:
       Marker Topic: /xpp/rviz_markers
       Name: CartesianVisualization
       Namespaces:
-        base_pose: true
-        cop: true
-        ee_force: true
-        endeffector_pos: true
-        friction_cone: true
-        gravity_force: true
-        inverted_pendulum: true
-        range_of_motion: true
-        support_polygons: true
+        {}
       Queue Size: 100
       Value: true
     - Alpha: 0.5
@@ -136,7 +128,7 @@ Visualization Manager:
       Color: 200; 200; 200
       Color Layer: elevation
       Color Transformer: GridMapLayer
-      Enabled: true
+      Enabled: false
       Height Layer: elevation
       Height Transformer: GridMapLayer
       History Length: 1
@@ -150,7 +142,7 @@ Visualization Manager:
       Topic: /terrain_grid_publisher/grid_map
       Unreliable: false
       Use Rainbow: true
-      Value: true
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 255; 255; 255
