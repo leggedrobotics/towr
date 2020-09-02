@@ -153,7 +153,9 @@ NodesVariables::AdvancedInititialisationEE(const VectorXd& initial_val,
   bool contact = incontact_start;
 
   for (int idx=0; idx<GetRows(); ++idx) {
+//    std::cout << "idx value: " << idx << "\n"<< std::endl;
     for (auto nvi : GetNodeValuesInfo(idx)) {
+//      std::cout << "nvi info: " << nvi.id_ << "\n"<< std::endl;
       if ( id_prev_!=nvi.id_){
         if(nvi.id_> polycumulative){
           phase+=1;
@@ -200,12 +202,14 @@ NodesVariables::AdvancedInititialisationEE(const VectorXd& initial_val,
       if(contact){
         goalz = goalz_terrain_;
       }else{
-        goalz = goalz_terrain_+0.1;
+        goalz = goalz_terrain_+0.1;//0.1
       }
+
       double dzdx = terrain->GetDerivativeOfHeightWrt(X_,goalx,goaly);
       double dzdy = terrain->GetDerivativeOfHeightWrt(Y_,goalx,goaly);
       double dzdt = dzdx * goalvx + dzdy * goalvy;
       goalvz = dzdt;//terrain gradient
+//      std::cout << goalz << "\n" << std::endl;
 
       if (nvi.deriv_ == kPos) {
         Eigen::Vector3d pos;
@@ -213,6 +217,10 @@ NodesVariables::AdvancedInititialisationEE(const VectorXd& initial_val,
         pos.y()= goaly;
         pos.z()= goalz;
         nodes_.at(nvi.id_).at(kPos)(nvi.dim_) = pos(nvi.dim_);
+//        if (nvi.id_>0){
+//          if (nodes_.at(nvi.id_-1).at(kPos).z() > nodes_.at(nvi.id_).at(kPos).z())
+//            nodes_.at(nvi.id_-1).at(kPos).z() = 0.05;
+//        }
       }
 
       if (nvi.deriv_ == kVel) {
@@ -224,6 +232,9 @@ NodesVariables::AdvancedInititialisationEE(const VectorXd& initial_val,
       }
     }
   }
+  if (nodes_.size()==11 || nodes_.size()==10) nodes_.at(5).at(kPos).z() = 0.05;
+  if (nodes_.size()==8) nodes_.at(6).at(kPos).z() = 0.05;
+  if (nodes_.size()==9) nodes_.at(7).at(kPos).z() = 0.05;
 }
 
 void

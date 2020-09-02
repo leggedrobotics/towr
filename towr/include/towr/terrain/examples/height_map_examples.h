@@ -89,10 +89,13 @@ private:
  class StepFlat : public HeightMap{
  public:
    double GetHeight(double x, double y) const override;
+   double GetHeightDerivWrtX(double x, double y) const override;
 
  private:
-   double step_start_ = 0.7;
+   double step_start_ = 0.70; //0.7
    double step_height_ = 0.05;  //0.1
+   double step_end_ = 0.71;
+   double slope_ = 2.50;
  };
 /**
  * @brief Sample terrain with parabola-modeled gap in x-direction.

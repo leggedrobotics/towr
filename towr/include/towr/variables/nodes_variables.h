@@ -199,7 +199,7 @@ public:
    * @param des_vy  desired speed in y direction (body coordinates)
    * @param offset_full  offset of ee with respect to base
    * @param terrain  terrain to get height
-   * @param angle_init initial yaw angle
+   * @param angle_init initial yaw x
    * @param incontact_start  true if the ee is in contact at the start of simulation
    */
   void
@@ -255,7 +255,7 @@ public:
    */
   void AddFinalBound(Dx deriv, const std::vector<int>& dimensions,
                      const VectorXd& val);
-
+  std::vector<Node> nodes_;
 protected:
   /**
    * @param n_dim  The number of dimensions (x,y,..) each node has.
@@ -265,7 +265,7 @@ protected:
   virtual ~NodesVariables () = default;
 
   VecBound bounds_; ///< the bounds on the node values.
-  std::vector<Node> nodes_;
+//  std::vector<Node> nodes_;
   int n_dim_;
 
 private:

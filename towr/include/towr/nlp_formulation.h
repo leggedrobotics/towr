@@ -128,6 +128,9 @@ public:
   HeightMap::Ptr terrain_;
   Parameters params_;
 
+  std::vector<NodesVariablesPhaseBased::Ptr> MakeEndeffectorVariables();
+  std::vector<PhaseDurations::Ptr> MakeContactScheduleVariables() const;
+
 private:
   ConstraintPtrVec MakeWheelsNonHolonomicConstraint(const SplineHolder& s) const;
   ConstraintPtrVec MakeDiscretizedTerrainConstraint(const SplineHolder& s) const;
@@ -135,10 +138,10 @@ private:
 
   // variables
   std::vector<NodesVariables::Ptr> MakeBaseVariables() const;
-  std::vector<NodesVariablesPhaseBased::Ptr> MakeEndeffectorVariables();
+//  std::vector<NodesVariablesPhaseBased::Ptr> MakeEndeffectorVariables();
   std::vector<NodesVariablesPhaseBased::Ptr> MakeForceVariables() const;
   std::vector<NodesVariablesPhaseBased::Ptr> MakeDecisionVariables() const;
-  std::vector<PhaseDurations::Ptr> MakeContactScheduleVariables() const;
+//  std::vector<PhaseDurations::Ptr> MakeContactScheduleVariables() const;
 
   // constraints
   ConstraintPtrVec GetConstraint(Parameters::ConstraintName name,
