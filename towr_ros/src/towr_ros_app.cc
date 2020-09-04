@@ -145,9 +145,9 @@ public:
 
       // derivative test
     if (true) {
-       solver_->SetOption("max_iter", 0);
-       solver_->SetOption("derivative_test", "first-order");
-       solver_->SetOption("print_level", 4);
+//       solver_->SetOption("max_iter", 0);
+//       solver_->SetOption("derivative_test", "first-order");
+//       solver_->SetOption("print_level", 4);
       // solver_->SetOption("derivative_test_tol", 1e-3);
 
       //solver_->SetOption("derivative_test_perturbation", 1e-4);

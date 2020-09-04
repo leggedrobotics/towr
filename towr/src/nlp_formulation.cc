@@ -322,10 +322,11 @@ NlpFormulation::MakeEndeffectorVariables ()
        std::vector<int> polys_per_phase_decision;
 
        // For single stair case
-       if (ee==0) { durations.emplace_back(0.45);durations.emplace_back(0.2);durations.emplace_back(1.75);}
-       if (ee==1) { durations.emplace_back(0.55);durations.emplace_back(0.2);durations.emplace_back(1.65);}
-       if (ee==2) { durations.emplace_back(1.65);durations.emplace_back(0.2);durations.emplace_back(0.55);}
-       if (ee==3) { durations.emplace_back(1.75);durations.emplace_back(0.2);durations.emplace_back(0.45);}
+       // bound gait feasible parameters: 0.50, 1.70
+       if (ee==0) { durations.emplace_back(0.48);durations.emplace_back(0.3);durations.emplace_back(1.62);}
+       if (ee==1) { durations.emplace_back(0.52);durations.emplace_back(0.3);durations.emplace_back(1.58);}
+       if (ee==2) { durations.emplace_back(1.68);durations.emplace_back(0.3);durations.emplace_back(0.42);}
+       if (ee==3) { durations.emplace_back(1.72);durations.emplace_back(0.3);durations.emplace_back(0.38);}
 
        polys_per_phase_motion.emplace_back(std::max(int(params_.motion_stance_nodes_per_s * durations.at(0)),params_.polynomials2_motion_per_stance_phase_));
        polys_per_phase_motion.emplace_back(params_.polynomials2_motion_per_swing_phase_);

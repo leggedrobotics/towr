@@ -156,6 +156,10 @@ int main(){
     for (int i=0; i<foot.size(); ++i)
       nodefile << foot.at(i).p() << "\n";
   }
+  nodefile << ee_motion.at(0)->GetNodes().size()<< "\n";
+  nodefile << ee_motion.at(1)->GetNodes().size()<< "\n";
+  nodefile << ee_motion.at(2)->GetNodes().size()<< "\n";
+  nodefile << ee_motion.at(3)->GetNodes().size()<< "\n";
 
   nodefile.close();
 
@@ -165,10 +169,10 @@ int main(){
   for (int ee=0; ee<n_ee; ++ee){
     std::cout << "EE: " << ee << " " << ee_motion.at(ee)->nodes_.size() << "\n" << std::endl;
   }
-   ee_motion.at(0)->nodes_.at(5).at(kPos).z() = 0.05;
-   ee_motion.at(1)->nodes_.at(5).at(kPos).z() = 0.05;
-   ee_motion.at(2)->nodes_.at(6).at(kPos).z() = 0.05;
-   ee_motion.at(3)->nodes_.at(7).at(kPos).z() = 0.05;
+//   ee_motion.at(0)->nodes_.at(5).at(kPos).z() = 0.05;
+//   ee_motion.at(1)->nodes_.at(5).at(kPos).z() = 0.05;
+//   ee_motion.at(2)->nodes_.at(6).at(kPos).z() = 0.05;
+//   ee_motion.at(3)->nodes_.at(7).at(kPos).z() = 0.05;
 
 
 
