@@ -102,6 +102,7 @@ TowrRosInterface::UserCommandCallback(const TowrCommandMsg& msg)
   // terrain
   auto terrain_id = static_cast<HeightMap::TerrainID>(msg.terrain);
   formulation_.terrain_ = HeightMap::MakeTerrain(terrain_id);
+  formulation_.terrainID_ = terrain_id;
 
   int n_ee = formulation_.model_.kinematic_model_->GetNumberOfEndeffectors();
   formulation_.params_ = GetTowrParameters(n_ee, msg);

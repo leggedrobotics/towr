@@ -127,6 +127,7 @@ public:
   RobotModel model_;
   HeightMap::Ptr terrain_;
   Parameters params_;
+  HeightMap::TerrainID terrainID_;
 
   std::vector<NodesVariablesPhaseBased::Ptr> MakeEndeffectorVariables();
   std::vector<PhaseDurations::Ptr> MakeContactScheduleVariables() const;
