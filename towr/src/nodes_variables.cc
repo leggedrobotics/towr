@@ -198,9 +198,11 @@ NodesVariables::AdvancedInititialisationEE(const VectorXd& initial_val,
       double goalz_terrain_ = terrain->GetHeight(goalx,goaly);
 
       if(contact){
-        goalz = goalz_terrain_;
+//        goalz = goalz_terrain_;
+          goalz = 0.0;
       }else{
-        goalz = goalz_terrain_+0.1;//0.1
+//        goalz = goalz_terrain_+0.1;//0.1
+        goalz = 0.05; // if it is gap
       }
 
       double dzdx = terrain->GetDerivativeOfHeightWrt(X_,goalx,goaly);

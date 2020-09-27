@@ -354,44 +354,44 @@ NlpFormulation::MakeEndeffectorVariables ()
 
        }
 
-       if (terrainID_ == HeightMap::TerrainID::GapID){
-         // manually add durations, parameter specific to the current gap setting: height, start point etc.
-         durations.clear();
-         polys_per_phase_motion.clear();
-         polys_per_phase_decision.clear();
-         polys_per_phase_force.clear();
+//       if (terrainID_ == HeightMap::TerrainID::GapID){
+//         // manually add durations, parameter specific to the current gap setting: height, start point etc.
+//         durations.clear();
+//         polys_per_phase_motion.clear();
+//         polys_per_phase_decision.clear();
+//         polys_per_phase_force.clear();
+//
+//         // For single stair case
+//         // bound gait feasible parameters: 0.50, 1.70
+//         if (ee==0) { durations.emplace_back(0.50);durations.emplace_back(0.3);durations.emplace_back(1.60);}
+//         if (ee==1) { durations.emplace_back(0.50);durations.emplace_back(0.3);durations.emplace_back(1.60);}
+//         if (ee==2) { durations.emplace_back(1.90);durations.emplace_back(0.3);durations.emplace_back(0.20);}
+//         if (ee==3) { durations.emplace_back(1.90);durations.emplace_back(0.3);durations.emplace_back(0.20);}
+//
+//         polys_per_phase_motion.emplace_back(std::max(int(params_.motion_stance_nodes_per_s * durations.at(0)),params_.polynomials2_motion_per_stance_phase_));
+//         polys_per_phase_motion.emplace_back(params_.polynomials2_motion_per_swing_phase_);
+//         polys_per_phase_motion.emplace_back(std::max(int(params_.motion_stance_nodes_per_s * durations.at(2)),1));
+//
+//         polys_per_phase_force.emplace_back((std::max(int(params_.force_stance_nodes_per_s * durations.at(0)),params_.polynomials2_force_per_stance_phase_)));
+//         polys_per_phase_force.emplace_back(params_.polynomials2_force_per_swing_phase_);
+//         polys_per_phase_force.emplace_back((std::max(int(params_.force_stance_nodes_per_s * durations.at(2)),1)));
+//
+//         polys_per_phase_decision.emplace_back((std::max(int(params_.decision_stance_nodes_per_s * durations.at(0)),params_.polynomials2_decision_per_stance_phase_)));
+//         polys_per_phase_decision.emplace_back(params_.polynomials2_decision_per_swing_phase_);
+//         polys_per_phase_decision.emplace_back((std::max(int(params_.decision_stance_nodes_per_s * durations.at(2)),1)));
+//
+//         params_.ee_phase_durations_.at(ee).clear();
+//
+//         params_.number_of_polys_per_phase_motion_.at(ee).clear();
+//         params_.number_of_polys_per_phase_force_.at(ee).clear();
+//         params_.number_of_polys_per_phase_decision_.at(ee).clear();
+//
+//         params_.ee_phase_durations_.at(ee) = durations;
+//         params_.number_of_polys_per_phase_motion_.at(ee) = polys_per_phase_motion;
+//         params_.number_of_polys_per_phase_force_.at(ee) = polys_per_phase_force;
+//         params_.number_of_polys_per_phase_decision_.at(ee) = polys_per_phase_decision;
 
-         // For single stair case
-         // bound gait feasible parameters: 0.50, 1.70
-         if (ee==0) { durations.emplace_back(0.48);durations.emplace_back(0.3);durations.emplace_back(1.62);}
-         if (ee==1) { durations.emplace_back(0.52);durations.emplace_back(0.3);durations.emplace_back(1.58);}
-         if (ee==2) { durations.emplace_back(1.68);durations.emplace_back(0.3);durations.emplace_back(0.42);}
-         if (ee==3) { durations.emplace_back(1.72);durations.emplace_back(0.3);durations.emplace_back(0.38);}
-
-         polys_per_phase_motion.emplace_back(std::max(int(params_.motion_stance_nodes_per_s * durations.at(0)),params_.polynomials2_motion_per_stance_phase_));
-         polys_per_phase_motion.emplace_back(params_.polynomials2_motion_per_swing_phase_);
-         polys_per_phase_motion.emplace_back(std::max(int(params_.motion_stance_nodes_per_s * durations.at(2)),1));
-
-         polys_per_phase_force.emplace_back((std::max(int(params_.force_stance_nodes_per_s * durations.at(0)),params_.polynomials2_force_per_stance_phase_)));
-         polys_per_phase_force.emplace_back(params_.polynomials2_force_per_swing_phase_);
-         polys_per_phase_force.emplace_back((std::max(int(params_.force_stance_nodes_per_s * durations.at(2)),1)));
-
-         polys_per_phase_decision.emplace_back((std::max(int(params_.decision_stance_nodes_per_s * durations.at(0)),params_.polynomials2_decision_per_stance_phase_)));
-         polys_per_phase_decision.emplace_back(params_.polynomials2_decision_per_swing_phase_);
-         polys_per_phase_decision.emplace_back((std::max(int(params_.decision_stance_nodes_per_s * durations.at(2)),1)));
-
-         params_.ee_phase_durations_.at(ee).clear();
-
-         params_.number_of_polys_per_phase_motion_.at(ee).clear();
-         params_.number_of_polys_per_phase_force_.at(ee).clear();
-         params_.number_of_polys_per_phase_decision_.at(ee).clear();
-
-         params_.ee_phase_durations_.at(ee) = durations;
-         params_.number_of_polys_per_phase_motion_.at(ee) = polys_per_phase_motion;
-         params_.number_of_polys_per_phase_force_.at(ee) = polys_per_phase_force;
-         params_.number_of_polys_per_phase_decision_.at(ee) = polys_per_phase_decision;
-
-       }
+//       }
 
 
 

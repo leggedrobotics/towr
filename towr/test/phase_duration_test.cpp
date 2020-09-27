@@ -38,7 +38,8 @@ int main(){
 
   NlpFormulation formulation;
 
-  formulation.terrain_ = std::make_shared<StepFlat>();
+//  formulation.terrain_ = std::make_shared<StepFlat>();
+  formulation.terrain_ = std::make_shared<Gap>(); // test on the gap terrain
   formulation.model_ = RobotModel(RobotModel::AnymalWheels);
   auto nominal_stance_B = formulation.model_.kinematic_model_->GetNominalStanceInBase();
 //  std::cout << nominal_stance_B.front().z();
