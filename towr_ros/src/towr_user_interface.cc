@@ -64,11 +64,11 @@ TowrUserInterface::TowrUserInterface ()
   user_command_pub_ = n.advertise<towr_ros::TowrCommand>(towr_msgs::user_command, 1);
 
   goal_geom_.lin.p_.setZero();
-  goal_geom_.lin.p_ << 1.2, 0.0, 0.0;
+  goal_geom_.lin.p_ << 2.1, 0.0, 0.0;
   goal_geom_.ang.p_ << 0.0, 0.0, 0.0; // roll, pitch, yaw angle applied Z->Y'->X''
   goal_geom_v_.lin.p_.setZero();
   goal_geom_v_.ang.p_.setZero();
-  goal_geom_v_.lin.p_ << 1.2, 0.0, 0.0;
+  goal_geom_v_.lin.p_ << 2.1, 0.0, 0.0;
   goal_geom_v_.ang.p_ << 0.0, 0.0, 0.0; // roll, pitch, yaw angle applied Z->Y'->X''
 
 
@@ -84,7 +84,7 @@ TowrUserInterface::TowrUserInterface ()
   publish_optimized_trajectory_ = false;
   optimize_phase_durations_ = true;
   using_des_vel_ = true;
-  des_vx_ = 1.4/2.4;
+  des_vx_ = 2.1/2.4; // a stable version for step: 1.4/2.4
   des_vy_ = 0.0;
   des_w_ = 0.0;
 
