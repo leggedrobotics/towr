@@ -21,21 +21,6 @@ using namespace towr;
 
 int main(){
   int n_ee = 4;
-//  auto gait_gen_ = GaitGenerator::MakeGaitGenerator(n_ee);
-//  auto id_gait   = static_cast<GaitGenerator::Combos>(1); //msg.gait=1: trot
-//  gait_gen_->SetCombo(id_gait);
-//  Parameters params;
-//  for (int ee=0; ee < n_ee; ++ee){
-//    params.ee_phase_durations_.push_back((gait_gen_->GetPhaseDurations(2.4,ee)));
-//  }
-//  std::cout << "without smart initialization\n";
-//  for (int ee=0; ee<n_ee; ++ee){
-//    for ( auto a: params.ee_phase_durations_.at(ee)){
-//      std::cout<<a<<" ,";
-//    }
-//    std::cout<<"\n";
-//  }
-
   NlpFormulation formulation;
 
 //  formulation.terrain_ = std::make_shared<StepFlat>();
@@ -58,20 +43,20 @@ int main(){
   // step, for convenience we use a GaitGenerator with some predefined gaits
   // for a variety of robots (walk, trot, pace, ...).
   auto gait_gen_ = GaitGenerator::MakeGaitGenerator(n_ee);
-  auto id_gait   = static_cast<GaitGenerator::Combos>(1); // 1:trot
+  auto id_gait   = static_cast<GaitGenerator::Combos>(0); // 1:trot
   gait_gen_->SetCombo(id_gait);
   for (int ee=0; ee<n_ee; ++ee) {
     params.ee_phase_durations_.push_back(gait_gen_->GetPhaseDurations(2.4, ee)); //total duration: 2.4s
     params.ee_in_contact_at_start_.push_back(gait_gen_->IsInContactAtStart(ee));
   }
 
-//  std::cout << "without smart initialization\n";
-//  for (int ee=0; ee<n_ee; ++ee){
-//    for ( auto a: params.ee_phase_durations_.at(ee)){
-//      std::cout<<a<<" ,";
-//    }
-//    std::cout<<"\n";
-//  }
+  std::cout << "without smart initialization\n";
+  for (int ee=0; ee<n_ee; ++ee){
+    for ( auto a: params.ee_phase_durations_.at(ee)){
+      std::cout<<a<<" ,";
+    }
+    std::cout<<"\n";
+  }
 
   params.number_of_polys_per_phase_motion_.clear();
   params.number_of_polys_per_phase_force_.clear();
@@ -112,6 +97,14 @@ int main(){
     nlp.AddConstraintSet(c);
   for (auto c : formulation.GetCosts())
     nlp.AddCostSet(c);
+
+  std::cout << "with smart initialization\n";
+  for (int ee=0; ee<n_ee; ++ee){
+    for ( auto a: params.ee_phase_durations_.at(ee)){
+      std::cout<<a<<" ,";
+    }
+    std::cout<<"\n";
+  }
 
 //  auto solver_ = std::make_shared<ifopt::IpoptSolver>();
 //  solver_->SetOption("linear_solver", "ma57");
