@@ -167,7 +167,6 @@ NlpFormulation::MakeEndeffectorVariables ()
         init_pos_base+w_R_b_init *(model_.kinematic_model_->GetNominalStanceInBase().at(ee) );
 
      if(final_base_v_.lin.p().y()==0 && final_base_v_.ang.p().z()==0 ) {
-       std::cout << "test here do" << std::endl;
        double total_t = params_.GetTotalTime();
        params_.ee_phase_durations_.at(ee).clear();
 
@@ -177,7 +176,7 @@ NlpFormulation::MakeEndeffectorVariables ()
        double current_t = 0;
        bool contact = true;
 
-       double padding = 0.03;
+       double padding = 0.05;
        double lrdev = 0.0;
 
        double xasdf =
@@ -245,8 +244,6 @@ NlpFormulation::MakeEndeffectorVariables ()
              contact = true;
              double t_diff_min = params_.bound_phase_duration_.first;
              double starttime = current_t + padding;
-//             if (ee==0 || ee==2) starttime += 0.1;
-//             else starttime += 0.2;
              double t_diff = starttime - t_last;
              if (t_diff < t_diff_min) {
                t_diff = t_diff_min;
@@ -354,71 +351,29 @@ NlpFormulation::MakeEndeffectorVariables ()
 
        }
 
-//       if (terrainID_ == HeightMap::TerrainID::GapID){
-//         // manually add durations, parameter specific to the current gap setting: height, start point etc.
-//         durations.clear();
-//         polys_per_phase_motion.clear();
-//         polys_per_phase_decision.clear();
-//         polys_per_phase_force.clear();
-//
-//         // For single stair case
-//         // bound gait feasible parameters: 0.50, 1.70
-//         if (ee==0) { durations.emplace_back(0.50);durations.emplace_back(0.3);durations.emplace_back(1.60);}
-//         if (ee==1) { durations.emplace_back(0.50);durations.emplace_back(0.3);durations.emplace_back(1.60);}
-//         if (ee==2) { durations.emplace_back(1.90);durations.emplace_back(0.3);durations.emplace_back(0.20);}
-//         if (ee==3) { durations.emplace_back(1.90);durations.emplace_back(0.3);durations.emplace_back(0.20);}
-//
-//         polys_per_phase_motion.emplace_back(std::max(int(params_.motion_stance_nodes_per_s * durations.at(0)),params_.polynomials2_motion_per_stance_phase_));
-//         polys_per_phase_motion.emplace_back(params_.polynomials2_motion_per_swing_phase_);
-//         polys_per_phase_motion.emplace_back(std::max(int(params_.motion_stance_nodes_per_s * durations.at(2)),1));
-//
-//         polys_per_phase_force.emplace_back((std::max(int(params_.force_stance_nodes_per_s * durations.at(0)),params_.polynomials2_force_per_stance_phase_)));
-//         polys_per_phase_force.emplace_back(params_.polynomials2_force_per_swing_phase_);
-//         polys_per_phase_force.emplace_back((std::max(int(params_.force_stance_nodes_per_s * durations.at(2)),1)));
-//
-//         polys_per_phase_decision.emplace_back((std::max(int(params_.decision_stance_nodes_per_s * durations.at(0)),params_.polynomials2_decision_per_stance_phase_)));
-//         polys_per_phase_decision.emplace_back(params_.polynomials2_decision_per_swing_phase_);
-//         polys_per_phase_decision.emplace_back((std::max(int(params_.decision_stance_nodes_per_s * durations.at(2)),1)));
-//
-//         params_.ee_phase_durations_.at(ee).clear();
-//
-//         params_.number_of_polys_per_phase_motion_.at(ee).clear();
-//         params_.number_of_polys_per_phase_force_.at(ee).clear();
-//         params_.number_of_polys_per_phase_decision_.at(ee).clear();
-//
-//         params_.ee_phase_durations_.at(ee) = durations;
-//         params_.number_of_polys_per_phase_motion_.at(ee) = polys_per_phase_motion;
-//         params_.number_of_polys_per_phase_force_.at(ee) = polys_per_phase_force;
-//         params_.number_of_polys_per_phase_decision_.at(ee) = polys_per_phase_decision;
-
-//       }
-
-
-
      }
 
+    std::cout<<ee<<"   "<<params_.GetPhaseCount(ee)<<"   :"<<std::endl;
+    for ( auto a: params_.ee_phase_durations_.at(ee)){
+      std::cout<<a<<" ,";
+    }
+    std::cout<<std::endl;
 
-//    std::cout<<ee<<"   "<<params_.GetPhaseCount(ee)<<"   :"<<std::endl;
-//    for ( auto a: params_.ee_phase_durations_.at(ee)){
-//      std::cout<<a<<" ,";
-//    }
-//    std::cout<<std::endl;
-//
-//    std::cout<<ee<<"  number_of_polys_per_phase_motion_  "<<params_.number_of_polys_per_phase_motion_.at(ee).size()<<"   :"<<std::endl;
-//    for ( auto a: params_.number_of_polys_per_phase_motion_.at(ee)){
-//      std::cout<<a<<" ,";
-//    }
-//    std::cout<<std::endl;
-//    std::cout<<ee<<"  number_of_polys_per_phase_force_  "<<params_.number_of_polys_per_phase_force_.at(ee).size()<<"   :"<<std::endl;
-//    for ( auto a: params_.number_of_polys_per_phase_force_.at(ee)){
-//      std::cout<<a<<" ,";
-//    }
-//    std::cout<<std::endl;
-//    std::cout<<ee<<"  number_of_polys_per_phase_decision_  "<<params_.number_of_polys_per_phase_decision_.at(ee).size()<<"   :"<<std::endl;
-//    for ( auto a: params_.number_of_polys_per_phase_decision_.at(ee)){
-//      std::cout<<a<<" ,";
-//    }
-//    std::cout<<std::endl;
+    std::cout<<ee<<"  number_of_polys_per_phase_motion_  "<<params_.number_of_polys_per_phase_motion_.at(ee).size()<<"   :"<<std::endl;
+    for ( auto a: params_.number_of_polys_per_phase_motion_.at(ee)){
+      std::cout<<a<<" ,";
+    }
+    std::cout<<std::endl;
+    std::cout<<ee<<"  number_of_polys_per_phase_force_  "<<params_.number_of_polys_per_phase_force_.at(ee).size()<<"   :"<<std::endl;
+    for ( auto a: params_.number_of_polys_per_phase_force_.at(ee)){
+      std::cout<<a<<" ,";
+    }
+    std::cout<<std::endl;
+    std::cout<<ee<<"  number_of_polys_per_phase_decision_  "<<params_.number_of_polys_per_phase_decision_.at(ee).size()<<"   :"<<std::endl;
+    for ( auto a: params_.number_of_polys_per_phase_decision_.at(ee)){
+      std::cout<<a<<" ,";
+    }
+    std::cout<<std::endl;
 
     auto nodes = std::make_shared<NodesVariablesEEMotion>(
         params_.GetPhaseCount(ee),
