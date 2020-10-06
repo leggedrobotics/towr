@@ -73,7 +73,7 @@ TowrUserInterface::TowrUserInterface ()
 
 
 
-    robot_      = RobotModel::AnymalWheels;
+  robot_      = RobotModel::AnymalWheels;
   terrain_    = HeightMap::RoundStairID;
   gait_combo_ = GaitGenerator::C1;
   total_duration_ = 2.4;
