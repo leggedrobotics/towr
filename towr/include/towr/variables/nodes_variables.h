@@ -199,7 +199,7 @@ public:
    * @param des_vy  desired speed in y direction (body coordinates)
    * @param offset_full  offset of ee with respect to base
    * @param terrain  terrain to get height
-   * @param angle_init initial yaw x
+   * @param angle_init initial yaw angle
    * @param incontact_start  true if the ee is in contact at the start of simulation
    */
   void
