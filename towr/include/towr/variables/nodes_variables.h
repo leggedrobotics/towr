@@ -255,7 +255,7 @@ public:
    */
   void AddFinalBound(Dx deriv, const std::vector<int>& dimensions,
                      const VectorXd& val);
-  std::vector<Node> nodes_;
+
 protected:
   /**
    * @param n_dim  The number of dimensions (x,y,..) each node has.
@@ -265,7 +265,7 @@ protected:
   virtual ~NodesVariables () = default;
 
   VecBound bounds_; ///< the bounds on the node values.
-//  std::vector<Node> nodes_;
+  std::vector<Node> nodes_;
   int n_dim_;
 
 private:

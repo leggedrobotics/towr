@@ -116,10 +116,9 @@ public:
    * @param t  global time along the trajectory.
    */
   bool IsContactPhase(double t) const;
-  VecDurations durations_;
 
 private:
-//  VecDurations durations_;
+  VecDurations durations_;
 
   double t_total_;
   bool initial_contact_state_; ///< true if first phase in contact
