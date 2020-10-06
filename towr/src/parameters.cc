@@ -54,8 +54,8 @@ Parameters::Parameters ()
   dt_constraint_range_of_motion_ = 0.01;//0.01
   dt_constraint_dynamic_ = 0.1;//0.1
   dt_non_holonomic_ = 0.01;//0.01
-  dt_force_ = 0.03;//0.03,0.01
-  dt_terrain_discretized_=0.04;//0.01
+  dt_force_ = 0.01;//0.03,0.01
+  dt_terrain_discretized_=0.01;//0.01
 
   dt_constraint_base_motion_ = duration_base_polynomial_/4.; // only for base RoM constraint
   bound_phase_duration_ = std::make_pair(0.15, 10.0);  // used only when optimizing phase durations, so gait (putting minimum to low -> spikey,
