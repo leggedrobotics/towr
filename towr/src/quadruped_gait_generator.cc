@@ -77,11 +77,11 @@ void
 QuadrupedGaitGenerator::SetCombo (Combos combo)
 {
   switch (combo) {
-    case C0: SetGaits({Stand, Walk2, Walk2, Walk2, Walk2E, Stand}); break; // overlap-walk
+    case C0: SetGaits({Stand, Walk2, Walk2, Walk2E, Stand}); break; // overlap-walk
     case C1: SetGaits({Stand, Run1, Run1, Run1, Stand});     break; // fly trot
-    case C2: SetGaits({Stand, Run3, Run3, Run3, Run3E, Stand}); break; // pace
-    case C3: SetGaits({Stand, Hop1, Hop1, Hop1, Hop1E, Stand}); break; // bound
-    case C4: SetGaits({Stand, Hop3, Hop3, Hop3, Hop3E, Stand}); break; // gallop
+    case C2: SetGaits({Stand, Run3, Run3, Run3E, Stand}); break; // pace
+    case C3: SetGaits({Stand, Hop1, Hop1, Hop1E, Stand}); break; // bound
+    case C4: SetGaits({Stand, Hop3, Hop3, Hop3E, Stand}); break; // gallop
     default: assert(false); std::cout << "Gait not defined\n"; break;
   }
 }
@@ -181,7 +181,7 @@ QuadrupedGaitGenerator::GetStrideWalk () const
 QuadrupedGaitGenerator::GaitInfo
 QuadrupedGaitGenerator::GetStrideWalkOverlap () const
 {
-  double three    = 0.25;
+  double three    = 0.35;//0.25
   double lateral  = 0.13;
   double diagonal = 0.13;
 
@@ -262,7 +262,7 @@ QuadrupedGaitGenerator::GetStrideTrotFlyEnd () const
 QuadrupedGaitGenerator::GaitInfo
 QuadrupedGaitGenerator::GetStridePace () const
 {
-  double stand  = 0.3;
+  double stand  = 0.4;//0.3
   double flight = 0.1;
 
   auto times =
@@ -295,7 +295,7 @@ QuadrupedGaitGenerator::GetStridePaceEnd () const
 QuadrupedGaitGenerator::GaitInfo
 QuadrupedGaitGenerator::GetStrideBound () const
 {
-  double stand  = 0.3;
+  double stand  = 0.4; //0.3
   double flight = 0.1;
 
   auto times =
