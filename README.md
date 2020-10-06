@@ -135,6 +135,39 @@ We provide a [ROS]-wrapper for the pure cmake towr library, which adds a keyboar
  * Want to add your own robot to towr? Start [here](http://docs.ros.org/api/towr/html/group__Robots.html).
  * To visualize that robot in rviz, see [xpp].
 
+##   Wheeled robot guide
+In the master_wheel branch, the wheeled robot is provided. Here are some guidance to run in that branch:
+
+### Smart initialization
+* In the source file ```src/nlp_formualtion.cc``` line ```169```, the smart initialization is invoked. It will provide such an initialization that the robot tries to roll in the flat ground as a priority, when it encounters stairs, the feet will be lifted and go to the swing phase.
+* To discard smart initialization, for example, to show how robot move with different gait in flat ground, just comment out the smart initialization;
+
+#### Terrain::Gap
+* For the gap terrain ```Gap```, to make the initialization work, stick to the default parameter setting, and,
+* Switch line ```200``` in ```src/towr/towr/src/nodes_variables.cc``` to the commented code line, it should be done more automatically but for now we need to manully adjust it, and we are sorry for the inconvenience.
+  
+#### Terrain::StepFalt
+* For the discontinuous single step terrain ```stepFlat``` which is defined in ```height_map_example.h```, line ```323``` in ```src/nlp_formualtion.cc``` provides a manual way to initialize the endeffectors. It is highly initialization-dependent due to discontinuity. A successful parameter setting for reference is:
+* First, to relax ```dt_terrain_discretized_``` from 0.01 to 0.04 in ```src/parameter.cc```;
+* Relax the constraint box in ```src/towr/towr/include/towr/models/examples/anymal_wheels_model.h```, use the commented code line;
+
+### Fine-tune tricks
+In order to balance the speed and quality when computing the solution, you may want to change some parameters in ```src/parameter.cc```;
+
+* Sampling rates of all time sampled constraints, a few commonly tuned parameters are:
+  ```
+  dt_constraint_range_of_motion_ = 0.01;
+  dt_constraint_dynamic_ = 0.1;
+  dt_non_holonomic_ = 0.01;/
+  dt_force_ = 0.01;
+  dt_terrain_discretized_=0.01;
+  ```
+  The bigger they are, faster the solution is computed, but with potentially lower accuracy;
+* Force limit in normal direction, set it lower for smoother motions, increase it for quicker solution;
+
+As there is no checkpoint mechanism yet, you may also want to change the iteration based on your sense of how long it might take to converge, you can change in ```src/towr/towr_ros/src/towr_ros_app.cc``` line ```119``` to set Ipopt parameters.
+
+
 
 ## Contribute
 We love pull request, whether its new constraint formulations, additional robot models, bug fixes, unit tests or updating the documentation. Please have a look at [CONTRIBUTING.md](CONTRIBUTING.md) for more information.  
