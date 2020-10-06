@@ -140,20 +140,20 @@ public:
     if (msg.play_initialization)
       solver_->SetOption("max_iter", 0);
     else
-      solver_->SetOption("max_iter", 1000);
+      solver_->SetOption("max_iter", 2000);
 
 
       // derivative test
     if (true) {
-//       solver_->SetOption("max_iter", 0);
-//       solver_->SetOption("derivative_test", "first-order");
-//       solver_->SetOption("print_level", 4);
+      // solver_->SetOption("max_iter", 0);
+      // solver_->SetOption("derivative_test", "first-order");
+      // solver_->SetOption("print_level", 4);
       // solver_->SetOption("derivative_test_tol", 1e-3);
 
-      //solver_->SetOption("derivative_test_perturbation", 1e-4);
-      //solver_->SetOption("derivative_test_perturbation", 1e1);
+      // solver_->SetOption("derivative_test_perturbation", 1e-4);
+      // solver_->SetOption("derivative_test_perturbation", 1e1);
 
-       // solver_->SetOption("derivative_test_print_all", "yes");
+      // solver_->SetOption("derivative_test_print_all", "yes");
     }
   }
 };
