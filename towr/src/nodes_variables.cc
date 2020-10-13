@@ -199,9 +199,12 @@ NodesVariables::AdvancedInititialisationEE(const VectorXd& initial_val,
 
       if(contact){
         goalz = goalz_terrain_;
+        // goalz = 0.0; if use gap terrain, use the commented code line for initialization
       }else{
         goalz = goalz_terrain_+0.1;
+        // goalz = 0.1;
       }
+
       double dzdx = terrain->GetDerivativeOfHeightWrt(X_,goalx,goaly);
       double dzdy = terrain->GetDerivativeOfHeightWrt(Y_,goalx,goaly);
       double dzdt = dzdx * goalvx + dzdy * goalvy;
@@ -224,6 +227,12 @@ NodesVariables::AdvancedInititialisationEE(const VectorXd& initial_val,
       }
     }
   }
+  // to make the initialization look better
+  for (int i=1; i<nodes_.size(); ++i){
+    if (nodes_.at(i-1).at(kPos).z() > nodes_.at(i).at(kPos).z())
+      nodes_.at(i-1).at(kPos).z() = nodes_.at(i).at(kPos).z();
+  }
+
 }
 
 void

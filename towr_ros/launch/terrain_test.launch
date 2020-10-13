@@ -1,0 +1,11 @@
+<launch>
+  <!-- Launch the grid map simple demo node -->
+  <node pkg="towr_ros" type="terrain_grid_publisher" name="terrain_grid_publisher" output="screen" launch-prefix="gnome-terminal --" />
+  <!-- Launch the grid map visualizer -->
+  <node pkg="grid_map_visualization" type="grid_map_visualization" name="grid_map_visualization" output="screen">
+    <rosparam command="load" file="$(find towr_ros)/rviz/terrain.yaml" />
+  </node>
+  <!-- Launch RViz with the demo configuration -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find towr_ros)/rviz/grid_map_demo.rviz" />
+   <node name="rviz_xpp" pkg="rviz" type="rviz" args="-d $(find towr_ros)/rviz/xpp_towr_drive_.rviz" />
+</launch>

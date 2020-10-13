@@ -34,6 +34,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <xpp_states/convert.h>
 #include <xpp_msgs/topic_names.h>
 #include <xpp_msgs/TerrainInfo.h>
+#include <grid_map_msgs/GridMap.h>
+//#include <grid_map_rviz_plugin/GridMapDisplay.hpp>
+#include <grid_map_ros/grid_map_ros.hpp>
 
 #include <towr/terrain/height_map.h>
 #include <towr/variables/euler_converter.h>
@@ -57,9 +60,11 @@ TowrRosInterface::TowrRosInterface ()
   robot_parameters_pub_  = n.advertise<xpp_msgs::RobotParameters>
                                     (xpp_msgs::robot_parameters, 1);
 
+  terrain_pub_ = n.advertise<grid_map_msgs::GridMap>("grid_map", 1, true);
+
   solver_ = std::make_shared<ifopt::IpoptSolver>();
 
-  visualization_dt_ = 0.001;
+  visualization_dt_ = 0.02;
 }
 
 BaseState
@@ -97,6 +102,7 @@ TowrRosInterface::UserCommandCallback(const TowrCommandMsg& msg)
   // terrain
   auto terrain_id = static_cast<HeightMap::TerrainID>(msg.terrain);
   formulation_.terrain_ = HeightMap::MakeTerrain(terrain_id);
+  formulation_.terrainID_ = terrain_id;
 
   int n_ee = formulation_.model_.kinematic_model_->GetNumberOfEndeffectors();
   formulation_.params_ = GetTowrParameters(n_ee, msg);
@@ -283,6 +289,31 @@ TowrRosInterface::SaveOptimizationAsRosbag (const std::string& bag_name,
   bag.open(bag_name, rosbag::bagmode::Write);
   ::ros::Time t0(1e-6); // t=0.0 throws ROS exception
 
+//  // save the grid_map
+  grid_map::GridMap map({"elevation"});
+  map.setFrameId("map");
+  map.setGeometry(grid_map::Length(4.0,4.0),0.03);
+  ROS_INFO("Created map with size %f x %f m (%i x %i cells).",
+           map.getLength().x(), map.getLength().y(),
+           map.getSize()(0), map.getSize()(1));
+
+  for (grid_map::GridMapIterator it(map); !it.isPastEnd(); ++it){
+    grid_map::Position position;
+    map.getPosition(*it, position);
+//    map.at("elevation", *it) = 0.4;
+    if (position.x()>0.8)
+      map.at("elevation", *it) = 0.05;
+    else
+      map.at("elevation", *it) = 0;
+  }
+  map.setTimestamp(t0.toNSec());
+  grid_map_msgs::GridMap message;
+  grid_map::GridMapRosConverter::toMessage(map, message);
+  terrain_pub_.publish(message);
+
+  bag.write("/towr/grid_info", t0, message);
+
+
   // save the a-priori fixed optimization variables
   bag.write(xpp_msgs::robot_parameters, t0, robot_params);
   bag.write(towr_msgs::user_command+"_saved", t0, user_command_msg);
@@ -324,6 +355,10 @@ TowrRosInterface::SaveTrajectoryInRosbag (rosbag::Bag& bag,
       Vector3d n = formulation_.terrain_->GetNormalizedBasis(HeightMap::Normal, ee.p_.x(), ee.p_.y());
       terrain_msg.surface_normals.push_back(xpp::Convert::ToRos<geometry_msgs::Vector3>(n));
       terrain_msg.friction_coeff = formulation_.terrain_->GetFrictionCoeff();
+      Vector3d p;
+      double z = formulation_.terrain_->GetHeight(ee.p_.x(), ee.p_.y());
+      p << ee.p_.x(), ee.p_.y(), z;
+      terrain_msg.terrain_grid_info.push_back(xpp::Convert::ToRos<geometry_msgs::Vector3>(p));
     }
 
     bag.write(xpp_msgs::terrain_info, timestamp, terrain_msg);

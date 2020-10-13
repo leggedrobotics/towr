@@ -127,6 +127,7 @@ public:
   RobotModel model_;
   HeightMap::Ptr terrain_;
   Parameters params_;
+  HeightMap::TerrainID terrainID_;
 
 private:
   ConstraintPtrVec MakeWheelsNonHolonomicConstraint(const SplineHolder& s) const;

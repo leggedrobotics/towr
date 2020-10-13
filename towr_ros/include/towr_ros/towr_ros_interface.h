@@ -95,6 +95,7 @@ private:
   ::ros::Subscriber user_command_sub_;
   ::ros::Publisher initial_state_pub_;
   ::ros::Publisher robot_parameters_pub_;
+  ::ros::Publisher terrain_pub_;
 
   void UserCommandCallback(const TowrCommandMsg& msg);
   XppVec GetTrajectory() const;

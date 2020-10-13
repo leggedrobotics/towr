@@ -40,5 +40,25 @@
     launch-prefix="$(arg gdb)"
     >
   </node>
-    
+
+<!--   visualize the gridMap terrain in RVIZ -->
+  <node
+    name="terrain_grid_publisher"
+    pkg="towr_ros"
+    type="terrain_grid_publisher"
+    output="screen"
+    launch-prefix="gnome-terminal --"
+    >
+  </node>
+
+<!-- Launch the grid map visualizer -->
+  <node
+    name="grid_map_visualization"
+    pkg="grid_map_visualization"
+    type="grid_map_visualization"
+    output="screen"
+    >
+    <rosparam command="load" file="$(find towr_ros)/rviz/terrain.yaml" />
+    </node>
+
 </launch>

@@ -13,6 +13,9 @@ find_package(catkin REQUIRED COMPONENTS
   xpp_states
   towr
         xpp_anymal_wheels
+        grid_map_core
+        grid_map_msgs
+        grid_map_visualization
 )
 
 
@@ -102,6 +105,12 @@ target_link_libraries(goal_pose_publisher
   ${catkin_LIBRARIES}
 )
 
+add_executable(terrain_grid_publisher
+        src/terrain_grid_publisher.cc
+        )
+target_link_libraries(terrain_grid_publisher
+        ${catkin_LIBRARIES}
+        )
 
 # (Optional) to manipulate ROS bags
 add_executable(rosbag_traj_combiner 
@@ -131,6 +140,7 @@ install(
           goal_pose_publisher
           rosbag_traj_combiner
           rosbag_geom_msg_extractor
+        terrain_grid_publisher
           ${PROJECT_NAME}
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

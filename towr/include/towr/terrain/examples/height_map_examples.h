@@ -84,6 +84,20 @@ private:
 };
 
 /**
+ * @brief Sample terrain with a one-step in height in x-direction.
+ */
+ class StepFlat : public HeightMap{
+ public:
+   double GetHeight(double x, double y) const override;
+   double GetHeightDerivWrtX(double x, double y) const override;
+
+ private:
+   double step_start_ = 0.70; //0.7
+   double step_height_ = 0.05;  //0.1
+   double step_end_ = 0.71;
+   double slope_ = 2.50;
+ };
+/**
  * @brief Sample terrain with parabola-modeled gap in x-direction.
  */
 class Gap : public HeightMap {
@@ -93,9 +107,9 @@ public:
   double GetHeightDerivWrtXX(double x, double y) const override;
 
 private:
-  const double gap_start_ = 1.0;
-  const double w = 0.5;
-  const double h = 1.5;
+  const double gap_start_ = 0.6;//1.0
+  const double w = 0.175;//0.5
+  const double h = 1.5;//1.5
 
   const double slope_ = h/w;
   const double dx = w/2.0;

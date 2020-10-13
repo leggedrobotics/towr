@@ -73,7 +73,7 @@ TowrUserInterface::TowrUserInterface ()
 
 
 
-    robot_      = RobotModel::AnymalWheels;
+  robot_      = RobotModel::AnymalWheels;
   terrain_    = HeightMap::RoundStairID;
   gait_combo_ = GaitGenerator::C1;
   total_duration_ = 2.4;
@@ -84,7 +84,7 @@ TowrUserInterface::TowrUserInterface ()
   publish_optimized_trajectory_ = false;
   optimize_phase_durations_ = true;
   using_des_vel_ = true;
-  des_vx_ = 2.1/2.4;
+  des_vx_ = 2.1/2.4; // a stable version for step: 1.4/2.4
   des_vy_ = 0.0;
   des_w_ = 0.0;
 

@@ -21,18 +21,20 @@ class AnymalWheelsKinematicModel : public KinematicModel {
 public:
   AnymalWheelsKinematicModel () : KinematicModel(4)
   {
-    const double x_nominal_b = 0.35;
-    const double y_nominal_b = 0.235; // 0.21;
-    const double z_nominal_b = -0.44;
+
+    const double x_nominal_b = 0.353088;
+    const double y_nominal_b = 0.146229;
+    const double z_nominal_b = -0.60174258;
 
     double offsets = 0.0;// 0.1;
 
-    nominal_stance_.at(LF) <<  x_nominal_b - offsets,   y_nominal_b, z_nominal_b;
-    nominal_stance_.at(RF) <<  x_nominal_b + offsets,  -y_nominal_b, z_nominal_b;
+    nominal_stance_.at(LF) <<  x_nominal_b + offsets,   y_nominal_b, z_nominal_b;
+    nominal_stance_.at(RF) <<  x_nominal_b - offsets,  -y_nominal_b, z_nominal_b;
     nominal_stance_.at(LH) << -x_nominal_b + offsets,   y_nominal_b, z_nominal_b;
     nominal_stance_.at(RH) << -x_nominal_b - offsets,  -y_nominal_b, z_nominal_b;
 
     max_dev_from_nominal_ << 0.225-offsets, 0.095, 0.095;
+//    max_dev_from_nominal_ << 0.3, 0.25, 0.25;  // if want cross over stairs, try increasing constraint box
 
     const double x_nominal_hip = 0.3405;
     const double y_nominal_hip = y_nominal_b; //0.1710;
@@ -47,8 +49,8 @@ public:
 class AnymalWheelsDynamicModel : public SingleRigidBodyDynamics {
 public:
   AnymalWheelsDynamicModel()
-  : SingleRigidBodyDynamics(19.642, 0.248057547486776, 0.650151658461464, 0.620944203624185,
-		  	  	  	  	    0.001097838800893, -0.003945011648535, -0.002135691054868, 4) {}
+      : SingleRigidBodyDynamics(25.586298, 0.17825624, 1.7073739, 1.7424951,
+                                -0.0038845614, -0.042678002, 0.002850078, 4) {}
 };
 
 } // namespace towr

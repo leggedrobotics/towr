@@ -196,7 +196,7 @@ NlpFormulation::MakeEndeffectorVariables ()
 
       bool added_at_least_one = false;
 
-      double max_stance_time = 0.3;
+      double max_stance_time = 0.5;
 
       while (current_t < total_t) {
         xasdf = init_ee_pos_W.x() + (final_ee_pos_W.x() - init_ee_pos_W.x()) *
@@ -221,13 +221,13 @@ NlpFormulation::MakeEndeffectorVariables ()
               mnodes = params_.polynomials2_motion_per_stance_phase_;
             }
             int fnodes = params_.force_stance_nodes_per_s * interval_duration_s;
-            if (fnodes < params_.polynomials2_decision_per_stance_phase_) {
-              fnodes = params_.polynomials2_decision_per_stance_phase_;
+            if (fnodes < params_.polynomials2_force_per_stance_phase_) {
+              fnodes = params_.polynomials2_force_per_stance_phase_;
             }
             int dnodes =
                 params_.decision_stance_nodes_per_s * interval_duration_s;
-            if (dnodes < params_.polynomials2_force_per_stance_phase_) {
-              dnodes = params_.polynomials2_force_per_stance_phase_;
+            if (dnodes < params_.polynomials2_decision_per_stance_phase_) {
+              dnodes = params_.polynomials2_decision_per_stance_phase_;
             }
             polys_per_phase_motion.emplace_back(mnodes);
             polys_per_phase_force.emplace_back(fnodes);
@@ -308,6 +308,46 @@ NlpFormulation::MakeEndeffectorVariables ()
       params_.number_of_polys_per_phase_decision_.at(ee) = polys_per_phase_decision;
 
       params_.ee_phase_durations_.at(ee) = durations;
+
+      if (terrainID_ == HeightMap::TerrainID::StepFlatID){
+        // manually add durations, parameter specific to the current step Stair setting: height, start point etc.
+
+        durations.clear();
+        polys_per_phase_motion.clear();
+        polys_per_phase_decision.clear();
+        polys_per_phase_force.clear();
+
+        // For single stair case
+        // bound gait feasible parameters: 0.50, 1.70
+        if (ee==0) { durations.emplace_back(0.48);durations.emplace_back(0.3);durations.emplace_back(1.62);}
+        if (ee==1) { durations.emplace_back(0.52);durations.emplace_back(0.3);durations.emplace_back(1.58);}
+        if (ee==2) { durations.emplace_back(1.68);durations.emplace_back(0.3);durations.emplace_back(0.42);}
+        if (ee==3) { durations.emplace_back(1.72);durations.emplace_back(0.3);durations.emplace_back(0.38);}
+
+        polys_per_phase_motion.emplace_back(std::max(int(params_.motion_stance_nodes_per_s * durations.at(0)),params_.polynomials2_motion_per_stance_phase_));
+        polys_per_phase_motion.emplace_back(params_.polynomials2_motion_per_swing_phase_);
+        polys_per_phase_motion.emplace_back(std::max(int(params_.motion_stance_nodes_per_s * durations.at(2)),1));
+
+        polys_per_phase_force.emplace_back((std::max(int(params_.force_stance_nodes_per_s * durations.at(0)),params_.polynomials2_force_per_stance_phase_)));
+        polys_per_phase_force.emplace_back(params_.polynomials2_force_per_swing_phase_);
+        polys_per_phase_force.emplace_back((std::max(int(params_.force_stance_nodes_per_s * durations.at(2)),1)));
+
+        polys_per_phase_decision.emplace_back((std::max(int(params_.decision_stance_nodes_per_s * durations.at(0)),params_.polynomials2_decision_per_stance_phase_)));
+        polys_per_phase_decision.emplace_back(params_.polynomials2_decision_per_swing_phase_);
+        polys_per_phase_decision.emplace_back((std::max(int(params_.decision_stance_nodes_per_s * durations.at(2)),1)));
+
+        params_.ee_phase_durations_.at(ee).clear();
+
+        params_.number_of_polys_per_phase_motion_.at(ee).clear();
+        params_.number_of_polys_per_phase_force_.at(ee).clear();
+        params_.number_of_polys_per_phase_decision_.at(ee).clear();
+
+        params_.ee_phase_durations_.at(ee) = durations;
+        params_.number_of_polys_per_phase_motion_.at(ee) = polys_per_phase_motion;
+        params_.number_of_polys_per_phase_force_.at(ee) = polys_per_phase_force;
+        params_.number_of_polys_per_phase_decision_.at(ee) = polys_per_phase_decision;
+
+      }
     }
 
     std::cout<<ee<<"   "<<params_.GetPhaseCount(ee)<<"   :"<<std::endl;
