@@ -176,7 +176,7 @@ NlpFormulation::MakeEndeffectorVariables ()
       double current_t = 0;
       bool contact = true;
 
-      double padding = 0.03;
+      double padding = 0.05;
 
       double xasdf =
           init_ee_pos_W.x() +
@@ -196,7 +196,7 @@ NlpFormulation::MakeEndeffectorVariables ()
 
       bool added_at_least_one = false;
 
-      double max_stance_time = 0.5;
+      double max_stance_time = 0.3;
 
       while (current_t < total_t) {
         xasdf = init_ee_pos_W.x() + (final_ee_pos_W.x() - init_ee_pos_W.x()) *
