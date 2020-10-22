@@ -150,6 +150,7 @@ In the master_wheel branch, the wheeled robot is provided. Here are some guidanc
 * For the discontinuous single step terrain ```stepFlat``` which is defined in ```height_map_example.h```, line ```323``` in ```src/nlp_formualtion.cc``` provides a manual way to initialize the endeffectors. It is highly initialization-dependent due to discontinuity. A successful parameter setting for reference is:
 * First, to relax ```dt_terrain_discretized_``` from 0.01 to 0.04 in ```src/parameter.cc```;
 * Relax the constraint box in ```src/towr/towr/include/towr/models/examples/anymal_wheels_model.h```, use the commented code line;
+* In gui, change the speed of the robot to 1.4 m/s;
 
 ### Fine-tune tricks
 In order to balance the speed and quality when computing the solution, you may want to change some parameters in ```src/parameter.cc```;
