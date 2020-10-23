@@ -49,8 +49,8 @@ public:
 class AnymalWheelsDynamicModel : public SingleRigidBodyDynamics {
 public:
   AnymalWheelsDynamicModel()
-      : SingleRigidBodyDynamics(25.586298, 0.17825624, 1.7073739, 1.7424951,
-                                -0.0038845614, -0.042678002, 0.002850078, 4) {}
+      : SingleRigidBodyDynamics(46.6237, 1.72911, 4.48562, 4.38949,
+                                0.0022872, 0.0752196, -0.0141115, 4) {}
 };
 
 } // namespace towr
