@@ -43,16 +43,18 @@ class AnymalKinematicModel : public KinematicModel {
 public:
   AnymalKinematicModel () : KinematicModel(4)
   {
-    const double x_nominal_b = 0.34;
-    const double y_nominal_b = 0.19;
-    const double z_nominal_b = -0.42;
+    const double x_nominal_b = 0.353088;
+    const double y_nominal_b = 0.146229;
+    const double z_nominal_b = -0.60174258;
 
-    nominal_stance_.at(LF) <<  x_nominal_b,   y_nominal_b, z_nominal_b;
-    nominal_stance_.at(RF) <<  x_nominal_b,  -y_nominal_b, z_nominal_b;
-    nominal_stance_.at(LH) << -x_nominal_b,   y_nominal_b, z_nominal_b;
-    nominal_stance_.at(RH) << -x_nominal_b,  -y_nominal_b, z_nominal_b;
+    double offsets = 0.0;// 0.1;
 
-    max_dev_from_nominal_ << 0.15, 0.1, 0.10;
+    nominal_stance_.at(LF) <<  x_nominal_b + offsets,   y_nominal_b, z_nominal_b;
+    nominal_stance_.at(RF) <<  x_nominal_b - offsets,  -y_nominal_b, z_nominal_b;
+    nominal_stance_.at(LH) << -x_nominal_b + offsets,   y_nominal_b, z_nominal_b;
+    nominal_stance_.at(RH) << -x_nominal_b - offsets,  -y_nominal_b, z_nominal_b;
+
+    max_dev_from_nominal_ << 0.225-offsets, 0.095, 0.095;
   }
 };
 
@@ -62,9 +64,8 @@ public:
 class AnymalDynamicModel : public SingleRigidBodyDynamics {
 public:
   AnymalDynamicModel()
-  : SingleRigidBodyDynamics(29.5,
-                    0.946438, 1.94478, 2.01835, 0.000938112, -0.00595386, -0.00146328,
-                    4) {}
+  : SingleRigidBodyDynamics(46.6237, 1.72911, 4.48562, 4.38949,
+                            0.0022872, 0.0752196, -0.0141115, 4) {}
 };
 
 } // namespace towr
