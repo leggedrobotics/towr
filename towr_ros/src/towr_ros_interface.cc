@@ -83,10 +83,6 @@ BaseState
 TowrRosInterface::GetGoalStatev(const TowrCommandMsg& msg) const
 {
   BaseState goal;
-  goal.lin.at(kPos) = xpp::Convert::ToXpp(msg.goal_linv.pos);
-  goal.lin.at(kVel) = xpp::Convert::ToXpp(msg.goal_linv.vel);
-  goal.ang.at(kPos) = xpp::Convert::ToXpp(msg.goal_angv.pos);
-  goal.ang.at(kVel) = xpp::Convert::ToXpp(msg.goal_angv.vel);
 
   return goal;
 }

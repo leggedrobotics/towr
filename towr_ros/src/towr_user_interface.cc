@@ -388,8 +388,6 @@ void TowrUserInterface::PublishCommand()
   towr_ros::TowrCommand msg;
   msg.goal_lin                 = xpp::Convert::ToRos(goal_geom_.lin);
   msg.goal_ang                 = xpp::Convert::ToRos(goal_geom_.ang);
-  msg.goal_linv                 = xpp::Convert::ToRos(goal_geom_v_.lin);
-  msg.goal_angv                 = xpp::Convert::ToRos(goal_geom_v_.ang);
   msg.total_duration           = total_duration_;
   msg.replay_trajectory        = visualize_trajectory_;
   msg.play_initialization      = play_initialization_;
