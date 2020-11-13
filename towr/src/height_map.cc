@@ -45,7 +45,7 @@ HeightMap::MakeTerrain (TerrainID type)
     case SlopeID:     return std::make_shared<Slope>(); break;
     case ChimneyID:   return std::make_shared<Chimney>(); break;
     case ChimneyLRID: return std::make_shared<ChimneyLR>(); break;
-    default: assert(false); break;
+    default: throw std::runtime_error("[HeightMap::MakeTerrain] Unknown terrain ID");
   }
 }
 
@@ -55,7 +55,7 @@ HeightMap::GetDerivativeOfHeightWrt (Dim2D dim, double x, double y) const
   switch (dim) {
     case X: return GetHeightDerivWrtX(x,y);
     case Y: return GetHeightDerivWrtY(x,y);
-    default: assert(false); // derivative dimension not implemented
+    default: throw std::runtime_error("[HeightMap::GetDerivativeOfHeightWrt] Derivative dimension not implemented");
   }
 }
 
@@ -73,7 +73,7 @@ HeightMap::GetBasis (Direction basis, double x, double y,
     case Normal:   return GetNormal(x,y, deriv);
     case Tangent1: return GetTangent1(x,y, deriv);
     case Tangent2: return GetTangent2(x,y, deriv);
-    default: assert(false); // basis does not exist
+    default: throw std::runtime_error("[HeightMap::GetDerivativeOfHeightWrt] Basis does not exist");
   }
 }
 
@@ -159,7 +159,7 @@ HeightMap::GetSecondDerivativeOfHeightWrt (Dim2D dim1, Dim2D dim2,
     if (dim2 == Y_) return GetHeightDerivWrtYY(x,y);
   }
 
-  assert(false); // second derivative not specified.
+  throw std::runtime_error("[HeightMap::GetSecondDerivativeOfHeightWrt] Second derivative not specified");
 }
 
 } /* namespace towr */

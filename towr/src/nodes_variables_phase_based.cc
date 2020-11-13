@@ -144,6 +144,7 @@ NodesVariablesPhaseBased::GetPolyIDAtStartOfPhase (int phase) const
   for (int i=0; i<polynomial_info_.size(); ++i)
     if (polynomial_info_.at(i).phase_ == phase)
       return i;
+  return 0;
 }
 
 Eigen::Vector3d

@@ -67,7 +67,7 @@ Polynomial::GetDerivativeWrtCoeff (double t, Dx deriv, Coefficients c) const
     case kPos:   return               std::pow(t,c);         break;
     case kVel:   return c>=B? c*      std::pow(t,c-1) : 0.0; break;
     case kAcc:   return c>=C? c*(c-1)*std::pow(t,c-2) : 0.0; break;
-    default: assert(false); // derivative not defined
+    default: throw std::runtime_error("[CubicHermitePolynomial::GetDerivativeWrtCoeff] derivative not defined");
   }
 }
 
@@ -116,7 +116,7 @@ CubicHermitePolynomial::GetDerivativeWrtStartNode (Dx dfdt,
     case kAcc:
       return GetDerivativeOfAccWrtStartNode(node_derivative, t_local);
     default:
-      assert(false); // derivative not yet implemented
+      throw std::runtime_error("[CubicHermitePolynomial::GetDerivativeWrtStartNode] derivative not yet implemented");
   }
 }
 
@@ -133,7 +133,7 @@ CubicHermitePolynomial::GetDerivativeWrtEndNode (Dx dfdt,
     case kAcc:
       return GetDerivativeOfAccWrtEndNode(node_derivative, t_local);
     default:
-      assert(false); // derivative not yet implemented
+      throw std::runtime_error("[CubicHermitePolynomial::GetDerivativeWrtEndNode] derivative not yet implemented");
   }
 }
 
@@ -150,7 +150,7 @@ CubicHermitePolynomial::GetDerivativeOfPosWrtStartNode(Dx node_value,
   switch (node_value) {
     case kPos: return (2*t3)/T3 - (3*t2)/T2 + 1;
     case kVel: return t - (2*t2)/T + t3/T2;
-    default: assert(false); // only derivative wrt nodes values calculated
+    default: throw std::runtime_error("[CubicHermitePolynomial::GetDerivativeOfPosWrtStartNode] only derivative wrt nodes values calculated");
   }
 }
 
@@ -166,7 +166,7 @@ CubicHermitePolynomial::GetDerivativeOfVelWrtStartNode (Dx node_value,
   switch (node_value) {
     case kPos: return (6*t2)/T3 - (6*t)/T2;
     case kVel: return (3*t2)/T2 - (4*t)/T + 1;
-    default: assert(false); // only derivative wrt nodes values calculated
+    default: throw std::runtime_error("[CubicHermitePolynomial::GetDerivativeOfVelWrtStartNode] only derivative wrt nodes values calculated");
   }
 }
 
@@ -181,7 +181,7 @@ CubicHermitePolynomial::GetDerivativeOfAccWrtStartNode (Dx node_value,
   switch (node_value) {
     case kPos: return (12*t)/T3 - 6/T2;
     case kVel: return (6*t)/T2 - 4/T;
-    default: assert(false); // only derivative wrt nodes values calculated
+    default: throw std::runtime_error("[CubicHermitePolynomial::GetDerivativeOfAccWrtStartNode] only derivative wrt nodes values calculated");
   }
 }
 
@@ -198,7 +198,7 @@ CubicHermitePolynomial::GetDerivativeOfPosWrtEndNode (Dx node_value,
   switch (node_value) {
     case kPos: return (3*t2)/T2 - (2*t3)/T3;
     case kVel: return t3/T2 - t2/T;
-    default: assert(false); // only derivative wrt nodes values calculated
+    default: throw std::runtime_error("[CubicHermitePolynomial::GetDerivativeOfPosWrtEndNode] only derivative wrt nodes values calculated");
   }
 }
 
@@ -214,7 +214,7 @@ CubicHermitePolynomial::GetDerivativeOfVelWrtEndNode (Dx node_value,
   switch (node_value) {
     case kPos: return (6*t)/T2 - (6*t2)/T3;
     case kVel: return (3*t2)/T2 - (2*t)/T;
-    default: assert(false); // only derivative wrt nodes values calculated
+    default: throw std::runtime_error("[CubicHermitePolynomial::GetDerivativeOfVelWrtEndNode] only derivative wrt nodes values calculated");
   }
 }
 
@@ -229,7 +229,7 @@ CubicHermitePolynomial::GetDerivativeOfAccWrtEndNode (Dx node_value,
   switch (node_value) {
     case kPos: return 6/T2 - (12*t)/T3;
     case kVel: return (6*t)/T2 - 2/T;
-    default: assert(false); // only derivative wrt nodes values calculated
+    default: throw std::runtime_error("[CubicHermitePolynomial::GetDerivativeOfAccWrtEndNode] only derivative wrt nodes values calculated");
   }
 }
 
