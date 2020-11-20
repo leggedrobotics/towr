@@ -282,7 +282,9 @@ TowrRosInterface::SaveOptimizationAsRosbag (const std::string& bag_name,
                                    bool include_iterations)
 {
   rosbag::Bag bag;
+  rosbag::Bag bagTerrain;
   bag.open(bag_name, rosbag::bagmode::Write);
+  bagTerrain.open("towr_elevation_map.bag", rosbag::bagmode::Write);
   ::ros::Time t0(1e-6); // t=0.0 throws ROS exception
 
 //  // save the grid_map
@@ -308,7 +310,7 @@ TowrRosInterface::SaveOptimizationAsRosbag (const std::string& bag_name,
   terrain_pub_.publish(message);
 
   bag.write("/towr/grid_info", t0, message);
-
+  bagTerrain.write("/towr/grid_info", t0, message);
 
   // save the a-priori fixed optimization variables
   bag.write(xpp_msgs::robot_parameters, t0, robot_params);
@@ -332,6 +334,7 @@ TowrRosInterface::SaveOptimizationAsRosbag (const std::string& bag_name,
   SaveTrajectoryInRosbag(bag, final_trajectory, xpp_msgs::robot_state_desired);
 
   bag.close();
+  bagTerrain.close();
 }
 
 void
