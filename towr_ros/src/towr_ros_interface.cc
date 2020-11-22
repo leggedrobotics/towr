@@ -299,7 +299,7 @@ TowrRosInterface::SaveOptimizationAsRosbag (const std::string& bag_name,
     grid_map::Position position;
     map.getPosition(*it, position);
 //    map.at("elevation", *it) = 0.4;
-    if (position.x()>0.8)
+    if (position.x()>0.7)
       map.at("elevation", *it) = 0.05;
     else
       map.at("elevation", *it) = 0;
