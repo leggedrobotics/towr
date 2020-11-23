@@ -290,7 +290,7 @@ TowrRosInterface::SaveOptimizationAsRosbag (const std::string& bag_name,
 //  // save the grid_map
   grid_map::GridMap map({"elevation"});
   map.setFrameId("map");
-  map.setGeometry(grid_map::Length(10.0,4.0),0.03);
+  map.setGeometry(grid_map::Length(10.0,4.0),0.02);
   ROS_INFO("Created map with size %f x %f m (%i x %i cells).",
            map.getLength().x(), map.getLength().y(),
            map.getSize()(0), map.getSize()(1));
@@ -365,4 +365,3 @@ TowrRosInterface::SaveTrajectoryInRosbag (rosbag::Bag& bag,
 }
 
 } /* namespace towr */
-
