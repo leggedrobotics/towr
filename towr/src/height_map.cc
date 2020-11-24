@@ -41,6 +41,7 @@ HeightMap::MakeTerrain (TerrainID type)
     case FlatID:      return std::make_shared<FlatGround>(); break;
     case BlockID:     return std::make_shared<Block>(); break;
     case StairsID:    return std::make_shared<Stairs>(); break;
+    case StepFlatID:  return std::make_shared<StepFlat>(); break;
     case GapID:       return std::make_shared<Gap>(); break;
     case SlopeID:     return std::make_shared<Slope>(); break;
     case ChimneyID:   return std::make_shared<Chimney>(); break;

@@ -115,7 +115,7 @@ QuadrupedGaitGenerator::GetStrideStand () const
 {
   auto times =
   {
-      0.1, // 0.3
+      0.3, // 0.3
   };
   auto contacts =
   {
@@ -206,8 +206,8 @@ QuadrupedGaitGenerator::GetStrideWalkOverlap () const
 QuadrupedGaitGenerator::GaitInfo
 QuadrupedGaitGenerator::GetStrideTrot () const
 {
-  double t_step = 0.4;//0.3,0.4
-  double t_stand = 0.1; //0.2,0.1
+  double t_step = 0.3;//0.3,0.4
+  double t_stand = 0.2; //0.2,0.1
   auto times =
   {
       t_step, t_stand, t_step, t_stand,

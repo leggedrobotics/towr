@@ -45,7 +45,7 @@ public:
   {
     const double x_nominal_b = 0.353088;
     const double y_nominal_b = 0.146229;
-    const double z_nominal_b = -0.60174258;
+    const double z_nominal_b = -0.58;
 
     double offsets = 0.0;// 0.1;
 

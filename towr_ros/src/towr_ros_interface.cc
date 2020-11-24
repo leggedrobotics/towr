@@ -59,7 +59,7 @@ TowrRosInterface::TowrRosInterface ()
 
   solver_ = std::make_shared<ifopt::IpoptSolver>();
 
-  visualization_dt_ = 0.01;
+  visualization_dt_ = 0.02;
 }
 
 BaseState
@@ -274,4 +274,3 @@ TowrRosInterface::SaveTrajectoryInRosbag (rosbag::Bag& bag,
 }
 
 } /* namespace towr */
-
