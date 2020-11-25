@@ -88,34 +88,6 @@ EEAccLimitsConstraint::GetBounds () const
 
 }
 
-//int
-//EEAccLimitsConstraint::GetRow (int node, int dim) const
-//{
-//  return node*k3D + dim;
-//}
-//
-//void
-//EEAccLimitsConstraint::UpdateConstraintAtInstance (double t, int k, VectorXd& g) const
-//{
-//  g.middleRows(GetRow(k, X), k3D) = ee_motion_->GetPoint(t).a();
-//}
-//
-//void
-//EEAccLimitsConstraint::UpdateBoundsAtInstance (double t, int k, VecBound& bounds) const
-//{
-//  for (int dim=0; dim<k3D; ++dim) {
-//	bounds.at(GetRow(k,dim)) = ifopt::Bounds(-acc_max_(dim), acc_max_(dim));
-//  }
-//}
-//
-//void
-//EEAccLimitsConstraint::UpdateJacobianAtInstance(double t, int k, std::string var_set, Jacobian& jac) const
-//{
-//  if (var_set == id::EEMotionNodes(ee_)) {
-//	jac.middleRows(GetRow(k,X), k3D) = ee_motion_->GetJacobianWrtNodes(t,kAcc);
-//  }
-//}
-
 } /* namespace towr */
 
 

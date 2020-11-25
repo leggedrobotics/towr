@@ -96,7 +96,7 @@ Parameters::SetNonHolonomicConstraint () {
 void
 Parameters::OptimizePhaseDurations ()
 {
-  //constraints_.push_back(TotalTime); already above
+  constraints_.push_back(TotalTime);
 }
 
 Parameters::VecTimes

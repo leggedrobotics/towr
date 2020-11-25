@@ -18,6 +18,10 @@ namespace towr {
 /**
  *  @brief Ensures continuous accelerations between ee polynomials during stance phase.
  *
+ *  The difference between this constraint and the SplineAccConstraint is that it just
+ *  enforces continuous acceleration during stance phases. However, SplineAccConstraint
+ *  ended up being more efficient.
+ *
  * @ingroup Constraints
  */
 class EEAccConstraint : public ifopt::ConstraintSet {

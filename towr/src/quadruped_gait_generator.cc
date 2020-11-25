@@ -251,7 +251,6 @@ QuadrupedGaitGenerator::GetStrideWalkTest () const
 	  bP_, //BB_,
 	  bB_, IB_, PB_, //BB_,
 	  Pb_, //BB_,
-	  // melhorar subida traseira!!
   };
 
   return std::make_pair(times, phase_contacts);

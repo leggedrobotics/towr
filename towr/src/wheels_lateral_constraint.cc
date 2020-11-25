@@ -177,7 +177,6 @@ WheelsLateralConstraint::FillJacobianBlock(std::string var_set, Jacobian& jac) c
 		jac6 = ee_spline_->GetJacobianWrtNodes(t, kAcc).row(Z) * ez.y();
 		jac.row(row++) = (jac1 + jac2 + jac3 + jac4 + jac5 + jac6);
 	}
-//	  jac.coeffRef(row++,col) = dR.row(Y) * ee_acc_w;
   }
 
   if (var_set == id::base_ang_nodes) {
@@ -201,7 +200,6 @@ WheelsLateralConstraint::FillJacobianBlock(std::string var_set, Jacobian& jac) c
 		jac.row(row++) = ee_vel_w.x() * Dex.row(Y) + ee_vel_w.y() * Dey.row(Y);
 		jac.row(row++) = ee_acc_w.x() * Dex.row(Y) + ee_acc_w.y() * Dey.row(Y);
 	}
-//    jac.row(row++) = base_angular_.DerivOfRotVecMult(t,ee_acc_w,true).row(Y);
   }
 }
 
