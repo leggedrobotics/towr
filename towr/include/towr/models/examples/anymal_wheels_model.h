@@ -24,7 +24,7 @@ public:
 
     const double x_nominal_b = 0.353088;
     const double y_nominal_b = 0.146229;
-    const double z_nominal_b = -0.60174258;
+    const double z_nominal_b = -0.55; //-0.60174258;
 
     double offsets = 0.0;// 0.1;
 
@@ -34,7 +34,6 @@ public:
     nominal_stance_.at(RH) << -x_nominal_b - offsets,  -y_nominal_b, z_nominal_b;
 
     max_dev_from_nominal_ << 0.225-offsets, 0.095, 0.095;
-//    max_dev_from_nominal_ << 0.3, 0.25, 0.25;  // if want cross over stairs, try increasing constraint box
 
     const double x_nominal_hip = 0.3405;
     const double y_nominal_hip = y_nominal_b; //0.1710;

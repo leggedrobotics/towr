@@ -144,9 +144,10 @@ public:
                         Swing,          ///< sets SwingConstraint
                         BaseRom,        ///< sets BaseMotionConstraint
                         BaseAcc,         ///< sets SplineAccConstraint
-                        WheelsNonHolonomic,///< sets WheelsNonHolonomic
-                        TerrainDiscretized,///< sets TerrainDiscretized
-                        ForceDiscretized///< sets ForceDiscretized
+						BaseAccLimits,	///< sets BaseAccLimitsConstraint
+						EndeffectorAcc, ///< sets EEAccConstraint
+						EEAccLimits,	    ///< sets EEAccLimitsConstraint
+						WheelsLateralConstraint /// rolling constraint for contact phase
   };
 
   /**
@@ -171,19 +172,6 @@ public:
   /// Number and initial duration of each foot's swing and stance phases.
   std::vector<VecTimes> ee_phase_durations_;
 
-  /// Number of polynomials per phase (swing, contact) for the motion,
-  /// force and decision spline respectively.
-  std::vector<std::vector<int>> number_of_polys_per_phase_motion_;
-  std::vector<std::vector<int>> number_of_polys_per_phase_force_;
-  std::vector<std::vector<int>> number_of_polys_per_phase_decision_;
-
-  /// spline dencity in nodes per second for the motion,
-  /// force and decision spline respectively. This is to make long phases possible
-  /// without sacrificing resolution.
-  int motion_stance_nodes_per_s;
-  int force_stance_nodes_per_s;
-  int decision_stance_nodes_per_s;
-
   /// True if the foot is initially in contact with the terrain.
   std::vector<bool> ee_in_contact_at_start_;
 
@@ -196,14 +184,11 @@ public:
   /// Interval at which the dynamic constraint is enforced.
   double dt_constraint_dynamic_;
 
-  /// Interval at which the non-holonomic wheel constraint is enforced.
-  double dt_non_holonomic_;
+  /// Use lateral constraint on the wheels motions during contact phase
+  bool use_non_holonomic_constraint_ = false;
 
-  /// Interval at which the force constraint is enforced.
-  double dt_force_;
-
-  /// Interval at which the terrain constraint is enforced.
-  double dt_terrain_discretized_;
+  /// Interval at which the driving constraints are enforced.
+  double dt_drive_constraint_;
 
   /// Interval at which the range of motion constraint is enforced.
   double dt_constraint_range_of_motion_;
@@ -214,18 +199,32 @@ public:
   /// Fixed duration of each cubic polynomial describing the base motion.
   double duration_base_polynomial_;
 
-  /// standard amount of nodes per phase for the motion,
-  /// force and decision spline respectively. They are potentially different for
-  /// swing and stance phases.
-  int polynomials2_force_per_stance_phase_;
-  int polynomials2_force_per_swing_phase_;
-  int polynomials2_motion_per_stance_phase_;
-  int polynomials2_motion_per_swing_phase_;
-  int polynomials2_decision_per_stance_phase_;
-  int polynomials2_decision_per_swing_phase_ ;
+  /// Number of polynomials to parameterize foot movement during swing phases.
+  int n_polynomials_per_swing_phase_;
+
+  /// Number of polynomials to parameterize each contact force during stance phase.
+  int force_polynomials_per_stance_phase_;
+
+  /// Number of polynomials to parameterize each ee motion during stance phase.
+  int motion_polynomials_per_stance_phase_;
 
   /// The maximum allowable force [N] in normal direction
   double force_limit_in_normal_direction_;
+
+  /// Maximum acceleration of the base (x, y, z)
+  std::vector<double> max_base_acc_lin_;
+
+  /// Maximum acceleration of the wheels [m/s^2] (x, y, z)
+  std::vector<double> max_wheels_acc_;
+
+  /// Maximum acceleration of the base (roll, pitch, yaw)
+  std::vector<double> max_base_acc_ang_;
+
+  /// Limit maximum angles on the base
+  bool limit_base_angles_;
+
+  /// Minimum distance above the ground
+  double min_distance_above_terrain_;
 
   /// which dimensions (x,y,z) of the final base state should be bounded
   std::vector<int> bounds_final_lin_pos_,
@@ -240,6 +239,12 @@ public:
    *  limiting this range can help convergence when optimizing gait.
    */
   std::pair<double,double> bound_phase_duration_;
+
+  // Set constraint on the lateral displacement of the wheel in contact phase
+  void SetNonHolonomicConstraint ();
+
+  // Set constraint on the maximum acceleration of the base
+  void SetBaseAccLimitsContraint();
 
   /// Specifies that timings of all feet, so the gait, should be optimized.
   void OptimizePhaseDurations();
@@ -258,6 +263,9 @@ public:
 
   /// Total duration [s] of the motion.
   double GetTotalTime() const;
+
+  /// Clear all the constraints.
+  void DeleteAllConstraints();
 };
 
 } // namespace towr

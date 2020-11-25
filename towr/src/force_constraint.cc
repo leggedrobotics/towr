@@ -31,6 +31,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <towr/variables/variable_names.h>
 
+#include <iostream>
+#include <cmath>
+
 namespace towr {
 
 
@@ -53,7 +56,7 @@ ForceConstraint::InitVariableDependedQuantities (const VariablesPtr& x)
   ee_force_  = x->GetComponent<NodesVariablesPhaseBased>(id::EEForceNodes(ee_));
   ee_motion_ = x->GetComponent<NodesVariablesPhaseBased>(id::EEMotionNodes(ee_));
 
-  pure_stance_force_node_ids_ = ee_force_->GetIndicesOfNonSwingNodes();
+  pure_stance_force_node_ids_ = ee_force_->GetIndicesOfNonConstantNodes();
 
   int constraint_count = pure_stance_force_node_ids_.size()*n_constraints_per_node_;
   SetRows(constraint_count);
@@ -66,9 +69,10 @@ ForceConstraint::GetValues () const
 
   int row=0;
   auto force_nodes = ee_force_->GetNodes();
+  auto motion_nodes = ee_motion_->GetNodes();
   for (int f_node_id : pure_stance_force_node_ids_) {
     int phase  = ee_force_->GetPhase(f_node_id);
-    Vector3d p = ee_motion_->GetValueAtStartOfPhase(phase); // doesn't change during stance phase
+    Vector3d p = motion_nodes.at(f_node_id).p();
     Vector3d n = terrain_->GetNormalizedBasis(HeightMap::Normal, p.x(), p.y());
     Vector3d f = force_nodes.at(f_node_id).p();
 
@@ -110,10 +114,10 @@ ForceConstraint::FillJacobianBlock (std::string var_set,
 {
   if (var_set == ee_force_->GetName()) {
     int row = 0;
+    auto motion_nodes = ee_motion_->GetNodes();
     for (int f_node_id : pure_stance_force_node_ids_) {
       // unilateral force
-      int phase   = ee_force_->GetPhase(f_node_id);
-      Vector3d p  = ee_motion_->GetValueAtStartOfPhase(phase); // doesn't change during phase
+      Vector3d p  = motion_nodes.at(f_node_id).p();
       Vector3d n  = terrain_->GetNormalizedBasis(HeightMap::Normal,   p.x(), p.y());
       Vector3d t1 = terrain_->GetNormalizedBasis(HeightMap::Tangent1, p.x(), p.y());
       Vector3d t2 = terrain_->GetNormalizedBasis(HeightMap::Tangent2, p.x(), p.y());
@@ -138,11 +142,12 @@ ForceConstraint::FillJacobianBlock (std::string var_set,
   if (var_set == ee_motion_->GetName()) {
     int row = 0;
     auto force_nodes = ee_force_->GetNodes();
+    auto motion_nodes = ee_motion_->GetNodes();
     for (int f_node_id : pure_stance_force_node_ids_) {
-      int phase  = ee_force_->GetPhase(f_node_id);
-      int ee_node_id = ee_motion_->GetNodeIDAtStartOfPhase(phase);
+//      int phase  = ee_force_->GetPhase(f_node_id);
+      int ee_node_id = f_node_id;
 
-      Vector3d p = ee_motion_->GetValueAtStartOfPhase(phase); // doesn't change during pahse
+      Vector3d p = motion_nodes.at(ee_node_id).p();
       Vector3d f = force_nodes.at(f_node_id).p();
 
       for (auto dim : {X_,Y_}) {

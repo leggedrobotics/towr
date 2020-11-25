@@ -256,6 +256,16 @@ public:
   void AddFinalBound(Dx deriv, const std::vector<int>& dimensions,
                      const VectorXd& val);
 
+  /**
+   * @brief Restricts all nodes in the spline.
+   * @param deriv Which derivative (pos,vel,...) should be restricted.
+   * @param dimensions Which dimensions (x,y,z) should be restricted.
+   * @param val_min The minimum value the bounds should be set to.
+   * @param val_max The maximum value the bounds should be set to.
+   */
+  void AddAllNodesBounds (Dx d, const std::vector<int>& dimensions,
+		  	  	  	  	  const VectorXd& val_min, const VectorXd& val_max);
+
 protected:
   /**
    * @param n_dim  The number of dimensions (x,y,..) each node has.

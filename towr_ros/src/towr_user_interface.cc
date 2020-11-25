@@ -44,7 +44,7 @@ namespace towr {
 
 
 enum YCursorRows {HEADING=6, OPTIMIZE=8, VISUALIZE, INITIALIZATION, PLOT,
-                  REPLAY_SPEED, GOAL_POS, GOAL_ORI, DES_VEL, DES_W, DES, ROBOT,
+                  REPLAY_SPEED, GOAL_POS, GOAL_ORI, ROBOT,
                   GAIT, OPTIMIZE_GAIT, TERRAIN, DURATION, CLOSE, END};
 static constexpr int Y_STATUS      = END+1;
 static constexpr int X_KEY         = 1;
@@ -64,29 +64,23 @@ TowrUserInterface::TowrUserInterface ()
   user_command_pub_ = n.advertise<towr_ros::TowrCommand>(towr_msgs::user_command, 1);
 
   goal_geom_.lin.p_.setZero();
-  goal_geom_.lin.p_ << 2.1, 0.0, 0.0;
+  goal_geom_.lin.p_ << 1.5, 0.0, 0.0;
   goal_geom_.ang.p_ << 0.0, 0.0, 0.0; // roll, pitch, yaw angle applied Z->Y'->X''
-  goal_geom_v_.lin.p_.setZero();
-  goal_geom_v_.ang.p_.setZero();
-  goal_geom_v_.lin.p_ << 2.1, 0.0, 0.0;
-  goal_geom_v_.ang.p_ << 0.0, 0.0, 0.0; // roll, pitch, yaw angle applied Z->Y'->X''
-
-
 
   robot_      = RobotModel::AnymalWheels;
-  terrain_    = HeightMap::RoundStairID;
+  terrain_    = HeightMap::FlatID;
   gait_combo_ = GaitGenerator::C1;
-  total_duration_ = 2.4;
+  total_duration_ = 2.0;
+  play_initialization_ = false;
   visualize_trajectory_ = false;
   plot_trajectory_ = false;
-  replay_speed_ = 1.0; // realtime
+  replay_speed_ = 0.6; //1.0; // realtime
   optimize_ = false;
   publish_optimized_trajectory_ = false;
-  optimize_phase_durations_ = true;
-  using_des_vel_ = true;
-  des_vx_ = 2.1/2.4; // a stable version for step: 1.4/2.4
-  des_vy_ = 0.0;
-  des_w_ = 0.0;
+  optimize_phase_durations_ = false;
+
+  min_combo_ = 0;
+  max_combo_ = GaitGenerator::COMBO_COUNT;
 
   PrintScreen();
 }
@@ -152,27 +146,6 @@ TowrUserInterface::PrintScreen() const
   PrintVector(goal_geom_.ang.p_);
   printw(" [rad]");
 
-  wmove(stdscr, DES_VEL, X_KEY);
-  printw("arrow");
-  wmove(stdscr, DES_VEL, X_DESCRIPTION);
-  printw("Des Vel x-y");
-  wmove(stdscr, DES_VEL, X_VALUE);
-  printw("%s , %s [m/s]", std::to_string(des_vx_).c_str(), std::to_string(des_vy_).c_str());
-
-  wmove(stdscr, DES_W, X_KEY);
-  printw("1/9");
-  wmove(stdscr, DES_W, X_DESCRIPTION);
-  printw("Des Vel w");
-  wmove(stdscr, DES_W, X_VALUE);
-  printw("%s [1/s]", std::to_string(des_w_).c_str());
-
-  wmove(stdscr, DES, X_KEY);
-  printw("d");
-  wmove(stdscr, DES, X_DESCRIPTION);
-  printw("Use Des Vel");
-  wmove(stdscr, DES, X_VALUE);
-  using_des_vel_? printw("On\n") : printw("Off\n");
-
   wmove(stdscr, ROBOT, X_KEY);
   printw("r");
   wmove(stdscr, ROBOT, X_DESCRIPTION);
@@ -185,7 +158,7 @@ TowrUserInterface::PrintScreen() const
   wmove(stdscr, GAIT, X_DESCRIPTION);
   printw("Gait");
   wmove(stdscr, GAIT, X_VALUE);
-  printw("%s", std::to_string(gait_combo_).c_str());
+  printw("%s ", std::to_string(gait_combo_).c_str());
 
   wmove(stdscr, OPTIMIZE_GAIT, X_KEY);
   printw("y");
@@ -222,162 +195,120 @@ TowrUserInterface::CallbackKey (int c)
   const static double d_lin = 0.1;  // [m]
   const static double d_ang = 0.25; // [rad]
 
-  if(using_des_vel_) {
-    switch (c) {
-      case KEY_RIGHT:
-        des_vx_ -= d_lin;
-        break;
-      case KEY_LEFT:
-        des_vx_ += d_lin;
-        break;
-      case KEY_DOWN:
-        des_vy_ += d_lin;
-        break;
-      case KEY_UP:
-        des_vy_ -= d_lin;
-        break;
-      case '1':
-        des_w_ += d_ang;  // yaw+
-        break;
-      case '9':
-        des_w_ -= d_ang;  // yaw-
-        break;
-    }
-    double goalx;
-    double goaly;
-    if (des_w_ != 0) {
-      double theta0 = atan2(des_vy_, des_vx_);
-      double thetaT = theta0 + des_w_ * total_duration_;
-      double r = sqrt(des_vx_ * des_vx_ + des_vy_ * des_vy_) / des_w_;
-      goalx = -r * sin(theta0) + r * sin(thetaT);
-      goaly = r * cos(theta0) - r * cos(thetaT);
-    } else {
-      goalx = des_vx_ * total_duration_;
-      goaly = des_vy_ * total_duration_;
-    }
-
-
-    goal_geom_v_.lin.p_.x()=des_vx_;
-    goal_geom_v_.lin.p_.y()=des_vy_;
-    goal_geom_v_.lin.p_.z()=0.0;
-    goal_geom_v_.ang.p_.x()=0.0;
-    goal_geom_v_.ang.p_.y()=0.0;
-    goal_geom_v_.ang.p_.z()=des_w_;
-
-    goal_geom_.lin.p_.x()=goalx;
-    goal_geom_.lin.p_.y()=goaly;
-    goal_geom_.lin.p_.z()=0.0;
-    goal_geom_.ang.p_.x()=0.0;
-    goal_geom_.ang.p_.y()=0.0;
-    goal_geom_.ang.p_.z()=des_w_*total_duration_;
-
-  } else {
-    switch (c) {
-      case KEY_RIGHT:
-        goal_geom_.lin.p_.x() -= d_lin;
-        break;
-      case KEY_LEFT:
-        goal_geom_.lin.p_.x() += d_lin;
-        break;
-      case KEY_DOWN:
-        goal_geom_.lin.p_.y() += d_lin;
-        break;
-      case KEY_UP:
-        goal_geom_.lin.p_.y() -= d_lin;
-        break;
-      case KEY_PPAGE:
-        goal_geom_.lin.p_.z() += 0.5 * d_lin;
-        break;
-      case KEY_NPAGE:
-        goal_geom_.lin.p_.z() -= 0.5 * d_lin;
-        break;
-
-      // desired goal orientations
-      case '4':
-        goal_geom_.ang.p_.x() -= d_ang;  // roll-
-        break;
-      case '6':
-        goal_geom_.ang.p_.x() += d_ang;  // roll+
-        break;
-      case '8':
-        goal_geom_.ang.p_.y() += d_ang;  // pitch+
-        break;
-      case '2':
-        goal_geom_.ang.p_.y() -= d_ang;  // pitch-
-        break;
-      case '1':
-        goal_geom_.ang.p_.z() += d_ang;  // yaw+
-        break;
-      case '9':
-        goal_geom_.ang.p_.z() -= d_ang;  // yaw-
-        break;
-    }
-  }
-
   switch (c) {
+	case KEY_RIGHT:
+	  goal_geom_.lin.p_.x() -= d_lin;
+	  break;
+	case KEY_LEFT:
+	  goal_geom_.lin.p_.x() += d_lin;
+	  break;
+	case KEY_DOWN:
+	  goal_geom_.lin.p_.y() += d_lin;
+	  break;
+	case KEY_UP:
+	  goal_geom_.lin.p_.y() -= d_lin;
+	  break;
+	case KEY_PPAGE:
+	  goal_geom_.lin.p_.z() += 0.5*d_lin;
+	  break;
+	case KEY_NPAGE:
+	  goal_geom_.lin.p_.z() -= 0.5*d_lin;
+	  break;
 
-    // terrains
-    case 't':
-      terrain_ = AdvanceCircularBuffer(terrain_, HeightMap::TERRAIN_COUNT);
-      break;
+	// desired goal orientations
+	case '4':
+	  goal_geom_.ang.p_.x() -= d_ang; // roll-
+	  break;
+	case '6':
+	  goal_geom_.ang.p_.x() += d_ang; // roll+
+	  break;
+	case '8':
+	  goal_geom_.ang.p_.y() += d_ang; // pitch+
+	  break;
+	case '2':
+	  goal_geom_.ang.p_.y() -= d_ang; // pitch-
+	  break;
+	case '1':
+	  goal_geom_.ang.p_.z() += d_ang; // yaw+
+	  break;
+	case '9':
+	  goal_geom_.ang.p_.z() -= d_ang; // yaw-
+	  break;
 
-    case 'g':
-      gait_combo_ = AdvanceCircularBuffer(gait_combo_, GaitGenerator::COMBO_COUNT);
-      break;
+	// terrains
+	case 't':
+	  terrain_ = AdvanceCircularBuffer(terrain_, HeightMap::TERRAIN_COUNT, 0);
+	  // Comment here to allow the user to chose any gait regardless of the terrain.
+	  if (terrain_ == (int) HeightMap::BlockID) {
+		  gait_combo_ = 9; min_combo_ = 9; max_combo_ = 10+1;
+	  }
+	  else if (terrain_ == (int) HeightMap::BlockRightID) {
+		  gait_combo_ = 13; min_combo_ = 13; max_combo_ = 13+1;
+	  }
+	  else if (terrain_ == (int) HeightMap::GapID) {
+		  gait_combo_ = 11; min_combo_ = 11; max_combo_ = 12+1;
+	  }
+	  else if (terrain_ == (int) HeightMap::FlatID) {
+		  gait_combo_ = 1; min_combo_ = 0; max_combo_ = 8+1;
+	  }
+	  else {
+		  gait_combo_ = 1; min_combo_ = 0; max_combo_ = GaitGenerator::COMBO_COUNT;
+	  }
 
-    case 'r':
-      robot_ = AdvanceCircularBuffer(robot_, RobotModel::ROBOT_COUNT);
-      break;
+	  break;
 
-    // duration
-    case '+':
-      total_duration_ += 0.2;
-    break;
-    case '-':
-      total_duration_ -= 0.2;
-    break;
-    case '\'':
-      replay_speed_ += 0.1;
-    break;
-    case ';':
-      replay_speed_ -= 0.1;
-    break;
-    case 'y':
-      optimize_phase_durations_ = !optimize_phase_durations_;
-      break;
+	case 'g':
+	  gait_combo_ = AdvanceCircularBuffer(gait_combo_, max_combo_, min_combo_);
+	  break;
 
-      //des vel
-    case 'd':
-      using_des_vel_ = !using_des_vel_;
-      break;
+	case 'r':
+	  robot_ = AdvanceCircularBuffer(robot_, RobotModel::ROBOT_COUNT, 0);
+	  break;
+
+	// duration
+	case '+':
+	  total_duration_ += 0.2;
+	break;
+	case '-':
+	  total_duration_ -= 0.2;
+	break;
+	case '\'':
+	  replay_speed_ += 0.1;
+	break;
+	case ';':
+	  replay_speed_ -= 0.1;
+	break;
+	case 'y':
+	  optimize_phase_durations_ = !optimize_phase_durations_;
+	  break;
 
 
-    case 'o':
-      optimize_ = true;
-      wmove(stdscr, Y_STATUS, 0);
-      printw("Optimizing motion\n\n");
-      break;
-    case 'v':
-      visualize_trajectory_ = true;
-      wmove(stdscr, Y_STATUS, 0);
-      printw("Visualizing current bag file\n\n");
-      break;
-    case 'i':
-      play_initialization_ = true;
-      wmove(stdscr, Y_STATUS, 0);
-      printw("Visualizing initialization (iteration 0)\n\n");
-      break;
-    case 'p':
-      plot_trajectory_ = true;
-      wmove(stdscr, Y_STATUS, 0);
-      printw("In rqt_bag: right-click on xpp/state_des -> View -> Plot.\n"
-             "Then expand the values you wish to plot on the right\n");
-      break;
-    case 'q':
-      printw("Closing user interface\n");
-      ros::shutdown(); break;
-    default:
-      break;
+	case 'o':
+	  optimize_ = true;
+	  wmove(stdscr, Y_STATUS, 0);
+	  printw("Optimizing motion\n\n");
+	  break;
+	case 'v':
+	  visualize_trajectory_ = true;
+	  wmove(stdscr, Y_STATUS, 0);
+	  printw("Visualizing current bag file\n\n");
+	  break;
+	case 'i':
+	  play_initialization_ = true;
+	  wmove(stdscr, Y_STATUS, 0);
+	  printw("Visualizing initialization (iteration 0)\n\n");
+	  break;
+	case 'p':
+	  plot_trajectory_ = true;
+	  wmove(stdscr, Y_STATUS, 0);
+	  printw("In rqt_bag: right-click on xpp/state_des -> View -> Plot.\n"
+			 "Then expand the values you wish to plot on the right\n");
+	  break;
+	case 'q':
+	  printw("Closing user interface\n");
+	  ros::shutdown(); break;
+	default:
+	  break;
   }
 
   PublishCommand();
@@ -410,9 +341,9 @@ void TowrUserInterface::PublishCommand()
   publish_optimized_trajectory_ = false;
 }
 
-int TowrUserInterface::AdvanceCircularBuffer(int& curr, int max) const
+int TowrUserInterface::AdvanceCircularBuffer(int& curr, int max, int min) const
 {
-  return curr==(max-1)? 0 : curr+1;
+  return curr==(max-1)? min : curr+1;
 }
 
 void

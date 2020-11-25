@@ -55,15 +55,18 @@ public:
   /**
    * @brief Predefined combinations of different strides.
    */
-  enum Combos { C0, C1, C2, C3, C4, COMBO_COUNT};
+  enum Combos { C0, C1, C2, C3, C4, C5, C6, Trot,
+				DRIVE, BlockCross, BlockBound, GapCross, GapBound, BlockRight, // specific for wheels
+			    COMBO_COUNT};
 
   /**
    * @brief Predefined strides, each with a different gait diagram.
    */
   enum Gaits  {Stand=0, Flight,
-               Walk1, Walk2, Walk2E,
+               Walk1, Walk2, Walk2E, Walk3, Walk3E,
                Run2, Run2E, Run1, Run1E, Run3, Run3E,
-               Hop1, Hop1E, Hop2, Hop3, Hop3E, Hop5, Hop5E,
+               Hop1, Hop1E, Hop2, Hop3, Hop3E, Hop4, Hop5, Hop5E,
+			   Drive, StandFlight, GapGallop, GapHop, BlockGallop, BlockHop, BlockRightHop, // specific for wheels
                GAIT_COUNT};
 
   static Ptr MakeGaitGenerator(int leg_count);

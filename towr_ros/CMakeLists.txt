@@ -12,10 +12,11 @@ find_package(catkin REQUIRED COMPONENTS
   xpp_msgs
   xpp_states
   towr
-        xpp_anymal_wheels
-        grid_map_core
-        grid_map_msgs
-        grid_map_visualization
+  yaml_tools
+  xpp_anymal_wheels
+  grid_map_core
+  grid_map_msgs
+  grid_map_visualization
 )
 
 
@@ -46,6 +47,7 @@ include_directories(
 # The interface to derive from for ros integration
 add_library(${PROJECT_NAME} SHARED
   src/towr_ros_interface.cc
+  src/helpers_towr.cc
 )
 add_dependencies(${PROJECT_NAME} 
   ${PROJECT_NAME}_gencpp

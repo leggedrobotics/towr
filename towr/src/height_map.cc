@@ -38,24 +38,14 @@ HeightMap::Ptr
 HeightMap::MakeTerrain (TerrainID type)
 {
   switch (type) {
-    case FlatID:      	   return std::make_shared<FlatGround>(); break;
-    case BlockID:     	   return std::make_shared<Block>(); break;
-    case StairsID:    	   return std::make_shared<Stairs>(); break;
-    case StepFlatID:       return std::make_shared<StepFlat>(); break;
-    case GapID:       	   return std::make_shared<Gap>(); break;
-    case SlopeID:     	   return std::make_shared<Slope>(); break;
-    case ChimneyID:   	   return std::make_shared<Chimney>(); break;
-    case ChimneyLRID: 	   return std::make_shared<ChimneyLR>(); break;
-    case SlopePlatID:  	   return std::make_shared<SlopePlat>(); break;
-    case MultipleSlopesID: return std::make_shared<MultipleSlopes>(); break;
-    case StepID:		   return std::make_shared<Step>(); break;
-    case TwoSlopeID:	   return std::make_shared<TwoSlope>(); break;
-    case TwoStepID:  	   return std::make_shared<TwoStep>(); break;
-    case FiveStepsID:  	   return std::make_shared<FiveSteps>(); break;
-    case SineLowFreqID:	   return std::make_shared<SineLowFreq>(); break;
-    case SineHighFreqID:   return std::make_shared<SineHighFreq>(); break;
-    case RoughID:		   return std::make_shared<Rough>(); break;
-    case RoundStairID:		   return std::make_shared<RoundStair>(); break;
+    case FlatID:      	return std::make_shared<FlatGround>(); break;
+    case BlockID:     	return std::make_shared<Block>(); break;
+    case BlockRightID:  return std::make_shared<BlockRight>(); break;
+    case GapID:       	return std::make_shared<Gap>(); break;
+//    case StairsID:    	return std::make_shared<Stairs>(); break;
+//    case SlopeID:     	return std::make_shared<Slope>(); break;
+//    case ChimneyID:   	return std::make_shared<Chimney>(); break;
+//    case ChimneyLRID: 	return std::make_shared<ChimneyLR>(); break;
     default: assert(false); break;
   }
 }
@@ -78,7 +68,7 @@ HeightMap::GetNormalizedBasis (Direction basis, double x, double y) const
 
 HeightMap::Vector3d
 HeightMap::GetBasis (Direction basis, double x, double y,
-                                  const DimDerivs& deriv) const
+                     const DimDerivs& deriv) const
 {
   switch (basis) {
     case Normal:   return GetNormal(x,y, deriv);
@@ -100,6 +90,7 @@ HeightMap::GetDerivativeOfNormalizedBasisWrt (Direction basis, Dim2D dim,
 
   Matrix3d dn_norm = GetDerivativeOfNormalizedVector(v);
   return dn_norm * dv_wrt_dim;
+
 //  Vector3d dn_norm_wrt_n = GetDerivativeOfNormalizedVectorWrtNonNormalizedIndex(v, dim);
 //  return dn_norm_wrt_n.cwiseProduct(dv_wrt_dim);
 }

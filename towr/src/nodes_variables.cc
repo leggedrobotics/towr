@@ -364,6 +364,20 @@ NodesVariables::AddFinalBound (Dx deriv, const std::vector<int>& dimensions,
   AddBounds(nodes_.size()-1, deriv, dimensions, val);
 }
 
+void
+NodesVariables::AddAllNodesBounds (Dx d, const std::vector<int>& dimensions,
+								   const VectorXd& val_min, const VectorXd& val_max)
+{
+  for (auto dim : dimensions) {
+	for (int idx=0; idx<GetRows(); ++idx) {
+	  for (auto nvi : GetNodeValuesInfo(idx)) {
+	    if (nvi.deriv_ == d && nvi.dim_ == dim)
+		  bounds_.at(idx) = ifopt::Bounds(val_min(dim), val_max(dim));
+	  }
+	}
+  }
+}
+
 NodesVariables::NodeValueInfo::NodeValueInfo(int node_id, Dx deriv, int node_dim)
 {
   id_    = node_id;

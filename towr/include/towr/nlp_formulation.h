@@ -51,10 +51,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <towr/constraints/terrain_constraint.h>
 #include <towr/constraints/total_duration_constraint.h>
 #include <towr/constraints/spline_acc_constraint.h>
-#include <towr/constraints/wheels_non_holonomic_constraint.h>
-#include <towr/constraints/terrain_constraint_discretized.h>
-#include <towr/constraints/force_constraint_discretized.h>
 
+#include <towr/constraints/base_acc_limits_constraint.h>
+#include <towr/constraints/ee_acc_constraint.h>
+#include <towr/constraints/ee_acc_limits_constraint.h>
+#include <towr/constraints/wheels_lateral_constraint.h>
 
 
 #include <towr/costs/node_cost.h>
@@ -122,7 +123,6 @@ public:
 
   BaseState initial_base_;
   BaseState final_base_;
-  BaseState final_base_v_;
   EEPos  initial_ee_W_;
   RobotModel model_;
   HeightMap::Ptr terrain_;
@@ -130,13 +130,10 @@ public:
   HeightMap::TerrainID terrainID_;
 
 private:
-  ConstraintPtrVec MakeWheelsNonHolonomicConstraint(const SplineHolder& s) const;
-  ConstraintPtrVec MakeDiscretizedTerrainConstraint(const SplineHolder& s) const;
-  ConstraintPtrVec MakeDiscretizedForceConstraint(const SplineHolder& s) const;
 
   // variables
   std::vector<NodesVariables::Ptr> MakeBaseVariables() const;
-  std::vector<NodesVariablesPhaseBased::Ptr> MakeEndeffectorVariables();
+  std::vector<NodesVariablesPhaseBased::Ptr> MakeEndeffectorVariables() const;
   std::vector<NodesVariablesPhaseBased::Ptr> MakeForceVariables() const;
   std::vector<NodesVariablesPhaseBased::Ptr> MakeDecisionVariables() const;
   std::vector<PhaseDurations::Ptr> MakeContactScheduleVariables() const;
@@ -152,6 +149,10 @@ private:
   ConstraintPtrVec MakeSwingConstraint() const;
   ConstraintPtrVec MakeBaseRangeOfMotionConstraint(const SplineHolder& s) const;
   ConstraintPtrVec MakeBaseAccConstraint(const SplineHolder& s) const;
+  ConstraintPtrVec MakeBaseAccLimitsConstraint(const SplineHolder& s) const;
+  ConstraintPtrVec MakeEENodesAccConstraint(const SplineHolder& s) const;
+  ConstraintPtrVec MakeEEAccLimitsConstraint(const SplineHolder& s) const;
+  ConstraintPtrVec MakeWheelsLateralConstraint(const SplineHolder& s) const;
 
   // costs
   CostPtrVec GetCost(const Parameters::CostName& id, double weight) const;

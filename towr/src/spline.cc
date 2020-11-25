@@ -77,6 +77,18 @@ Spline::GetLocalTime (double t_global, const VecTimes& durations) const
   return std::make_pair(id, t_local);
 }
 
+double
+Spline::GetGlobalTime (int poly_id, double t_local) const
+{
+  VecTimes durations = GetPolyDurations();
+
+  double t_global = t_local;
+  for (int i=0; i<poly_id; i++)
+    t_global += durations.at(i);
+
+  return t_global;
+}
+
 const State
 Spline::GetPoint(double t_global) const
 {
