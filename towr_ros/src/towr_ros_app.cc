@@ -29,6 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <towr/initialization/gait_generator.h>
 #include <towr_ros/towr_ros_interface.h>
+#include <xpp_states/convert.h>
 
 #include "yaml_tools/yaml_tools.hpp"
 
@@ -90,10 +91,15 @@ public:
 
     auto terrain_id = static_cast<HeightMap::TerrainID>(msg.terrain);
     std::string terrain = terrain_names.find(terrain_id)->second;
+    HeightMap::Ptr terrain_ptr=HeightMap::MakeTerrain(terrain_id);
+
+    xpp::Vector3d goal;
+    goal = xpp::Convert::ToXpp(msg.goal_lin.pos);
+    double des_v_x = goal[0]/msg.total_duration;
 
     // Define gait
-    auto gait_gen_ = GaitGenerator::MakeGaitGenerator(n_ee);
     auto id_gait   = static_cast<GaitGenerator::Combos>(msg.gait);
+    auto gait_gen_ = GaitGenerator::MakeGaitGenerator(n_ee, id_gait, des_v_x, terrain_ptr);
     gait_gen_->SetCombo(id_gait);
     for (int ee=0; ee<n_ee; ++ee) {
       params.ee_phase_durations_.push_back(gait_gen_->GetPhaseDurations(msg.total_duration, ee));
@@ -112,7 +118,7 @@ public:
     	params.n_polynomials_per_swing_phase_ = 2;
 
     // Print phase durations (optional)
-    //PrintPhaseDurations(params.ee_phase_durations_);
+    PrintPhaseDurations(params.ee_phase_durations_);
 
     // increases optimization time, but sometimes helps find a solution for
     // more difficult terrain.

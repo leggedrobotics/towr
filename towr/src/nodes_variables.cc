@@ -32,6 +32,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <towr/variables/node_spline.h>
 #include <towr/variables/euler_converter.h>
 
+#include <towr/terrain/height_map.h>
+#include <towr/terrain/examples/height_map_examples.h>
+
 namespace towr {
 
 
@@ -138,7 +141,8 @@ NodesVariables::AdvancedInititialisationEE(const VectorXd& initial_val,
                                           const VectorXd& offset_full,
                                           HeightMap::Ptr  terrain,
                                           double angle_init,
-                                          bool incontact_start)
+                                          bool incontact_start,
+                                          HeightMap::TerrainID terrainID)
 {
   double theta0 = atan2(des_vy, des_vx);
   double r = sqrt(des_vx * des_vx + des_vy * des_vy) / des_w;
@@ -197,13 +201,42 @@ NodesVariables::AdvancedInititialisationEE(const VectorXd& initial_val,
 
       double goalz_terrain_ = terrain->GetHeight(goalx,goaly);
 
-      if(contact){
-        goalz = goalz_terrain_;
-        // goalz = 0.0; if use gap terrain, use the commented code line for initialization
+      //depending on the terrain, initialization is different
+      if (terrainID== HeightMap::TerrainID::StepsID){
+
+        std::shared_ptr<Steps> terrain_steps = std::dynamic_pointer_cast<Steps>(terrain);
+        double range_after_step=0.15;
+        double swing_phase_margin=0.02;
+        int index;
+        for(index=0;index<terrain_steps->level_starts_.size();index++){
+          if(goalx < (terrain_steps->level_starts_.at(index)+range_after_step)) break;
+        }
+        if(index==terrain_steps->level_starts_.size()) {
+          index-=1;
+        }
+        if(contact){
+          goalz = goalz_terrain_;
+        }else{
+          //two types if ee initialization, based on the next step difference in height
+          if(terrain_steps->level_heights_.at(index)<terrain_steps->level_heights_.at(index-1)){
+            goalz =
+                terrain_steps->level_heights_.at(index-1) + swing_phase_margin;
+          }else {
+            goalz =
+                terrain_steps->level_heights_.at(index) + swing_phase_margin;
+          }
+        }
+
       }else{
-        goalz = goalz_terrain_+0.1;
-        // goalz = 0.1;
+        if(contact){
+          goalz = goalz_terrain_;
+        }else{
+          goalz = goalz_terrain_ + 0.1;
+        }
       }
+
+
+
 
       double dzdx = terrain->GetDerivativeOfHeightWrt(X_,goalx,goaly);
       double dzdy = terrain->GetDerivativeOfHeightWrt(Y_,goalx,goaly);
@@ -243,7 +276,9 @@ NodesVariables::AdvancedInititialisationBase(const VectorXd& initial_val,
                                           double des_w,
                                           double des_vx,
                                           double des_vy,
-                                          double angle_init)
+                                          double angle_init,
+                                          HeightMap::Ptr  terrain,
+                                          HeightMap::TerrainID terrainID)
 {
   double theta0 = atan2(des_vy, des_vx);
   double r = sqrt(des_vx * des_vx + des_vy * des_vy) / des_w;
@@ -284,7 +319,53 @@ NodesVariables::AdvancedInititialisationBase(const VectorXd& initial_val,
         goalvy = desv_rotated.y();
       }
 
-      double goalz = initial_val.z() + (t_current3*(final_val.z()-initial_val.z()))/t_total;
+      double goalz;
+
+      /*if (terrainID== HeightMap::TerrainID::StepsID){
+
+        std::shared_ptr<Steps> terrain_steps = std::dynamic_pointer_cast<Steps>(terrain);
+        double range_before_step=0.4;
+        double range_after_step=0.15;
+        int index;
+        for(index=0;index<terrain_steps->level_starts_.size();index++){
+          if(goalx < (terrain_steps->level_starts_.at(index)+range_after_step)) break;
+        }
+        if(index==terrain_steps->level_starts_.size()) {
+          index-=1;
+        }
+        double pre_step_target_value_z;
+        double post_step_target_value_z=initial_val.z()+terrain_steps->level_heights_.at(index);
+        if(index==0){
+          pre_step_target_value_z=initial_val.z();
+        }else{
+          pre_step_target_value_z=initial_val.z()+terrain_steps->level_heights_.at(index-1);
+        }
+        double des_vx_calculated=final_val.x()/t_total;
+        double step_position=terrain_steps->level_starts_.at(index);
+        double time_to_cross=(range_before_step+range_after_step)/des_vx_calculated;
+        double start_time=(step_position-range_before_step-initial_val.x())/des_vx_calculated;
+
+        //std::cout<<"des_vx_calculated "<<des_vx_calculated<<std::endl;
+        //std::cout<<"pre_step_target_value_z + ((t_current3-start_time)*(post_step_target_value_z-pre_step_target_value_z))/time_to_cross "<<pre_step_target_value_z + ((t_current3-start_time)*(post_step_target_value_z-pre_step_target_value_z))/time_to_cross<<std::endl;
+        //std::cout<<"goalx: "<<goalx<<std::endl;
+        //std::cout<<"step position: "<<step_position<<std::endl;
+        if((goalx>(step_position-range_before_step)) && (goalx<(step_position+range_after_step))) {
+          goalz = pre_step_target_value_z + ((t_current3-start_time)*(post_step_target_value_z-pre_step_target_value_z))/time_to_cross;
+        }
+       // goalz = initial_val.z() + (t_current3*(final_val.z()-initial_val.z()))/t_total;
+        if(goalx>(step_position+range_after_step)){
+          goalz=post_step_target_value_z;
+        }
+        if(goalx<(step_position-range_before_step)){
+          goalz=pre_step_target_value_z;
+        }
+
+
+      }else{*/
+        goalz = initial_val.z() + (t_current3*(final_val.z()-initial_val.z()))/t_total;
+      //}
+
+
       double goalvz =(final_val.z()-initial_val.z())/t_total;
 
 

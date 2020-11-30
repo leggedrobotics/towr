@@ -10,7 +10,7 @@
 
 namespace towr {
 
-BaseAccLimitsConstraint::BaseAccLimitsConstraint (std::vector<Vector3d> acc_max,
+BaseAccLimitsConstraint::BaseAccLimitsConstraint (const std::vector<Vector3d>& acc_max,
 	  	  	   	   	   	   	   	   	   	   	   	  double T, double dt,
 												  const SplineHolder& spline_holder)
 	: TimeDiscretizationConstraint(T, dt, "base-acc-limits")

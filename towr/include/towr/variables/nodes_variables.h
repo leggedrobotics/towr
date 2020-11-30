@@ -214,7 +214,8 @@ public:
                              const VectorXd& offset_full,
                              HeightMap::Ptr  terrain,
                              double angle_init,
-                             bool incontact_start);
+                             bool incontact_start,
+                             HeightMap::TerrainID terrainID);
 
   /**
    * @brief Sets nodes for the base position andvance. follows curve.
@@ -236,7 +237,9 @@ public:
                                double des_w,
                                double des_vx,
                                double des_vy,
-                               double angle_init);
+                               double angle_init,
+                               HeightMap::Ptr  terrain,
+                               HeightMap::TerrainID terrainID);
 
   /**
    * @brief Restricts the first node in the spline.

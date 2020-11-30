@@ -53,8 +53,8 @@ int main()
 
   // Parameters that define the motion.
   double total_duration = 2.0;
-  auto gait_gen_ = GaitGenerator::MakeGaitGenerator(4);
   auto id_gait = towr::GaitGenerator::C1; //GapCross; //C0;
+  auto gait_gen_ = GaitGenerator::MakeGaitGenerator(4,id_gait, 2.0, formulation.terrain_);
   gait_gen_->SetCombo(id_gait);
   for (int ee=0; ee<4; ++ee) {
 	formulation.params_.ee_phase_durations_.push_back(gait_gen_->GetPhaseDurations(total_duration, ee));

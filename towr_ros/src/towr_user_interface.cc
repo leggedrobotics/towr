@@ -38,6 +38,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <towr/terrain/height_map.h>
 #include <towr/initialization/gait_generator.h>
 #include <towr/models/robot_model.h>
+#include <towr/terrain/examples/height_map_examples.h>
 
 
 namespace towr {
@@ -70,7 +71,7 @@ TowrUserInterface::TowrUserInterface ()
   robot_      = RobotModel::AnymalWheels;
   terrain_    = HeightMap::FlatID;
   gait_combo_ = GaitGenerator::C1;
-  total_duration_ = 2.0;
+  total_duration_ = 2.5;
   play_initialization_ = false;
   visualize_trajectory_ = false;
   plot_trajectory_ = false;
@@ -251,8 +252,15 @@ TowrUserInterface::CallbackKey (int c)
 	  else if (terrain_ == (int) HeightMap::FlatID) {
 		  gait_combo_ = 1; min_combo_ = 0; max_combo_ = 8+1;
 	  }
+          else if (terrain_ == (int) HeightMap::StepsID) {
+            std::shared_ptr<towr::Steps> terrain_steps = std::make_shared<towr::Steps>();
+            goal_geom_.lin.p_.x() = terrain_steps->level_starts_.at(terrain_steps->level_starts_.size()-1) + 0.7;
+            double des_velocity = 0.8;
+            total_duration_ = goal_geom_.lin.p_.x()/des_velocity;
+            gait_combo_ = GaitGenerator::StepsCross; min_combo_ = GaitGenerator::StepsCross; max_combo_ = GaitGenerator::StepsCross+1;
+          }
 	  else {
-		  gait_combo_ = 1; min_combo_ = 0; max_combo_ = GaitGenerator::COMBO_COUNT;
+            gait_combo_ = 1; min_combo_ = 0; max_combo_ = GaitGenerator::COMBO_COUNT;
 	  }
 
 	  break;
@@ -267,10 +275,10 @@ TowrUserInterface::CallbackKey (int c)
 
 	// duration
 	case '+':
-	  total_duration_ += 0.2;
+	  total_duration_ += 0.1;
 	break;
 	case '-':
-	  total_duration_ -= 0.2;
+	  total_duration_ -= 0.1;
 	break;
 	case '\'':
 	  replay_speed_ += 0.1;
@@ -310,6 +318,7 @@ TowrUserInterface::CallbackKey (int c)
 	default:
 	  break;
   }
+
 
   PublishCommand();
 }

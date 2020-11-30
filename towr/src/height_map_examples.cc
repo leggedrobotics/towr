@@ -242,4 +242,55 @@ ChimneyLR::GetHeightDerivWrtY (double x, double y) const
   return dzdy;
 }
 
+// Steps
+
+Steps::Steps(){
+  level_slope_ends_.push_back(0);
+  slopes_.push_back(0);
+  for(int i=1;i<level_starts_.size();i++){
+    level_slope_ends_.push_back(level_starts_.at(i)+slope_length_);
+    slopes_.push_back((level_heights_.at(i)-level_heights_.at(i-1))/(level_slope_ends_.at(i)-level_starts_.at(i)));
+  }
+}
+double
+Steps::GetHeight(double x, double y) const {
+  double h = 0.0;
+  int index;
+  for(index=0;index<level_starts_.size();index++){
+    if(x < level_starts_.at(index)) break;
+  }
+  index-=1;
+
+  if(index==0){
+    h = level_heights_.at(index);
+  }else{
+    if (x>=level_starts_.at(index) && x<level_slope_ends_.at(index)) {
+      h = slopes_.at(index)*(x-level_starts_.at(index))+level_heights_.at(index-1);
+      if(h>level_heights_.at(index)) h=level_heights_.at(index);
+      if(h<level_heights_.at(index-1)) h=level_heights_.at(index-1);
+    }
+    if (x>=level_slope_ends_.at(index)) {h = level_heights_.at(index);}
+  }
+  return h;
+}
+
+double
+Steps::GetHeightDerivWrtX(double x, double y) const {
+  double dhdx = 0.0;
+
+  int index;
+  for(index=0;index<level_starts_.size();index++){
+    if(x < level_starts_.at(index)) break;
+  }
+  index-=1;
+
+  if(index>0){
+    if (x>=level_starts_.at(index) && x<level_slope_ends_.at(index)) {
+      dhdx = slopes_.at(index);
+    }
+  }
+
+  return dhdx;
+}
+
 } /* namespace towr */

@@ -11,8 +11,8 @@
 
 namespace towr {
 
-EEAccLimitsConstraint::EEAccLimitsConstraint (Vector3d acc_max,
-        									  const EE& ee,
+EEAccLimitsConstraint::EEAccLimitsConstraint (const Vector3d& acc_max,
+        									   EE ee,
 											  const SplineHolder& ee_motion_holder)
 		: ConstraintSet(kSpecifyLater, "acc-limits-" + id::EEMotionNodes(ee))
 {
