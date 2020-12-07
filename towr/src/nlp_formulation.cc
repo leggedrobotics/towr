@@ -95,13 +95,21 @@ NlpFormulation::MakeBaseVariables () const
   double z2 = terrain_->GetHeight(x2,y2) - model_.kinematic_model_->GetNominalStanceInBase().front().z();
   Vector3d init_pos(x2, y2, z2);
 
-  spline_lin->SetByLinearInterpolation(initial_base_.lin.p(), final_pos, params_.GetTotalTime());
+  //spline_lin->SetByLinearInterpolation(initial_base_.lin.p(), final_pos, params_.GetTotalTime());
 
-  spline_lin->AdvancedInititialisationBase(
+  Vector3d des_v((final_base_.lin.p().x() - initial_base_.lin.p().x()) / params_.GetTotalTime(),
+                 (final_base_.lin.p().y() - initial_base_.lin.p().y()) / params_.GetTotalTime(),
+                 (final_base_.lin.p().z() - initial_base_.lin.p().z()) / params_.GetTotalTime());
+
+  double des_w = (final_base_.ang.p().z() - initial_base_.ang.p().z()) / params_.GetTotalTime();
+
+ spline_lin->AdvancedInititialisationBase(
       init_pos, final_pos, params_.GetTotalTime(),
-      params_.duration_base_polynomial_, final_base_.ang.v().z(),
-      final_base_.lin.v().x(),
-      final_base_.lin.v().y(), initial_base_.ang.p().z(), terrain_, terrainID_ );
+      params_.duration_base_polynomial_, des_w,
+      des_v[0],
+      des_v[1], initial_base_.ang.p().z(), terrain_, terrainID_ );
+
+
 
   spline_lin->AddStartBound(kPos, {X,Y,Z}, initial_base_.lin.p());
   spline_lin->AddStartBound(kVel, {X,Y,Z}, initial_base_.lin.v());
@@ -176,15 +184,21 @@ NlpFormulation::MakeEndeffectorVariables () const
     Vector3d init_ee_pos_W =
         init_pos_base+w_R_b_init *(model_.kinematic_model_->GetNominalStanceInBase().at(ee) );
 
-    nodes->SetByLinearInterpolation(initial_ee_W_.at(ee), Vector3d(x,y,z), T);
+    //nodes->SetByLinearInterpolation(initial_ee_W_.at(ee), Vector3d(x,y,z), T);
+
+    Vector3d des_v((final_base_.lin.p().x() - initial_base_.lin.p().x()) / params_.GetTotalTime(),
+                   (final_base_.lin.p().y() - initial_base_.lin.p().y()) / params_.GetTotalTime(),
+                   (final_base_.lin.p().z() - initial_base_.lin.p().z()) / params_.GetTotalTime());
+
+    double des_w = (final_base_.ang.p().z() - initial_base_.ang.p().z()) / params_.GetTotalTime();
 
     nodes->AdvancedInititialisationEE(
         init_ee_pos_W, final_ee_pos_W, params_.GetTotalTime(),
         params_.ee_phase_durations_.at(ee),
         n_polys,
-        final_base_.ang.v().z(),
-        final_base_.lin.v().x(),
-        final_base_.lin.v().y(),
+        des_w,
+        des_v[0],
+        des_v[1],
         model_.kinematic_model_->GetNominalStanceInBase().at(ee), terrain_,  initial_base_.ang.p().z(),
         params_.ee_in_contact_at_start_.at(ee),terrainID_);
 

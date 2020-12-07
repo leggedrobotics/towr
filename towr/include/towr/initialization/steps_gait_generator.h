@@ -32,7 +32,7 @@ public:
 
   /**
    * Dummy function just to override the superclass method
-   * @param combo
+   * @param combo+
    */
   void SetCombo(Combos combo) override;
 
