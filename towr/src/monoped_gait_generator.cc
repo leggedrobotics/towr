@@ -55,7 +55,7 @@ MonopedGaitGenerator::GetGait (Gaits gait) const
     case Flight:  return GetStrideFlight();
     case Hop1:    return GetStrideHop();
     case Hop2:    return GetStrideHopLong();
-    default: assert(false); // gait not implemented
+    default: throw std::runtime_error("[MonopedGaitGenerator::GetGait] Gait not implemented");
   }
 }
 

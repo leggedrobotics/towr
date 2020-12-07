@@ -99,7 +99,8 @@ public:
    *             n: Number of optimized durations.
    */
   virtual Jacobian
-  GetJacobianOfPosWrtDurations(double t) const { assert(false); } // durations are fixed here
+  GetJacobianOfPosWrtDurations(double t) const {
+    throw std::runtime_error("[NodeSpline::GetJacobianOfPosWrtDurations] durations are fixed here"); }
 
 protected:
   /**
