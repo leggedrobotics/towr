@@ -92,7 +92,7 @@ public:
   double GetHeightDerivWrtX(double x, double y) const override;
 
 private:
-  double step_start_ = 0.70; //0.7
+  double step_start_ = 0.90; //0.7
   double step_height_ = 0.205;  //0.1
   double step_end_ = 0.71;
   double slope_ = 2.05;

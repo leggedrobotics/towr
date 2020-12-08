@@ -45,16 +45,20 @@ public:
   {
     const double x_nominal_b = 0.353088;
     const double y_nominal_b = 0.146229;
-    const double z_nominal_b = -0.58;
+    const double z_nominal_b = -0.5;
 
-    double offsets = 0.0;// 0.1;
+    double offsets = 0.095;// 0.1;
 
     nominal_stance_.at(LF) <<  x_nominal_b + offsets,   y_nominal_b, z_nominal_b;
     nominal_stance_.at(RF) <<  x_nominal_b - offsets,  -y_nominal_b, z_nominal_b;
     nominal_stance_.at(LH) << -x_nominal_b + offsets,   y_nominal_b, z_nominal_b;
     nominal_stance_.at(RH) << -x_nominal_b - offsets,  -y_nominal_b, z_nominal_b;
 
-    max_dev_from_nominal_ << 0.225-offsets, 0.095, 0.095;
+    max_dev_from_nominal_ << 0.25-offsets, 0.095, 0.15;
+
+    const double x_nominal_hip = 0.3405;
+    const double y_nominal_hip = y_nominal_b; //0.1710;
+    const double z_nominal_hip = 0.0;
   }
 };
 
