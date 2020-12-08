@@ -82,7 +82,7 @@ QuadrupedGaitGenerator::SetCombo (Combos combo)
     case C2: SetGaits({Stand, Run3, Run3, Run3, Run3E, Stand}); break; // pace
     case C3: SetGaits({Stand, Hop1, Hop1, Hop1, Hop1E, Stand}); break; // bound
     case C4: SetGaits({Stand, Hop3, Hop3, Hop3, Hop3E, Stand}); break; // gallop
-    default: assert(false); std::cout << "Gait not defined\n"; break;
+    default: throw std::runtime_error("[QuadrupedGaitGenerator::SetCombo] Gait not defined");
   }
 }
 
@@ -106,7 +106,7 @@ QuadrupedGaitGenerator::GetGait(Gaits gait) const
     case Hop3:    return GetStrideGallop();
     case Hop3E:   return RemoveTransition(GetStrideGallop());
     case Hop5:    return GetStrideLimp();
-    default: assert(false); // gait not implemented
+    default: throw std::runtime_error("[QuadrupedGaitGenerator::QuadrupedGaitGenerator] Gait not implemented");
   }
 }
 

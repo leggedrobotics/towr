@@ -57,7 +57,7 @@ BipedGaitGenerator::SetCombo (Combos combo)
     case C2: SetGaits({Stand, Hop1, Hop1, Hop1, Stand});       break;
     case C3: SetGaits({Stand, Hop1, Hop2, Hop2, Stand});       break;
     case C4: SetGaits({Stand, Hop5, Hop5, Hop5, Stand});       break;
-    default: assert(false); std::cout << "Gait not defined\n"; break;
+    default: throw std::runtime_error("[BipedGaitGenerator::SetCombo] Gait not defined");
   }
 }
 
@@ -75,7 +75,7 @@ BipedGaitGenerator::GetGait (Gaits gait) const
     case Hop2:    return GetStrideLeftHop();
     case Hop3:    return GetStrideRightHop();
     case Hop5:    return GetStrideGallopHop();
-    default: assert(false); // gait not implemented
+    default: throw std::runtime_error("[BipedGaitGenerator::GetGait] Gait not implemented");
   }
 }
 
