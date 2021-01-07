@@ -201,7 +201,56 @@ public:
    */
 
   std::vector<double> level_heights_={0.0,0.1};
+  // terrain step-up-and-down
+  // 1
+  //   std::vector<double> level_heights_={0.0,0.155,0.0};
+  // 2
+  //   std::vector<double> level_heights_={0.0,0.155,0.0};
+  // 3
+  //   std::vector<double> level_heights_={0.0,0.2,0.0};
+  // 4
+  //   std::vector<double> level_heights_={0.0,0.2,0.0};
+  // terrain double-step
+  // 1
+  //   std::vector<double> level_heights_={0.0,0.2, 0.29};
+  // 2
+  //   std::vector<double> level_heights_={0.0,0.2, 0.29};
+  // 3
+  //   std::vector<double> level_heights_={0.0,0.2, 0.39};
+  // 4
+  //   std::vector<double> level_heights_={0.0,0.2, 0.39};
+  // 5
+  //   std::vector<double> level_heights_={0.0,0.2, 0.35};
+  // 6
+  //   std::vector<double> level_heights_={0.0,0.2, 0.35};
+
+
+
+
   std::vector<double> level_starts_={-1000.0,0.9};
+  // terrain step-up-and-down
+  // 1
+  //   std::vector<double> level_starts_={-1000.0,0.9,2.415};
+  // 2
+  //   std::vector<double> level_starts_={-1000.0,0.9,1.915};
+  // 3
+  //   std::vector<double> level_starts_={-1000.0,0.9, 2.105};
+  // 4
+  //   std::vector<double> level_starts_={-1000.0,0.9, 1.7};
+  // terrain double-step
+  // 1
+  // std::vector<double> level_starts_={-1000.0,0.9, 2.105};
+  // 2
+  // std::vector<double> level_starts_={-1000.0,0.9, 1.7};
+  // 3
+  // std::vector<double> level_starts_={-1000.0,0.9, 2.105};
+  // 4
+  // std::vector<double> level_starts_={-1000.0,0.9, 1.7};
+  // 5
+  // std::vector<double> level_starts_={-1000.0,0.9, 2.105};
+  // 6
+  // std::vector<double> level_starts_={-1000.0,0.9, 1.7};
+
 private:
 
   /***
