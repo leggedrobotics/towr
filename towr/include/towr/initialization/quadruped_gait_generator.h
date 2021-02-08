@@ -72,6 +72,7 @@ private:
   GaitInfo GetBlockCrossingGait() const;
   GaitInfo GetBlockHoppingGait() const;
   GaitInfo GetBlockRightHoppingGait() const;
+  GaitInfo GetStepsWalkingOverGait() const;
 
   void SetCombo(Combos combo) override;
 
@@ -100,6 +101,7 @@ private:
   ContactState PB_;
   // stance-phase
   ContactState BB_;
+
 };
 
 } /* namespace towr */

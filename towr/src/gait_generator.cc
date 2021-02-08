@@ -32,21 +32,33 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cassert>
 #include <numeric>   // std::accumulate
 #include <algorithm> // std::transform
+#include <iostream>
 
 #include <towr/initialization/monoped_gait_generator.h>
 #include <towr/initialization/biped_gait_generator.h>
 #include <towr/initialization/quadruped_gait_generator.h>
+#include <towr/initialization/steps_gait_generator.h>
+
+#include <iostream>
+
 
 namespace towr {
 
 
 GaitGenerator::Ptr
-GaitGenerator::MakeGaitGenerator(int leg_count)
+GaitGenerator::MakeGaitGenerator(int leg_count, Combos gait_combo, double des_v_x, std::shared_ptr<towr::HeightMap> terrain)
 {
+
   switch (leg_count) {
     case 1: return std::make_shared<MonopedGaitGenerator>();   break;
     case 2: return std::make_shared<BipedGaitGenerator>();     break;
-    case 4: return std::make_shared<QuadrupedGaitGenerator>(); break;
+    case 4:
+      if (gait_combo==StepsCross){
+        return std::make_shared<StepsGaitGenerator>(des_v_x, terrain);
+      } else {
+       return std::make_shared<QuadrupedGaitGenerator>();
+      }
+      break;
     default: assert(false); break; // Error: Not implemented
   }
 }
@@ -54,10 +66,10 @@ GaitGenerator::MakeGaitGenerator(int leg_count)
 GaitGenerator::VecTimes
 GaitGenerator::GetPhaseDurations (double t_total, EE ee) const
 {
-  // scale total time tu t_total
   std::vector<double> durations;
   for (auto d : GetNormalizedPhaseDurations(ee))
-    durations.push_back(d*t_total);
+      durations.push_back(d*t_total);
+
 
   return durations;
 }

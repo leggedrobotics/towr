@@ -25,6 +25,7 @@ public:
   using Vector3d = Eigen::Vector3d;
   using Jacobian = Eigen::SparseMatrix<double, Eigen::RowMajor>;
   using VecDurations = std::vector<double>;
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 
   WheelsLateralConstraint (const HeightMap::Ptr& terrain, const EE& ee,
 		  	  	  	  	   const SplineHolder& spline_holder);
@@ -40,7 +41,7 @@ private:
 
   std::vector<double> GetVectorGlobalTimeAtNodes (VecDurations poly);
   Eigen::Matrix3d GetJacobianTerrainBasis(HeightMap::Direction basis, double x, double y) const;
-  Jacobian SkewSymmetricMatrix (const Vector3d v) const;
+  Jacobian SkewSymmetricMatrix (const Vector3d& v) const;
 
   NodesVariablesPhaseBased::Ptr ee_motion_; ///< the position of the endeffector (nodes).
 

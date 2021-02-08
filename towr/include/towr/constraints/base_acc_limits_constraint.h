@@ -20,8 +20,8 @@ namespace towr {
 class BaseAccLimitsConstraint : public TimeDiscretizationConstraint {
 public:
   using Vector3d = Eigen::Vector3d;
-
-  BaseAccLimitsConstraint (std::vector<Vector3d> acc_max,
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
+  BaseAccLimitsConstraint (const std::vector<Vector3d>& acc_max,
 		  	  	  	  	   double T, double dt,
 						   const SplineHolder& spline_holder);
   virtual ~BaseAccLimitsConstraint () = default;

@@ -35,6 +35,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <utility>
 #include <vector>
 
+#include <towr/terrain/height_map.h>
+
 namespace towr {
 
 /**
@@ -56,7 +58,8 @@ public:
    * @brief Predefined combinations of different strides.
    */
   enum Combos { C0, C1, C2, C3, C4, C5, C6, Trot,
-				DRIVE, BlockCross, BlockBound, GapCross, GapBound, BlockRight, // specific for wheels
+                DRIVE, BlockCross, BlockBound, GapCross,
+                GapBound, BlockRight, StepsCross, // specific for wheels
 			    COMBO_COUNT};
 
   /**
@@ -66,10 +69,10 @@ public:
                Walk1, Walk2, Walk2E, Walk3, Walk3E,
                Run2, Run2E, Run1, Run1E, Run3, Run3E,
                Hop1, Hop1E, Hop2, Hop3, Hop3E, Hop4, Hop5, Hop5E,
-			   Drive, StandFlight, GapGallop, GapHop, BlockGallop, BlockHop, BlockRightHop, // specific for wheels
+			   Drive, StandFlight, GapGallop, GapHop, BlockGallop, BlockHop, BlockRightHop, StepsWalkOver, // specific for wheels
                GAIT_COUNT};
 
-  static Ptr MakeGaitGenerator(int leg_count);
+  static Ptr MakeGaitGenerator(int leg_count, Combos gait_combo,  double des_v_x, std::shared_ptr<towr::HeightMap> terrain);
 
   GaitGenerator () = default;
   virtual ~GaitGenerator () = default;
@@ -79,13 +82,13 @@ public:
    * @param ee  endeffector for which the phase durations are desired.
    * @param T   total time for all phases, durations are scaled by that.
    */
-  VecTimes GetPhaseDurations(double T, EE ee) const;
+  virtual VecTimes GetPhaseDurations(double T, EE ee) const;
 
   /**
    * @returns true if the foot is initially in contact with the environment.
    * @param ee  The endeffector/foot/hand.
    */
-  bool IsInContactAtStart(EE ee) const;
+  virtual bool IsInContactAtStart(EE ee) const;
 
   /**
    * @brief Sets a specific sequence of gaits.
@@ -116,6 +119,7 @@ protected:
    * This is usually necessary for a gait change.
    */
   GaitInfo RemoveTransition(const GaitInfo& g) const;
+
 
 private:
   FootDurations GetPhaseDurations() const;

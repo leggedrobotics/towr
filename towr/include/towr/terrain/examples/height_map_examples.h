@@ -62,7 +62,7 @@ public:
 private:
   double block_start = 0.7;
   double length_     = 3.5;
-  double height_     = 0.2; // [m]
+  double height_     = 0.1; // [m]
 
   double eps_ = 0.03; // approximate as slope
   const double slope_ = height_/eps_;
@@ -184,7 +184,85 @@ private:
   const double x_end2_ = x_start_+2*length_;
 };
 
+/**
+ * @brief Sample terrain with multiple steps in x-direction.
+ */
+class Steps : public HeightMap{
+public:
+  Steps();
+  double GetHeight(double x, double y) const override;
+  double GetHeightDerivWrtX(double x, double y) const override;
+
+
+  /**
+   * Each step is defined as the absolute height of the step and from where on the x-axis it starts, on the same place in the vector. First
+   * step is always 0, as the ground step and it starts from -inf, which is here presented as -1000. This means that the number of steps will
+   * be num_of_steps=level_heigths.size()-1. Adding numbers to these two vectors will change number of steps.
+   */
+
+  std::vector<double> level_heights_={0.0,0.1};
+  // terrain step-up-and-down
+  // 1
+  //   std::vector<double> level_heights_={0.0,0.155,0.0};
+  // 2
+  //   std::vector<double> level_heights_={0.0,0.155,0.0};
+  // 3
+  //   std::vector<double> level_heights_={0.0,0.2,0.0};
+  // 4
+  //   std::vector<double> level_heights_={0.0,0.2,0.0};
+  // terrain double-step
+  // 1
+  //   std::vector<double> level_heights_={0.0,0.2, 0.29};
+  // 2
+  //   std::vector<double> level_heights_={0.0,0.2, 0.29};
+  // 3
+  //   std::vector<double> level_heights_={0.0,0.2, 0.39};
+  // 4
+  //   std::vector<double> level_heights_={0.0,0.2, 0.39};
+  // 5
+  //   std::vector<double> level_heights_={0.0,0.2, 0.35};
+  // 6
+  //   std::vector<double> level_heights_={0.0,0.2, 0.35};
+
+
+
+
+  std::vector<double> level_starts_={-1000.0,0.9};
+  // terrain step-up-and-down
+  // 1
+  //   std::vector<double> level_starts_={-1000.0,0.9,2.415};
+  // 2
+  //   std::vector<double> level_starts_={-1000.0,0.9,1.915};
+  // 3
+  //   std::vector<double> level_starts_={-1000.0,0.9, 2.105};
+  // 4
+  //   std::vector<double> level_starts_={-1000.0,0.9, 1.7};
+  // terrain double-step
+  // 1
+  // std::vector<double> level_starts_={-1000.0,0.9, 2.105};
+  // 2
+  // std::vector<double> level_starts_={-1000.0,0.9, 1.7};
+  // 3
+  // std::vector<double> level_starts_={-1000.0,0.9, 2.105};
+  // 4
+  // std::vector<double> level_starts_={-1000.0,0.9, 1.7};
+  // 5
+  // std::vector<double> level_starts_={-1000.0,0.9, 2.105};
+  // 6
+  // std::vector<double> level_starts_={-1000.0,0.9, 1.7};
+
+private:
+
+  /***
+   * In order not to have discontinuities, steep slope is introduced between steps.
+   */
+  double slope_length_=0.02;
+  std::vector<double> level_slope_ends_;
+  std::vector<double> slopes_;
+};
 /** @}*/
+
+
 
 } /* namespace towr */
 

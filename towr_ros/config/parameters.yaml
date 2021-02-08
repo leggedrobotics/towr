@@ -43,4 +43,13 @@ BlockRight:
   limit_base_angles: false
   max_wheels_acc_z: 40.0
 
+Steps:
+  use_non_holonomic_constraint: false
+  limit_base_angles: false
+  max_wheels_acc_z: 40.0
+
+
+
+
+
 

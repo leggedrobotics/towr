@@ -32,6 +32,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <towr/variables/node_spline.h>
 #include <towr/variables/euler_converter.h>
 
+#include <towr/terrain/height_map.h>
+#include <towr/terrain/examples/height_map_examples.h>
+
 namespace towr {
 
 
@@ -138,15 +141,19 @@ NodesVariables::AdvancedInititialisationEE(const VectorXd& initial_val,
                                           const VectorXd& offset_full,
                                           HeightMap::Ptr  terrain,
                                           double angle_init,
-                                          bool incontact_start)
+                                          bool incontact_start,
+                                          HeightMap::TerrainID terrainID)
 {
   double theta0 = atan2(des_vy, des_vx);
   double r = sqrt(des_vx * des_vx + des_vy * des_vy) / des_w;
   double t_current3 = 0.0;
+  double t_current3_previous = 0.0;
+
   int id_prev_ = 0;
 
   int lastnodeadded = -10;
-  double goalz_terrain_last= terrain->GetHeight(initial_val.x(),initial_val.y());
+  double goalz_previous = 0.0;
+  double goalvz_previous = 0.0;
 
   int phase = 0;
   int polycumulative= poly_per_phase[0];
@@ -197,18 +204,60 @@ NodesVariables::AdvancedInititialisationEE(const VectorXd& initial_val,
 
       double goalz_terrain_ = terrain->GetHeight(goalx,goaly);
 
-      if(contact){
-        goalz = goalz_terrain_;
-        // goalz = 0.0; if use gap terrain, use the commented code line for initialization
+      //depending on the terrain, initialization is different
+      if (terrainID== HeightMap::TerrainID::StepsID){
+
+        std::shared_ptr<Steps> terrain_steps = std::dynamic_pointer_cast<Steps>(terrain);
+        double range_after_step=0.15;
+        double swing_phase_margin=0.02;
+        int index;
+        for(index=0;index<terrain_steps->level_starts_.size();index++){
+          if(goalx < (terrain_steps->level_starts_.at(index)+range_after_step)) break;
+        }
+        if(index==terrain_steps->level_starts_.size()) {
+          index-=1;
+        }
+        if(contact){
+          goalz = goalz_terrain_;
+        }else{
+          //two types if ee initialization, based on the next step difference in height
+          if(terrain_steps->level_heights_.at(index)<terrain_steps->level_heights_.at(index-1)){
+            goalz =
+                terrain_steps->level_heights_.at(index-1) + swing_phase_margin;
+          }else {
+            goalz =
+                terrain_steps->level_heights_.at(index) + swing_phase_margin;
+          }
+        }
+        if(t_current3-t_current3_previous < 0.001) {
+          goalvz = goalvz_previous;
+
+        } else {
+          goalvz =
+              (goalz - goalz_previous) / (t_current3 - t_current3_previous);
+        }
+
+        t_current3_previous= t_current3;
+        goalz_previous = goalz;
+        goalvz_previous = goalvz;
+
       }else{
-        goalz = goalz_terrain_+0.1;
-        // goalz = 0.1;
+
+        if(contact){
+          goalz = goalz_terrain_;
+        }else{
+          goalz = goalz_terrain_ + 0.1;
+        }
+        double dzdx = terrain->GetDerivativeOfHeightWrt(X_,goalx,goaly);
+        double dzdy = terrain->GetDerivativeOfHeightWrt(Y_,goalx,goaly);
+        double dzdt = dzdx * goalvx + dzdy * goalvy;
+        goalvz = dzdt;//terrain gradient
       }
 
-      double dzdx = terrain->GetDerivativeOfHeightWrt(X_,goalx,goaly);
-      double dzdy = terrain->GetDerivativeOfHeightWrt(Y_,goalx,goaly);
-      double dzdt = dzdx * goalvx + dzdy * goalvy;
-      goalvz = dzdt;//terrain gradient
+
+
+
+
 
       if (nvi.deriv_ == kPos) {
         Eigen::Vector3d pos;
@@ -243,12 +292,42 @@ NodesVariables::AdvancedInititialisationBase(const VectorXd& initial_val,
                                           double des_w,
                                           double des_vx,
                                           double des_vy,
-                                          double angle_init)
+                                          double angle_init,
+                                          HeightMap::Ptr  terrain,
+                                          HeightMap::TerrainID terrainID)
 {
   double theta0 = atan2(des_vy, des_vx);
   double r = sqrt(des_vx * des_vx + des_vy * des_vy) / des_w;
-  double t_current3 = 0.0;
   int id_prev_ = 0;
+
+  double t_current3 = 0.0;
+  double t_current3_previous = 0.0;
+
+  double goalz_previous = 0.0;
+  double goalvz_previous =0.0;
+  bool use_z_positioning=true;
+
+  // parameters for speed reduction around steps
+  double range_after_step=0.4;
+  std::vector<double> t_checkpoint;
+  double goalx_prev=0.0;
+  double v_max=10.0*des_vx/7.0;
+  double v_min=4.0*des_vx/7.0;
+  int t_checkpoint_index=1;
+  bool use_speed_reduction=true;
+
+
+  // smart initialization speed reduction around steps forming checkpoint times based on steps
+  if (terrainID== HeightMap::TerrainID::StepsID && use_speed_reduction) {
+
+    std::shared_ptr<Steps> terrain_steps_init_base =
+        std::dynamic_pointer_cast<Steps>(terrain);
+    t_checkpoint.push_back(0.0);
+    for(int i=1;i<terrain_steps_init_base->level_starts_.size();i++){
+       t_checkpoint.push_back(des_vx*(range_after_step+terrain_steps_init_base->level_starts_.at(i)));
+    }
+    t_checkpoint.push_back(t_total);
+  }
 
   for (int idx=0; idx<GetRows(); ++idx) {
     for (auto nvi : GetNodeValuesInfo(idx)) {
@@ -284,9 +363,93 @@ NodesVariables::AdvancedInititialisationBase(const VectorXd& initial_val,
         goalvy = desv_rotated.y();
       }
 
-      double goalz = initial_val.z() + (t_current3*(final_val.z()-initial_val.z()))/t_total;
+      double goalz;
       double goalvz =(final_val.z()-initial_val.z())/t_total;
+      goalz = initial_val.z() + (t_current3*(final_val.z()-initial_val.z()))/t_total;
 
+
+      //smart initialization for the terrain with steps
+      //this overwrites all goal position of the base goalx,goalz,goalvx,goalvz
+
+      if (terrainID== HeightMap::TerrainID::StepsID){
+
+        // speed reduction
+        if (use_speed_reduction) {
+          if (t_current3 > t_checkpoint.at(t_checkpoint_index)) {
+            t_checkpoint_index++;
+          }
+          if (t_checkpoint_index == t_checkpoint.size()) {
+            t_checkpoint_index--;
+          }
+          if (t_current3 > t_checkpoint.at(t_checkpoint.size() - 2)) {
+            goalvx = desv_rotated.x();
+          } else {
+            double k =
+                (v_max - v_min) / (t_checkpoint.at(t_checkpoint_index - 1) -
+                                   t_checkpoint.at(t_checkpoint_index));
+            double n = v_max - k * t_checkpoint.at(t_checkpoint_index - 1);
+            goalvx = k * t_current3 + n;
+          }
+          goalx = goalx_prev + goalvx * (t_current3 - t_current3_previous);
+          goalx_prev = goalx;
+        }
+        if (use_z_positioning) {
+          std::shared_ptr<Steps> terrain_steps =
+              std::dynamic_pointer_cast<Steps>(terrain);
+          double range_before_step = 0.4;
+
+          int index;
+          for (index = 0; index < terrain_steps->level_starts_.size();
+               index++) {
+            if (goalx <
+                (terrain_steps->level_starts_.at(index) + range_after_step))
+              break;
+          }
+          if (index == terrain_steps->level_starts_.size()) {
+            index -= 1;
+          }
+          double pre_step_target_value_z;
+          double post_step_target_value_z =
+              initial_val.z() + terrain_steps->level_heights_.at(index);
+          if (index == 0) {
+            pre_step_target_value_z = initial_val.z();
+          } else {
+            pre_step_target_value_z =
+                initial_val.z() + terrain_steps->level_heights_.at(index - 1);
+          }
+          double des_vx_calculated = final_val.x() / t_total;
+          double step_position = terrain_steps->level_starts_.at(index);
+          double time_to_cross =
+              (range_before_step + range_after_step) / des_vx_calculated;
+          double start_time =
+              (step_position - range_before_step - initial_val.x()) /
+              des_vx_calculated;
+
+          if ((goalx > (step_position - range_before_step)) &&
+              (goalx < (step_position + range_after_step))) {
+            goalz = pre_step_target_value_z +
+                    ((t_current3 - start_time) *
+                     (post_step_target_value_z - pre_step_target_value_z)) /
+                        time_to_cross;
+          }
+          if (goalx > (step_position + range_after_step)) {
+            goalz = post_step_target_value_z;
+          }
+          if (goalx < (step_position - range_before_step)) {
+            goalz = pre_step_target_value_z;
+          }
+          if (t_current3 - t_current3_previous < 0.001) {
+            goalvz = goalvz_previous;
+          } else {
+            goalvz =
+                (goalz - goalz_previous) / (t_current3 - t_current3_previous);
+          }
+          goalz_previous = goalz;
+          goalvz_previous = goalvz;
+        }
+
+        t_current3_previous= t_current3;
+      }
 
       if (nvi.deriv_ == kPos) {
         Eigen::Vector3d pos;
@@ -303,6 +466,7 @@ NodesVariables::AdvancedInititialisationBase(const VectorXd& initial_val,
         vel.z()= goalvz;
         nodes_.at(nvi.id_).at(kVel)(nvi.dim_) = vel(nvi.dim_);
       }
+
     }
   }
 }

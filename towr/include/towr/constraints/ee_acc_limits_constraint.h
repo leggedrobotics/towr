@@ -21,8 +21,9 @@ class EEAccLimitsConstraint : public ifopt::ConstraintSet {
 public:
   using EE = uint;
   using Vector3d = Eigen::Vector3d;
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 
-  EEAccLimitsConstraint (Vector3d acc_max, const EE& ee,
+  EEAccLimitsConstraint (const Vector3d& acc_max, EE ee,
 						 const SplineHolder& spline_holder);
   virtual ~EEAccLimitsConstraint () = default;
 

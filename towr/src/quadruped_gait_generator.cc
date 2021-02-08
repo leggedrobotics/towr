@@ -91,6 +91,8 @@ QuadrupedGaitGenerator::SetCombo (Combos combo)
     case GapCross:    SetGaits({GapGallop});     break;
     case GapBound:    SetGaits({GapHop});     break;
     case BlockRight:  SetGaits({BlockRightHop});     break;
+    case StepsCross:  SetGaits({StepsWalkOver});
+                      break;
     default: assert(false); std::cout << "Gait not defined\n"; break;
   }
 }
@@ -127,6 +129,7 @@ QuadrupedGaitGenerator::GetGait(Gaits gait) const
     case BlockGallop: return GetBlockCrossingGait();
     case BlockHop: return GetBlockHoppingGait();
     case BlockRightHop: return GetBlockRightHoppingGait();
+    case StepsWalkOver: return GetStepsWalkingOverGait();
 
     default: assert(false); // gait not implemented
   }
@@ -541,5 +544,69 @@ QuadrupedGaitGenerator::GetStrideLimp () const
 
   return std::make_pair(times, phase_contacts);
 }
+
+QuadrupedGaitGenerator::GaitInfo
+QuadrupedGaitGenerator::GetStepsWalkingOverGait() const
+{
+
+
+
+  auto times =
+      {
+          0.2,
+      };
+  auto phase_contacts =
+      {
+          BB_,
+      };
+
+  return std::make_pair(times, phase_contacts);
+
+}
+/*
+std::vector<double>
+QuadrupedGaitGenerator::MakeEEDurationsForSteps(double step_margin,int swing_phase_duration, double des_v_x, double total_t, std::shared_ptr<towr::StepFlat> terrain_steps)
+{
+
+
+  // based on margin making touchdown_place;
+  std::vector<double> touchdown_place;
+  std::vector<double> steps_x_axis(terrain_steps->level_starts_.begin(), terrain_steps->level_starts_.end());
+
+  for(int i=1;i<steps_x_axis.size();i++){
+    touchdown_place.emplace_back(steps_x_axis.at(i)-step_margin);
+  }
+  //std::cout<<touchdown_place.at(0)<<"tdp"<<std::endl;
+
+  std::vector<double> durations;
+
+
+  // calculating the time of a touchdown, based on desired x-velocity of a base
+  std::vector<int> touchdown_time;
+  for(int i=0;i<touchdown_place.size();i++){
+    touchdown_time.emplace_back(touchdown_place.at(i)/des_v_x*100);
+  }
+  //std::cout<<touchdown_time.at(0)<<"tdt"<<std::endl;
+  int number_of_steps=touchdown_time.size();
+
+
+  // converting everything into simulation times
+  int total_t_integer= (float)(total_t)*100;
+  int last_step_touchdown_time=0;
+
+  for(int i=0;i<number_of_steps;i++){
+    durations.emplace_back(touchdown_time.at(i)-swing_phase_duration-last_step_touchdown_time);
+    durations.emplace_back(swing_phase_duration);
+    last_step_touchdown_time=touchdown_time.at(i);
+  }
+  durations.emplace_back(total_t_integer-last_step_touchdown_time);
+  for(auto t=durations.begin(); t!=durations.end(); ++t){
+    *t=*t/100;
+    //std::cout << "ee " << ee << " phase duration:" <<  *t << std::endl;
+  }
+  return durations;
+}
+
+*/
 
 } /* namespace towr */

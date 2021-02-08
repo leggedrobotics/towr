@@ -111,7 +111,7 @@ WheelsLateralConstraint::GetBounds () const
 }
 
 WheelsLateralConstraint::Jacobian
-WheelsLateralConstraint::SkewSymmetricMatrix (const Vector3d in) const
+WheelsLateralConstraint::SkewSymmetricMatrix (const Vector3d& in) const
 {
   Jacobian out(3,3);
 

@@ -90,7 +90,27 @@ NlpFormulation::MakeBaseVariables () const
   double z = terrain_->GetHeight(x,y) - model_.kinematic_model_->GetNominalStanceInBase().front().z();
   Vector3d final_pos(x, y, z);
 
-  spline_lin->SetByLinearInterpolation(initial_base_.lin.p(), final_pos, params_.GetTotalTime());
+  double x2 = initial_base_.lin.p().x();
+  double y2 = initial_base_.lin.p().y();
+  double z2 = terrain_->GetHeight(x2,y2) - model_.kinematic_model_->GetNominalStanceInBase().front().z();
+  Vector3d init_pos(x2, y2, z2);
+
+  //spline_lin->SetByLinearInterpolation(initial_base_.lin.p(), final_pos, params_.GetTotalTime());
+
+  Vector3d des_v((final_base_.lin.p().x() - initial_base_.lin.p().x()) / params_.GetTotalTime(),
+                 (final_base_.lin.p().y() - initial_base_.lin.p().y()) / params_.GetTotalTime(),
+                 (final_base_.lin.p().z() - initial_base_.lin.p().z()) / params_.GetTotalTime());
+
+  double des_w = (final_base_.ang.p().z() - initial_base_.ang.p().z()) / params_.GetTotalTime();
+
+ spline_lin->AdvancedInititialisationBase(
+      init_pos, final_pos, params_.GetTotalTime(),
+      params_.duration_base_polynomial_, des_w,
+      des_v[0],
+      des_v[1], initial_base_.ang.p().z(), terrain_, terrainID_ );
+
+
+
   spline_lin->AddStartBound(kPos, {X,Y,Z}, initial_base_.lin.p());
   spline_lin->AddStartBound(kVel, {X,Y,Z}, initial_base_.lin.v());
   spline_lin->AddFinalBound(kPos, params_.bounds_final_lin_pos_,   final_base_.lin.p());
@@ -153,7 +173,34 @@ NlpFormulation::MakeEndeffectorVariables () const
     double y = final_ee_pos_W.y();
     double z = terrain_->GetHeight(x,y);
 
-    nodes->SetByLinearInterpolation(initial_ee_W_.at(ee), Vector3d(x,y,z), T);
+    double yaw_init = initial_base_.ang.p().z();
+    Eigen::Vector3d euler_init(0.0, 0.0, yaw_init);
+    Eigen::Matrix3d w_R_b_init =
+        EulerConverter::GetRotationMatrixBaseToWorld(euler_init);
+    double x2 = initial_base_.lin.p().x();
+    double y2 = initial_base_.lin.p().y();
+    double z2 = terrain_->GetHeight(x2,y2) - model_.kinematic_model_->GetNominalStanceInBase().front().z();
+    Vector3d init_pos_base(x2, y2, z2);
+    Vector3d init_ee_pos_W =
+        init_pos_base+w_R_b_init *(model_.kinematic_model_->GetNominalStanceInBase().at(ee) );
+
+    //nodes->SetByLinearInterpolation(initial_ee_W_.at(ee), Vector3d(x,y,z), T);
+
+    Vector3d des_v((final_base_.lin.p().x() - initial_base_.lin.p().x()) / params_.GetTotalTime(),
+                   (final_base_.lin.p().y() - initial_base_.lin.p().y()) / params_.GetTotalTime(),
+                   (final_base_.lin.p().z() - initial_base_.lin.p().z()) / params_.GetTotalTime());
+
+    double des_w = (final_base_.ang.p().z() - initial_base_.ang.p().z()) / params_.GetTotalTime();
+
+    nodes->AdvancedInititialisationEE(
+        init_ee_pos_W, final_ee_pos_W, params_.GetTotalTime(),
+        params_.ee_phase_durations_.at(ee),
+        n_polys,
+        des_w,
+        des_v[0],
+        des_v[1],
+        model_.kinematic_model_->GetNominalStanceInBase().at(ee), terrain_,  initial_base_.ang.p().z(),
+        params_.ee_in_contact_at_start_.at(ee),terrainID_);
 
     nodes->AddStartBound(kPos, {X,Y,Z}, initial_ee_W_.at(ee));
     nodes->AddStartBound(kVel, {X,Y,Z}, Vector3d(0, 0, 0));
