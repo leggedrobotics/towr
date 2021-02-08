@@ -64,17 +64,15 @@ NlpFormulation::GetVariableSets (SplineHolder& spline_holder)
     vars.insert(vars.end(), contact_schedule.begin(), contact_schedule.end());
   }
 
-  auto ee_decision = MakeDecisionVariables();
-
   // stores these readily constructed spline
   spline_holder = SplineHolder(base_motion.at(0), // linear
                                base_motion.at(1), // angular
                                params_.GetBasePolyDurations(),
                                ee_motion,
                                ee_force,
-                               ee_decision,
                                contact_schedule,
                                params_.IsOptimizeTimings());
+
   return vars;
 }
 
@@ -91,308 +89,130 @@ NlpFormulation::MakeBaseVariables () const
   double y = final_base_.lin.p().y();
   double z = terrain_->GetHeight(x,y) - model_.kinematic_model_->GetNominalStanceInBase().front().z();
   Vector3d final_pos(x, y, z);
+
   double x2 = initial_base_.lin.p().x();
   double y2 = initial_base_.lin.p().y();
   double z2 = terrain_->GetHeight(x2,y2) - model_.kinematic_model_->GetNominalStanceInBase().front().z();
   Vector3d init_pos(x2, y2, z2);
 
-  spline_lin->AdvancedInititialisationBase(
+  //spline_lin->SetByLinearInterpolation(initial_base_.lin.p(), final_pos, params_.GetTotalTime());
+
+  Vector3d des_v((final_base_.lin.p().x() - initial_base_.lin.p().x()) / params_.GetTotalTime(),
+                 (final_base_.lin.p().y() - initial_base_.lin.p().y()) / params_.GetTotalTime(),
+                 (final_base_.lin.p().z() - initial_base_.lin.p().z()) / params_.GetTotalTime());
+
+  double des_w = (final_base_.ang.p().z() - initial_base_.ang.p().z()) / params_.GetTotalTime();
+
+ spline_lin->AdvancedInititialisationBase(
       init_pos, final_pos, params_.GetTotalTime(),
-      params_.duration_base_polynomial_, final_base_v_.ang.p().z(),
-      final_base_v_.lin.p().x(),
-      final_base_v_.lin.p().y(), initial_base_.ang.p().z());
+      params_.duration_base_polynomial_, des_w,
+      des_v[0],
+      des_v[1], initial_base_.ang.p().z(), terrain_, terrainID_ );
 
 
-  Eigen::Vector3d euler(0.0, 0.0, final_base_.ang.p().z());
-  Eigen::Matrix3d w_R_b = EulerConverter::GetRotationMatrixBaseToWorld(euler);
-  Eigen::Vector3d desv(final_base_v_.lin.p().x(), final_base_v_.lin.p().y(), 0.0);
-  Vector3d desv_rotated = w_R_b*desv;
 
-  spline_lin->AddStartBound(kPos, {X,Y,Z}, init_pos);
-  spline_lin->AddStartBound(kVel, {X,Y,Z}, final_base_v_.lin.p());
-  spline_lin->AddFinalBound(kPos, params_.bounds_final_lin_pos_,   final_pos);
-  spline_lin->AddFinalBound(kVel, params_.bounds_final_lin_vel_, desv_rotated);
+  spline_lin->AddStartBound(kPos, {X,Y,Z}, initial_base_.lin.p());
+  spline_lin->AddStartBound(kVel, {X,Y,Z}, initial_base_.lin.v());
+  spline_lin->AddFinalBound(kPos, params_.bounds_final_lin_pos_,   final_base_.lin.p());
+  spline_lin->AddFinalBound(kVel, params_.bounds_final_lin_vel_, final_base_.lin.v());
   vars.push_back(spline_lin);
 
   auto spline_ang = std::make_shared<NodesVariablesAll>(n_nodes, k3D, id::base_ang_nodes);
   spline_ang->SetByLinearInterpolation(initial_base_.ang.p(), final_base_.ang.p(), params_.GetTotalTime());
   spline_ang->AddStartBound(kPos, {X,Y,Z}, initial_base_.ang.p());
-  spline_ang->AddStartBound(kVel, {X,Y,Z}, final_base_v_.ang.p());
+  spline_ang->AddStartBound(kVel, {X,Y,Z}, initial_base_.ang.v());
   spline_ang->AddFinalBound(kPos, params_.bounds_final_ang_pos_, final_base_.ang.p());
-  spline_ang->AddFinalBound(kVel, params_.bounds_final_ang_vel_, final_base_v_.ang.p());
+  spline_ang->AddFinalBound(kVel, params_.bounds_final_ang_vel_, final_base_.ang.v());
+
+  // limits all angles displacement to 30 degrees (optional)
+  Vector3d ang_limit_ = Vector3d(10, 10, 10) * (M_PI/180);
+  if (params_.limit_base_angles_)
+	  spline_ang->AddAllNodesBounds(kPos, {Y}, -ang_limit_, ang_limit_);
+
   vars.push_back(spline_ang);
 
   return vars;
 }
 
 std::vector<NodesVariablesPhaseBased::Ptr>
-NlpFormulation::MakeEndeffectorVariables ()
+NlpFormulation::MakeEndeffectorVariables () const
 {
   std::vector<NodesVariablesPhaseBased::Ptr> vars;
 
   // Endeffector Motions
   double T = params_.GetTotalTime();
+
+  std::vector<int> n_polys;
+
   for (int ee=0; ee<params_.GetEECount(); ee++) {
 
+	bool phase_constant = params_.ee_in_contact_at_start_.at(ee);
+	const std::vector<double> phase_durations = params_.ee_phase_durations_.at(ee);
+	for (auto v : phase_durations) {
+		if (phase_constant) {
+			n_polys.push_back(floor(v/params_.dt_drive_constraint_)+1);
+		}
+		else {
+			n_polys.push_back(params_.n_polynomials_per_swing_phase_);
+		}
+		phase_constant = !phase_constant;
+	}
+
+    auto nodes = std::make_shared<NodesVariablesEEMotion>(
+                                              params_.GetPhaseCount(ee),
+                                              params_.ee_in_contact_at_start_.at(ee),
+                                              id::EEMotionNodes(ee),
+                                              n_polys, !params_.use_non_holonomic_constraint_);
 
     // initialize towards final footholds
-    double yaw_final = final_base_.ang.p().z();
+    double yaw = final_base_.ang.p().z();
+    Eigen::Vector3d euler(0.0, 0.0, yaw);
+    Eigen::Matrix3d w_R_b = EulerConverter::GetRotationMatrixBaseToWorld(euler);
+    Vector3d final_ee_pos_W = final_base_.lin.p() + w_R_b*model_.kinematic_model_->GetNominalStanceInBase().at(ee);
+    double x = final_ee_pos_W.x();
+    double y = final_ee_pos_W.y();
+    double z = terrain_->GetHeight(x,y);
+
     double yaw_init = initial_base_.ang.p().z();
-    Eigen::Vector3d euler_final(0.0, 0.0, yaw_final);
     Eigen::Vector3d euler_init(0.0, 0.0, yaw_init);
-    Eigen::Matrix3d w_R_b_final =
-        EulerConverter::GetRotationMatrixBaseToWorld(euler_final);
     Eigen::Matrix3d w_R_b_init =
         EulerConverter::GetRotationMatrixBaseToWorld(euler_init);
-
-    double x = final_base_.lin.p().x();
-    double y = final_base_.lin.p().y();
-    double z = terrain_->GetHeight(x, y) -
-               model_.kinematic_model_->GetNominalStanceInBase().front().z();
-    Vector3d final_pos(x, y, z);
-
-
     double x2 = initial_base_.lin.p().x();
     double y2 = initial_base_.lin.p().y();
     double z2 = terrain_->GetHeight(x2,y2) - model_.kinematic_model_->GetNominalStanceInBase().front().z();
     Vector3d init_pos_base(x2, y2, z2);
-
-    Eigen::Vector3d desv(final_base_v_.lin.p().x(), final_base_v_.lin.p().y(), 0.0);
-    Vector3d desv_final = w_R_b_final*desv;
-
-
-    Vector3d final_ee_pos_W =
-        final_pos + w_R_b_final * (model_.kinematic_model_->GetNominalStanceInBase().at(ee));
     Vector3d init_ee_pos_W =
         init_pos_base+w_R_b_init *(model_.kinematic_model_->GetNominalStanceInBase().at(ee) );
 
-    if(final_base_v_.lin.p().y()==0 && final_base_v_.ang.p().z()==0 ) {
-      double total_t = params_.GetTotalTime();
-      params_.ee_phase_durations_.at(ee).clear();
+    //nodes->SetByLinearInterpolation(initial_ee_W_.at(ee), Vector3d(x,y,z), T);
 
-      params_.number_of_polys_per_phase_motion_.at(ee).clear();
-      params_.number_of_polys_per_phase_force_.at(ee).clear();
-      params_.number_of_polys_per_phase_decision_.at(ee).clear();
-      double current_t = 0;
-      bool contact = true;
+    Vector3d des_v((final_base_.lin.p().x() - initial_base_.lin.p().x()) / params_.GetTotalTime(),
+                   (final_base_.lin.p().y() - initial_base_.lin.p().y()) / params_.GetTotalTime(),
+                   (final_base_.lin.p().z() - initial_base_.lin.p().z()) / params_.GetTotalTime());
 
-      double padding = 0.05;
-
-      double xasdf =
-          init_ee_pos_W.x() +
-          (final_ee_pos_W.x() - init_ee_pos_W.x()) * (current_t / total_t);
-      double yasdf =
-          init_ee_pos_W.y() +
-          (final_ee_pos_W.y() - init_ee_pos_W.y()) * (current_t / total_t);
-      double z_terrain_prev = terrain_->GetHeight(xasdf, yasdf);
-      double z_terrain = z_terrain_prev;
-
-      std::vector<double> durations;
-      std::vector<int> polys_per_phase_motion;
-      std::vector<int> polys_per_phase_force;
-      std::vector<int> polys_per_phase_decision;
-      double t_last = 0;
-      double walking_total = 0.0;
-
-      bool added_at_least_one = false;
-
-      double max_stance_time = 0.3;
-
-      while (current_t < total_t) {
-        xasdf = init_ee_pos_W.x() + (final_ee_pos_W.x() - init_ee_pos_W.x()) *
-                                        (current_t / total_t);
-        yasdf = init_ee_pos_W.y() + (final_ee_pos_W.y() - init_ee_pos_W.y()) *
-                                        (current_t / total_t);
-        z_terrain = terrain_->GetHeight(xasdf, yasdf);
-
-        if (contact) {
-
-          if (z_terrain != z_terrain_prev) {
-            contact = false;
-            double starttime = current_t - padding;
-            if (starttime - t_last < 0) {
-              starttime = t_last;
-            }
-            double interval_duration_s = starttime - t_last;
-            durations.emplace_back(interval_duration_s);
-            int mnodes =
-                params_.motion_stance_nodes_per_s * interval_duration_s;
-            if (mnodes < params_.polynomials2_motion_per_stance_phase_) {
-              mnodes = params_.polynomials2_motion_per_stance_phase_;
-            }
-            int fnodes = params_.force_stance_nodes_per_s * interval_duration_s;
-            if (fnodes < params_.polynomials2_force_per_stance_phase_) {
-              fnodes = params_.polynomials2_force_per_stance_phase_;
-            }
-            int dnodes =
-                params_.decision_stance_nodes_per_s * interval_duration_s;
-            if (dnodes < params_.polynomials2_decision_per_stance_phase_) {
-              dnodes = params_.polynomials2_decision_per_stance_phase_;
-            }
-            polys_per_phase_motion.emplace_back(mnodes);
-            polys_per_phase_force.emplace_back(fnodes);
-            polys_per_phase_decision.emplace_back(dnodes);
-            walking_total += interval_duration_s;
-            added_at_least_one = true;
-            t_last = starttime;
-          }
-
-        } else {
-          if (z_terrain == z_terrain_prev) {
-            contact = true;
-            double t_diff_min = params_.bound_phase_duration_.first;
-            double starttime = current_t + padding;
-            double t_diff = starttime - t_last;
-            if (t_diff < t_diff_min) {
-              t_diff = t_diff_min;
-            }
-            durations.emplace_back(t_diff);
-            polys_per_phase_motion.emplace_back(
-                params_.polynomials2_motion_per_swing_phase_);
-            polys_per_phase_force.emplace_back(
-                params_.polynomials2_force_per_swing_phase_);
-            polys_per_phase_decision.emplace_back(
-                params_.polynomials2_decision_per_swing_phase_);
-            walking_total += (t_diff);
-            added_at_least_one = true;
-            t_last = t_diff + t_last;
-          }
-        }
-
-        z_terrain_prev = z_terrain;
-
-        current_t += 0.01;
-      }
-
-      if (!added_at_least_one) {
-        double interval_duration_s = total_t - walking_total;
-        durations.emplace_back(interval_duration_s);
-        walking_total += interval_duration_s;
-        int mnodes = params_.motion_stance_nodes_per_s * interval_duration_s;
-        if (mnodes < params_.polynomials2_motion_per_stance_phase_) {
-          mnodes = params_.polynomials2_motion_per_stance_phase_;
-        }
-        int fnodes = params_.force_stance_nodes_per_s * interval_duration_s;
-        if (fnodes < params_.polynomials2_decision_per_stance_phase_) {
-          fnodes = params_.polynomials2_decision_per_stance_phase_;
-        }
-        int dnodes = params_.decision_stance_nodes_per_s * interval_duration_s;
-        if (dnodes < params_.polynomials2_force_per_stance_phase_) {
-          dnodes = params_.polynomials2_force_per_stance_phase_;
-        }
-        polys_per_phase_motion.emplace_back(mnodes);
-        polys_per_phase_force.emplace_back(fnodes);
-        polys_per_phase_decision.emplace_back(dnodes);
-      }
-
-      double interval_duration_s = total_t - walking_total;
-      durations.emplace_back(interval_duration_s);
-      int mnodes = params_.motion_stance_nodes_per_s * interval_duration_s;
-      if (mnodes < 1) {
-        mnodes = 1;
-      }
-      int fnodes = params_.force_stance_nodes_per_s * interval_duration_s;
-      if (fnodes < 1) {
-        fnodes = 1;
-      }
-      int dnodes = params_.decision_stance_nodes_per_s * interval_duration_s;
-      if (dnodes < 1) {
-        dnodes = 1;
-      }
-      polys_per_phase_motion.emplace_back(mnodes);
-      polys_per_phase_force.emplace_back(fnodes);
-      polys_per_phase_decision.emplace_back(dnodes);
-
-      params_.number_of_polys_per_phase_motion_.at(ee) = polys_per_phase_motion;
-      params_.number_of_polys_per_phase_force_.at(ee) = polys_per_phase_force;
-      params_.number_of_polys_per_phase_decision_.at(ee) = polys_per_phase_decision;
-
-      params_.ee_phase_durations_.at(ee) = durations;
-
-      if (terrainID_ == HeightMap::TerrainID::StepFlatID){
-        // manually add durations, parameter specific to the current step Stair setting: height, start point etc.
-
-        durations.clear();
-        polys_per_phase_motion.clear();
-        polys_per_phase_decision.clear();
-        polys_per_phase_force.clear();
-
-        // For single stair case
-        // bound gait feasible parameters: 0.50, 1.70
-        if (ee==0) { durations.emplace_back(0.48);durations.emplace_back(0.3);durations.emplace_back(1.62);}
-        if (ee==1) { durations.emplace_back(0.52);durations.emplace_back(0.3);durations.emplace_back(1.58);}
-        if (ee==2) { durations.emplace_back(1.68);durations.emplace_back(0.3);durations.emplace_back(0.42);}
-        if (ee==3) { durations.emplace_back(1.72);durations.emplace_back(0.3);durations.emplace_back(0.38);}
-
-        polys_per_phase_motion.emplace_back(std::max(int(params_.motion_stance_nodes_per_s * durations.at(0)),params_.polynomials2_motion_per_stance_phase_));
-        polys_per_phase_motion.emplace_back(params_.polynomials2_motion_per_swing_phase_);
-        polys_per_phase_motion.emplace_back(std::max(int(params_.motion_stance_nodes_per_s * durations.at(2)),1));
-
-        polys_per_phase_force.emplace_back((std::max(int(params_.force_stance_nodes_per_s * durations.at(0)),params_.polynomials2_force_per_stance_phase_)));
-        polys_per_phase_force.emplace_back(params_.polynomials2_force_per_swing_phase_);
-        polys_per_phase_force.emplace_back((std::max(int(params_.force_stance_nodes_per_s * durations.at(2)),1)));
-
-        polys_per_phase_decision.emplace_back((std::max(int(params_.decision_stance_nodes_per_s * durations.at(0)),params_.polynomials2_decision_per_stance_phase_)));
-        polys_per_phase_decision.emplace_back(params_.polynomials2_decision_per_swing_phase_);
-        polys_per_phase_decision.emplace_back((std::max(int(params_.decision_stance_nodes_per_s * durations.at(2)),1)));
-
-        params_.ee_phase_durations_.at(ee).clear();
-
-        params_.number_of_polys_per_phase_motion_.at(ee).clear();
-        params_.number_of_polys_per_phase_force_.at(ee).clear();
-        params_.number_of_polys_per_phase_decision_.at(ee).clear();
-
-        params_.ee_phase_durations_.at(ee) = durations;
-        params_.number_of_polys_per_phase_motion_.at(ee) = polys_per_phase_motion;
-        params_.number_of_polys_per_phase_force_.at(ee) = polys_per_phase_force;
-        params_.number_of_polys_per_phase_decision_.at(ee) = polys_per_phase_decision;
-
-      }
-    }
-
-    std::cout<<ee<<"   "<<params_.GetPhaseCount(ee)<<"   :"<<std::endl;
-    for ( auto a: params_.ee_phase_durations_.at(ee)){
-      std::cout<<a<<" ,";
-    }
-    std::cout<<std::endl;
-
-    std::cout<<ee<<"  number_of_polys_per_phase_motion_  "<<params_.number_of_polys_per_phase_motion_.at(ee).size()<<"   :"<<std::endl;
-    for ( auto a: params_.number_of_polys_per_phase_motion_.at(ee)){
-      std::cout<<a<<" ,";
-    }
-    std::cout<<std::endl;
-    std::cout<<ee<<"  number_of_polys_per_phase_force_  "<<params_.number_of_polys_per_phase_force_.at(ee).size()<<"   :"<<std::endl;
-    for ( auto a: params_.number_of_polys_per_phase_force_.at(ee)){
-      std::cout<<a<<" ,";
-    }
-    std::cout<<std::endl;
-    std::cout<<ee<<"  number_of_polys_per_phase_decision_  "<<params_.number_of_polys_per_phase_decision_.at(ee).size()<<"   :"<<std::endl;
-    for ( auto a: params_.number_of_polys_per_phase_decision_.at(ee)){
-      std::cout<<a<<" ,";
-    }
-    std::cout<<std::endl;
-
-    auto nodes = std::make_shared<NodesVariablesEEMotion>(
-        params_.GetPhaseCount(ee),
-        params_.ee_in_contact_at_start_.at(ee),
-        id::EEMotionNodes(ee),        params_.number_of_polys_per_phase_motion_.at(ee));
+    double des_w = (final_base_.ang.p().z() - initial_base_.ang.p().z()) / params_.GetTotalTime();
 
     nodes->AdvancedInititialisationEE(
         init_ee_pos_W, final_ee_pos_W, params_.GetTotalTime(),
         params_.ee_phase_durations_.at(ee),
-        params_.number_of_polys_per_phase_motion_.at(ee),
-        final_base_v_.ang.p().z(),
-        final_base_v_.lin.p().x(),
-        final_base_v_.lin.p().y(),
-        model_.kinematic_model_->GetNominalStanceInBase().at(ee), terrain_, initial_base_.ang.p().z(),
-        params_.ee_in_contact_at_start_.at(ee));
+        n_polys,
+        des_w,
+        des_v[0],
+        des_v[1],
+        model_.kinematic_model_->GetNominalStanceInBase().at(ee), terrain_,  initial_base_.ang.p().z(),
+        params_.ee_in_contact_at_start_.at(ee),terrainID_);
 
+    nodes->AddStartBound(kPos, {X,Y,Z}, initial_ee_W_.at(ee));
+    nodes->AddStartBound(kVel, {X,Y,Z}, Vector3d(0, 0, 0));
+    nodes->AddFinalBound(kVel, {X,Y,Z}, Vector3d(0, 0, 0));
 
-    nodes->AddStartBound(kPos, {X,Y,Z}, init_ee_pos_W);
-    nodes->AddStartBound(kVel, {X,Y,Z}, final_base_v_.lin.p());
-    nodes->AddFinalBound(kPos, {X,Y,Z}, final_ee_pos_W);
-    nodes->AddFinalBound(kVel, {X,Y,Z}, desv_final);
+    // bound on the final ee_pos
+//    nodes->AddFinalBound(kPos, {X,Y,Z}, Vector3d(x,y,z));
+
     vars.push_back(nodes);
+
+    n_polys.clear();
+    std::vector<double> poly_durations = nodes->ConvertPhaseToPolyDurations(params_.ee_phase_durations_.at(ee));
   }
 
   return vars;
@@ -403,37 +223,43 @@ NlpFormulation::MakeForceVariables () const
 {
   std::vector<NodesVariablesPhaseBased::Ptr> vars;
 
+  // force is still constant and zero on swing phase!!
+  int force_polynomials_per_swing_phase_ = 1;
+  std::vector<int> n_polys;
+
   double T = params_.GetTotalTime();
   for (int ee=0; ee<params_.GetEECount(); ee++) {
+
+	bool phase_constant = !params_.ee_in_contact_at_start_.at(ee);
+	const std::vector<double> phase_durations = params_.ee_phase_durations_.at(ee);
+	for (auto v : phase_durations) {
+		if (phase_constant) {
+			n_polys.push_back(1);
+		}
+		else {
+			n_polys.push_back(floor(v/params_.dt_drive_constraint_)+1);
+		}
+		phase_constant = !phase_constant;
+	}
+
     auto nodes = std::make_shared<NodesVariablesEEForce>(
                                               params_.GetPhaseCount(ee),
                                               params_.ee_in_contact_at_start_.at(ee),
                                               id::EEForceNodes(ee),
-                                              params_.number_of_polys_per_phase_force_.at(ee));
+											  n_polys);
 
     // initialize with mass of robot distributed equally on all legs
     double m = model_.dynamic_model_->m();
     double g = model_.dynamic_model_->g();
+
+    n_polys.clear();
+    std::vector<double> poly_durations = nodes->ConvertPhaseToPolyDurations(params_.ee_phase_durations_.at(ee));
 
     Vector3d f_stance(0.0, 0.0, m*g/params_.GetEECount());
     nodes->SetByLinearInterpolation(f_stance, f_stance, T); // stay constant
     vars.push_back(nodes);
   }
 
-  return vars;
-}
-
-std::vector<NodesVariablesPhaseBased::Ptr>
-NlpFormulation::MakeDecisionVariables() const {
-  std::vector<NodesVariablesPhaseBased::Ptr> vars;
-
-  for (int ee = 0; ee < params_.GetEECount(); ee++) {
-    auto nodes = std::make_shared<NodesVariablesEEDecision>(
-        params_.GetPhaseCount(ee), params_.ee_in_contact_at_start_.at(ee),
-        id::EEDecision(ee),  params_.number_of_polys_per_phase_decision_.at(ee));
-
-    vars.push_back(nodes);
-  }
   return vars;
 }
 
@@ -478,9 +304,10 @@ NlpFormulation::GetConstraint (Parameters::ConstraintName name,
     case Parameters::Force:                     return MakeForceConstraint();
     case Parameters::Swing:                     return MakeSwingConstraint();
     case Parameters::BaseAcc:                   return MakeBaseAccConstraint(s);
-    case Parameters::WheelsNonHolonomic:	return MakeWheelsNonHolonomicConstraint(s);
-    case Parameters::TerrainDiscretized:        return MakeDiscretizedTerrainConstraint(s);
-    case Parameters::ForceDiscretized:          return MakeDiscretizedForceConstraint(s);
+    case Parameters::BaseAccLimits:  			return MakeBaseAccLimitsConstraint(s);
+    case Parameters::EndeffectorAcc: 			return MakeEENodesAccConstraint(s);
+    case Parameters::EEAccLimits:	 			return MakeEEAccLimitsConstraint(s);
+    case Parameters::WheelsLateralConstraint: 	return MakeWheelsLateralConstraint(s);
     default: throw std::runtime_error("constraint not defined!");
   }
 }
@@ -541,7 +368,7 @@ NlpFormulation::MakeTerrainConstraint () const
   ConstraintPtrVec constraints;
 
   for (int ee=0; ee<params_.GetEECount(); ee++) {
-    auto c = std::make_shared<TerrainConstraint>(terrain_, id::EEMotionNodes(ee));
+	auto c = std::make_shared<TerrainConstraint>(terrain_, id::EEMotionNodes(ee), params_.min_distance_above_terrain_);
     constraints.push_back(c);
   }
 
@@ -581,13 +408,67 @@ NlpFormulation::MakeBaseAccConstraint (const SplineHolder& s) const
 {
   ConstraintPtrVec constraints;
 
+  std::vector<int> dim = {X, Y, Z};
   constraints.push_back(std::make_shared<SplineAccConstraint>
-                        (s.base_linear_, id::base_lin_nodes));
+                        (s.base_linear_, id::base_lin_nodes, dim));
 
-  constraints.push_back(std::make_shared<SplineAccConstraint>
-                        (s.base_angular_, id::base_ang_nodes));
+  constraints.push_back(std::make_shared<SplineAccConstraint>(s.base_angular_, id::base_ang_nodes, dim));
 
   return constraints;
+}
+
+NlpFormulation::ConstraintPtrVec
+NlpFormulation::MakeBaseAccLimitsConstraint(const SplineHolder& s) const
+{
+  std::vector<Vector3d> max_base_acc;
+  max_base_acc.push_back(Vector3d(params_.max_base_acc_lin_.data()));  // linear acc limits
+  max_base_acc.push_back(Vector3d(params_.max_base_acc_ang_.data()));  // angular acc limits
+
+  return {std::make_shared<BaseAccLimitsConstraint>(max_base_acc,
+    											    params_.GetTotalTime(),
+												    params_.dt_constraint_dynamic_, s)};
+}
+
+NlpFormulation::ConstraintPtrVec
+NlpFormulation::MakeEENodesAccConstraint (const SplineHolder& s) const
+{
+  ConstraintPtrVec constraints;
+
+  std::vector<int> dim = {X};
+  for (int ee=0; ee<params_.GetEECount(); ee++) {
+
+//    auto ee_acc = std::make_shared<EEAccConstraint>(s.ee_motion_.at(ee), id::EEMotionNodes(ee), dim);
+    auto ee_acc = std::make_shared<SplineAccConstraint>(s.ee_motion_.at(ee), id::EEMotionNodes(ee), dim);
+
+    constraints.push_back(ee_acc);
+  }
+
+  return constraints;
+}
+
+NlpFormulation::ConstraintPtrVec
+NlpFormulation::MakeEEAccLimitsConstraint (const SplineHolder& s) const
+{
+  ConstraintPtrVec c;
+
+  Vector3d acc_limits (params_.max_wheels_acc_.at(X), params_.max_wheels_acc_.at(Y), params_.max_wheels_acc_.at(Z));
+  for (int ee=0; ee<params_.GetEECount(); ee++) {
+    auto constraint = std::make_shared<EEAccLimitsConstraint>(acc_limits, ee, s);
+    c.push_back(constraint);
+  }
+  return c;
+}
+
+NlpFormulation::ConstraintPtrVec
+NlpFormulation::MakeWheelsLateralConstraint (const SplineHolder& s) const
+{
+  ConstraintPtrVec c;
+
+  for (int ee=0; ee<params_.GetEECount(); ee++) {
+    auto constraint = std::make_shared<WheelsLateralConstraint>(terrain_, ee, s);
+    c.push_back(constraint);
+  }
+  return c;
 }
 
 NlpFormulation::ConstraintPtrVec
@@ -599,47 +480,6 @@ NlpFormulation::GetCosts() const
       costs.push_back(c);
 
   return costs;
-}
-
-NlpFormulation::ConstraintPtrVec
-NlpFormulation::MakeWheelsNonHolonomicConstraint (const SplineHolder& s) const
-{
-  ConstraintPtrVec c;
-
-  for (int ee=0; ee<params_.GetEECount(); ee++) {
-    auto constraint = std::make_shared<WheelsNonHolonomicConstraint>(terrain_, params_.GetTotalTime(),
-                                                                     params_.dt_non_holonomic_, ee, s);
-    c.push_back(constraint);
-  }
-
-  return c;
-}
-
-NlpFormulation::ConstraintPtrVec
-NlpFormulation::MakeDiscretizedForceConstraint(const SplineHolder &s) const {
-  ConstraintPtrVec c;
-
-  for (int ee = 0; ee < params_.GetEECount(); ee++) {
-    auto constraint = std::make_shared<ForceConstraintDiscretized>(
-        terrain_, params_.GetTotalTime(), params_.dt_force_, ee,
-        s, params_.force_limit_in_normal_direction_);
-    c.push_back(constraint);
-  }
-  return c;
-}
-
-NlpFormulation::ConstraintPtrVec
-NlpFormulation::MakeDiscretizedTerrainConstraint(const SplineHolder &s) const {
-  ConstraintPtrVec c;
-
-  for (int ee = 0; ee < params_.GetEECount(); ee++) {
-    auto constraint = std::make_shared<TerrainConstraintDiscretized>(
-        terrain_, params_.GetTotalTime(), params_.dt_terrain_discretized_, ee,
-        s);
-    c.push_back(constraint);
-  }
-
-  return c;
 }
 
 NlpFormulation::CostPtrVec

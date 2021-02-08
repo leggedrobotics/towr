@@ -79,22 +79,13 @@ public:
    */
   enum TerrainID { FlatID,
                    BlockID,
-                   StairsID,
-                   StepFlatID,
+				   BlockRightID,
                    GapID,
-                   SlopeID,
-                   ChimneyID,
-                   ChimneyLRID,
-		   SlopePlatID,
-		   MultipleSlopesID,
-		   StepID,
-		   TwoSlopeID,
-		   TwoStepID,
-		   FiveStepsID,
-		   SineLowFreqID,
-		   SineHighFreqID,
-		   RoughID,
-      RoundStairID,
+                   StepsID,
+//                   StairsID,
+//                   SlopeID,
+//                   ChimneyID,
+//                   ChimneyLRID,
                    TERRAIN_COUNT };
 
   static HeightMap::Ptr MakeTerrain(TerrainID type);
@@ -187,46 +178,28 @@ private:
 
 const static std::map<HeightMap::TerrainID, std::string> terrain_names =
 {
-  {HeightMap::FlatID,         	"Flat"           },
-  {HeightMap::BlockID,        	"Block"          },
-  {HeightMap::StairsID,       	"Stairs"         },
-  {HeightMap::StepFlatID,            "StepFlat"       },
-  {HeightMap::GapID,          	"Gap"            },
-  {HeightMap::SlopeID,        	"Slope"          },
-  {HeightMap::ChimneyID,      	"Chimney"        },
-  {HeightMap::ChimneyLRID,    	"ChimenyLR"      },
-  {HeightMap::SlopePlatID,    	"SlopePlat"      },
-  {HeightMap::MultipleSlopesID, "MultipleSlopes" },
-  {HeightMap::StepID,         	"Step"           },
-  {HeightMap::TwoSlopeID,      	"TwoSlope"       },
-  {HeightMap::TwoStepID,      	"TwoStep"        },
-  {HeightMap::FiveStepsID,      "FiveSteps"      },
-  {HeightMap::SineLowFreqID,  	"SineLowFreq"    },
-  {HeightMap::SineHighFreqID, 	"SineHighFreq"   },
-  {HeightMap::RoughID,        	"Rough"      	 },
-  {HeightMap::RoundStairID,        	"RoundStairID"      	 }
+  {HeightMap::FlatID,        "Flat"       },
+  {HeightMap::BlockID,       "Block"      },
+  {HeightMap::BlockRightID,  "BlockRight" },
+  {HeightMap::GapID,         "Gap"        },
+  {HeightMap::StepsID,         "Steps"        },
+//  {HeightMap::StairsID,      "Stairs"     },
+//  {HeightMap::SlopeID,       "Slope"      },
+//  {HeightMap::ChimneyID,     "Chimney"    },
+//  {HeightMap::ChimneyLRID,   "ChimenyLR"  }
 };
 
 const static std::map<std::string, HeightMap::TerrainID> terrain_ids =
 {
   {"Flat", 			 HeightMap::FlatID         	  },
-  {"Block", 		         HeightMap::BlockID        	  },
-  {"Stairs", 		 HeightMap::StairsID       	  },
-  {"StepFlat",                HeightMap::StepFlatID         },
+  {"Block", 		 HeightMap::BlockID        	  },
+  {"BlockRight", 	 HeightMap::BlockRightID  	  },
   {"Gap", 			 HeightMap::GapID          	  },
-  {"Slope", 		         HeightMap::SlopeID        	  },
-  {"Chimney", 		 HeightMap::ChimneyID      	  },
-  {"ChimenyLR", 	         HeightMap::ChimneyLRID        },
-  {"SlopePlat", 	         HeightMap::SlopePlatID    	  },
-  {"MultipleSlopes",          HeightMap::MultipleSlopesID   },
-  {"Step", 			 HeightMap::StepID         	  },
-  {"TwoSlope", 		 HeightMap::TwoSlopeID        },
-  {"TwoStep", 		 HeightMap::TwoStepID,        },
-  {"FiveSteps", 	         HeightMap::FiveStepsID,      },
-  {"SineLowFreq", 	         HeightMap::SineLowFreqID,    },
-  {"SineHighFreq", 	         HeightMap::SineHighFreqID,   },
-  {"Rough", 		         HeightMap::RoughID,          },
-  {"RoundStairID" ,           HeightMap::RoundStairID	 }
+  {"Steps", 			 HeightMap::StepsID          	  },
+//  {"Stairs", 		 HeightMap::StairsID       	  },
+//  {"Slope", 		 HeightMap::SlopeID        	  },
+//  {"Chimney", 		 HeightMap::ChimneyID      	  },
+//  {"ChimenyLR", 	 HeightMap::ChimneyLRID       },
 };
 
 } /* namespace towr */

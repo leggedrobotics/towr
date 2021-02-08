@@ -49,7 +49,9 @@ private:
 
   GaitInfo GetStrideStand() const;
   GaitInfo GetStrideFlight() const;
+  GaitInfo GetStrideStandFlight() const;
   GaitInfo GetStrideWalk() const;
+  GaitInfo GetStrideWalkTest() const;
   GaitInfo GetStrideWalkOverlap() const;
   GaitInfo GetStrideTrot() const;
   GaitInfo GetStrideTrotFly() const;
@@ -57,10 +59,20 @@ private:
   GaitInfo GetStridePace() const;
   GaitInfo GetStridePaceEnd() const;
   GaitInfo GetStrideBound() const;
+  GaitInfo GetStrideHop() const;
   GaitInfo GetStrideBoundEnd () const;
   GaitInfo GetStrideGallop() const;
   GaitInfo GetStridePronk() const;
   GaitInfo GetStrideLimp() const;
+
+  // specific for wheels
+  GaitInfo GetDriveGait() const;
+  GaitInfo GetGapCrossingGait() const;
+  GaitInfo GetGapHoppingGait() const;
+  GaitInfo GetBlockCrossingGait() const;
+  GaitInfo GetBlockHoppingGait() const;
+  GaitInfo GetBlockRightHoppingGait() const;
+  GaitInfo GetStepsWalkingOverGait() const;
 
   void SetCombo(Combos combo) override;
 
@@ -89,6 +101,7 @@ private:
   ContactState PB_;
   // stance-phase
   ContactState BB_;
+
 };
 
 } /* namespace towr */

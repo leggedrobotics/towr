@@ -29,6 +29,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <towr/initialization/gait_generator.h>
 #include <towr_ros/towr_ros_interface.h>
+#include <xpp_states/convert.h>
+
+#include "yaml_tools/yaml_tools.hpp"
 
 
 namespace towr {
@@ -41,6 +44,24 @@ namespace towr {
  */
 class TowrRosApp : public TowrRosInterface {
 public:
+  using VecTimes = std::vector<double>;
+
+  TowrRosApp (std::string config_file)
+  {
+	config_file_ = config_file;
+  }
+
+  void PrintPhaseDurations(std::vector<VecTimes> phase_durations) const
+  {
+    std::cout << "Initial Phase Durations: \n";
+    for (int ee = 0; ee < phase_durations.size(); ++ee) {
+      std::cout << "EE " << ee << " : ";
+      for (int i = 0; i < phase_durations.at(ee).size(); i++)
+        std::cout << phase_durations.at(ee).at(i) << " ";
+      std::cout << std::endl;
+    }
+  }
+
   /**
    * @brief Sets the feet to nominal position on flat ground and base above.
    */
@@ -64,51 +85,71 @@ public:
   {
     Parameters params;
 
-    // Instead of manually defining the initial durations for each foot and
-    // step, for convenience we use a GaitGenerator with some predefined gaits
-    // for a variety of robots (walk, trot, pace, ...).
-    auto gait_gen_ = GaitGenerator::MakeGaitGenerator(n_ee);
+    yaml_tools::YamlNode basenode = yaml_tools::YamlNode::fromFile(config_file_);
+    if (basenode.isNull())
+    	throw std::runtime_error("CONFIGURATION LOADING FAILED");
+
+    auto terrain_id = static_cast<HeightMap::TerrainID>(msg.terrain);
+    std::string terrain = terrain_names.find(terrain_id)->second;
+    HeightMap::Ptr terrain_ptr=HeightMap::MakeTerrain(terrain_id);
+
+    xpp::Vector3d goal;
+    goal = xpp::Convert::ToXpp(msg.goal_lin.pos);
+    double des_v_x = goal[0]/msg.total_duration;
+
+    // Define gait
     auto id_gait   = static_cast<GaitGenerator::Combos>(msg.gait);
+    auto gait_gen_ = GaitGenerator::MakeGaitGenerator(n_ee, id_gait, des_v_x, terrain_ptr);
     gait_gen_->SetCombo(id_gait);
     for (int ee=0; ee<n_ee; ++ee) {
       params.ee_phase_durations_.push_back(gait_gen_->GetPhaseDurations(msg.total_duration, ee));
       params.ee_in_contact_at_start_.push_back(gait_gen_->IsInContactAtStart(ee));
     }
 
-    params.number_of_polys_per_phase_motion_.clear();
-    params.number_of_polys_per_phase_force_.clear();
-    params.number_of_polys_per_phase_decision_.clear();
+    int n_polys_in_swing_phase = basenode["n_polys_in_swing_phase"].as<int>();
+    params.n_polynomials_per_swing_phase_ = n_polys_in_swing_phase;
+    // These gaits (for floating steps) converge faster for 3 polynomials in swing phase
+    // All the other gaits work well for 2 polynomials in swing phase
+    // (this is optional, you can comment the if bellow to test other number of polynomials)
+    // TODO: include this parameter in the user interface?
+    if (msg.gait == 9 || msg.gait == 11)
+    	params.n_polynomials_per_swing_phase_ = 3;
+    else
+    	params.n_polynomials_per_swing_phase_ = 2;
 
-    for (int ee=0; ee<n_ee; ++ee) {
-      bool contact = gait_gen_->IsInContactAtStart(ee);
-      std::vector<int> temp_motion;
-      std::vector<int> temp_force;
-      std::vector<int> temp_decision;
-      for (auto const &value : params.ee_phase_durations_.at(ee)) {
-        if (contact) {
-          temp_motion.push_back(params.polynomials2_motion_per_stance_phase_);
-          temp_force.push_back(params.polynomials2_force_per_stance_phase_);
-          temp_decision.push_back(params.polynomials2_decision_per_stance_phase_);
-          contact = false;
-        } else {
-          temp_motion.push_back(params.polynomials2_motion_per_swing_phase_);
-          temp_force.push_back(params.polynomials2_force_per_swing_phase_);
-          temp_decision.push_back(params.polynomials2_decision_per_swing_phase_);
-          contact = true;
-        }
-      }
-      params.number_of_polys_per_phase_motion_.push_back(temp_motion);
-      params.number_of_polys_per_phase_force_.push_back(temp_force);
-      params.number_of_polys_per_phase_decision_.push_back(temp_decision);
-    }
-
-    // Here you can also add other constraints or change parameters
-    // params.constraints_.push_back(Parameters::BaseRom);
+    // Print phase durations (optional)
+    PrintPhaseDurations(params.ee_phase_durations_);
 
     // increases optimization time, but sometimes helps find a solution for
     // more difficult terrain.
     if (msg.optimize_phase_durations)
-      params.OptimizePhaseDurations();//does not do anything at the moment. Phase durations are always optimized
+      params.OptimizePhaseDurations();
+
+    bool constrain_final_z_base = basenode["constrain_final_z_base"].as<bool>();
+    if (constrain_final_z_base)
+    {
+    	params.bounds_final_lin_pos_ = {X, Y, Z};
+    }
+
+    // Get parameters specific to that terrain type
+    bool use_non_holonomic_constraint = basenode[terrain]["use_non_holonomic_constraint"].as<bool>();
+    if (use_non_holonomic_constraint)
+  	  params.SetNonHolonomicConstraint();
+
+    params.limit_base_angles_ = false;
+    bool limit_base_angles = basenode[terrain]["limit_base_angles"].as<bool>();
+    if (limit_base_angles)
+  	  params.limit_base_angles_ = true;
+
+    float min_distance_above_terrain = basenode["min_distance_above_terrain"].as<float>();
+    params.min_distance_above_terrain_ = min_distance_above_terrain;
+
+	double max_wheels_acc_z = basenode[terrain]["max_wheels_acc_z"].as<double>();
+	params.max_wheels_acc_.at(Z) = max_wheels_acc_z;
+
+//	    bool constrain_base_acc = basenode[terrain]["constrain_base_acc"].as<bool>();
+//	    if (constrain_base_acc)
+//	  	  params.SetBaseAccLimitsContraint();
 
     return params;
   }
@@ -118,44 +159,37 @@ public:
    */
   void SetIpoptParameters(const TowrCommandMsg& msg) override
   {
-    // the HA-L solvers are alot faster, so consider installing and using
-    solver_->SetOption("linear_solver", "ma57"); // ma27, ma57, mumps
+	yaml_tools::YamlNode basenode = yaml_tools::YamlNode::fromFile(config_file_);
 
-    // Analytically defining the derivatives in IFOPT as we do it, makes the
-    // problem a lot faster. However, if this becomes too difficult, we can also
-    // tell IPOPT to just approximate them using finite differences. However,
-    // this uses numerical derivatives for ALL constraints, there doesn't yet
-    // exist an option to turn on numerical derivatives for only some constraint
-    // sets.
-    solver_->SetOption("jacobian_approximation", "exact"); // finite difference-values
+	if (basenode.isNull())
+	throw std::runtime_error("CONFIGURATION LOADING FAILED");
 
-    // This is a great to test if the analytical derivatives implemented in are
-    // correct. Some derivatives that are correct are still flagged, showing a
-    // deviation of 10e-4, which is fine. What to watch out for is deviations > 10e-2.
-    // solver_->SetOption("derivative_test", "first-order");
+	bool run_derivative_test = basenode["run_derivative_test"].as<bool>();
+	solver_->SetOption("linear_solver", "ma57"); // ma27, ma57, ma77, ma86, ma97
+	solver_->SetOption("jacobian_approximation", "exact"); // "finite difference-values"
+	solver_->SetOption("max_cpu_time", 60.0); // 1 min
+	solver_->SetOption("print_level", 5);
 
-    solver_->SetOption("max_cpu_time", 8000.0);
-    solver_->SetOption("print_level", 5);
+	if (msg.play_initialization)
+	  solver_->SetOption("max_iter", 0);
+	else
+	  solver_->SetOption("max_iter", 3000);
 
-    if (msg.play_initialization)
+    // derivative test
+    if (run_derivative_test) {
       solver_->SetOption("max_iter", 0);
-    else
-      solver_->SetOption("max_iter", 2000);
-
-
-      // derivative test
-    if (true) {
-      // solver_->SetOption("max_iter", 0);
-      // solver_->SetOption("derivative_test", "first-order");
-      // solver_->SetOption("print_level", 4);
-      // solver_->SetOption("derivative_test_tol", 1e-3);
-
-      // solver_->SetOption("derivative_test_perturbation", 1e-4);
-      // solver_->SetOption("derivative_test_perturbation", 1e1);
-
-      // solver_->SetOption("derivative_test_print_all", "yes");
+      solver_->SetOption("derivative_test", "first-order");
+      solver_->SetOption("print_level", 4);
+      solver_->SetOption("derivative_test_tol", 1e-3);
+      //solver_->SetOption("derivative_test_perturbation", 1e-4);
+      //solver_->SetOption("derivative_test_print_all", "yes");
     }
+
   }
+
+protected:
+  std::string config_file_;
+
 };
 
 } // namespace towr
@@ -164,7 +198,9 @@ public:
 int main(int argc, char *argv[])
 {
   ros::init(argc, argv, "my_towr_ros_app");
-  towr::TowrRosApp towr_app;
+
+  std::string config_file = ros::package::getPath("towr_ros") + "/config/parameters.yaml";
+  towr::TowrRosApp towr_app (config_file);
   ros::spin();
 
   return 1;

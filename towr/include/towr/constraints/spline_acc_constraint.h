@@ -47,7 +47,7 @@ namespace towr {
  */
 class SplineAccConstraint : public ifopt::ConstraintSet {
 public:
-  SplineAccConstraint(const NodeSpline::Ptr& spline, std::string name);
+  SplineAccConstraint(const NodeSpline::Ptr& spline, std::string name, const std::vector<int>& dimensions);
   virtual ~SplineAccConstraint() = default;
 
   VectorXd GetValues() const override;
@@ -61,6 +61,8 @@ private:
   int n_junctions_;       ///< number of junctions between polynomials in spline.
   int n_dim_;             ///< dimensions that this polynomial represents (e.g. x,y).
   std::vector<double> T_; ///< Duration of each polynomial in spline.
+
+  std::vector<int> dimensions_;  ///< dimensions that are constrained
 };
 
 } /* namespace towr */

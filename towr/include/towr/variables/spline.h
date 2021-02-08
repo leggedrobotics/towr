@@ -85,6 +85,13 @@ public:
    */
   VecTimes GetPolyDurations() const;
 
+  /**
+   * @param poly_id  Polynomial id, 0 is first polynomial.
+   * @param t_local  Time along the current polynomial.
+   * @returns The global time in the spline..
+   */
+  double GetGlobalTime (int poly_id, double t_local) const;
+
 protected:
   VecPoly cubic_polys_; ///< the sequence of polynomials making up the spline.
 

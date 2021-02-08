@@ -36,35 +36,38 @@ namespace towr {
 
 
 std::vector<NodesVariablesPhaseBased::PolyInfo>
-BuildPolyInfos(int phase_count, bool first_poly_in_contact,
-    std::vector<int> number_of_polys_per_phase) {
+BuildPolyInfos (int phase_count, bool first_phase_constant,
+        		std::vector<int> n_polys_per_phase)
+{
   using PolyInfo = NodesVariablesPhaseBased::PolyInfo;
   std::vector<PolyInfo> polynomial_info;
 
-  bool poly_contact = first_poly_in_contact;
+  bool phase_constant = first_phase_constant;
 
-  for (int i = 0; i < phase_count; ++i) {
-    // last phase is always contact
-    if (poly_contact || i==phase_count-1) {
-      for (int j = 0; j < number_of_polys_per_phase[i]; ++j)
-        polynomial_info.push_back(PolyInfo(i, j, number_of_polys_per_phase[i], true));
-    } else {
-      for (int j = 0; j < number_of_polys_per_phase[i]; ++j)
-        polynomial_info.push_back(PolyInfo(i, j, number_of_polys_per_phase[i], false));
+  for (int i=0; i<phase_count; ++i) {
+    int n_polys = n_polys_per_phase.at(i);
+	if (phase_constant) {
+	  for (int j=0; j<n_polys; ++j)
+	    polynomial_info.push_back(PolyInfo(i,j,n_polys, true, false));
     }
-      poly_contact = !poly_contact; // constant and non-constant phase alternate
+    else {
+      for (int j=0; j<n_polys; ++j)
+        polynomial_info.push_back(PolyInfo(i,j,n_polys, false, false));
+    }
+
+    phase_constant = !phase_constant; // constant and non-constant phase alternate
   }
 
   return polynomial_info;
 }
 
 NodesVariablesPhaseBased::NodesVariablesPhaseBased (int phase_count,
-                                                    bool first_phase_contact,
+                                                    bool first_phase_constant,
                                                     const std::string& name,
-                                                    std::vector<int> number_of_polys_per_phase)
-    :NodesVariables(name)
+													std::vector<int> n_polys_per_phase)
+    : NodesVariables(name)
 {
-  polynomial_info_ = BuildPolyInfos(phase_count, first_phase_contact, number_of_polys_per_phase);
+  polynomial_info_ = BuildPolyInfos(phase_count, first_phase_constant, n_polys_per_phase);
 
   n_dim_ = k3D;
   int n_nodes = polynomial_info_.size()+1;
@@ -92,89 +95,58 @@ NodesVariablesPhaseBased::GetDerivativeOfPolyDurationWrtPhaseDuration (int poly_
 }
 
 int
-NodesVariablesPhaseBased::GetNumberOfPrevPolynomialsInPhase(int poly_id) const
+NodesVariablesPhaseBased::GetNumberOfPrevPolynomialsInPhase (int poly_id) const
 {
   return polynomial_info_.at(poly_id).poly_in_phase_;
 }
 
 bool
-NodesVariablesPhaseBased::IsContactNode (int node_id) const
+NodesVariablesPhaseBased::IsConstantNode (int node_id) const
 {
-  bool is_contact = false;
+  bool is_constant = false;
 
   // node is considered constant if either left or right polynomial
   // belongs to a constant phase
   for (int poly_id : GetAdjacentPolyIds(node_id))
-    if (IsInContactPhase(poly_id))
-      is_contact = true;
+    if (IsInConstantPhase(poly_id))
+      is_constant = true;
 
-  return is_contact;
+  return is_constant;
 }
 
 bool
-NodesVariablesPhaseBased::IsSwingNode(int node_id) const
+NodesVariablesPhaseBased::AdjacentPolyIdsConstant (int node_id) const
 {
-  bool is_contact = true;
+  bool is_constant = true;
 
-  // node is considered constant if either left or right polynomial
+  // node is considered constant if left AND right polynomial
   // belongs to a constant phase
-  for (int poly_id : GetAdjacentPolyIds(node_id))
-    if (!IsInContactPhase(poly_id))
-      is_contact = false;
+  std::vector<int> polys = GetAdjacentPolyIds(node_id);
+  if (polys.size() > 1) {
+    for (int poly_id : polys) {
+	  is_constant = is_constant & IsInConstantPhase(poly_id);
+    }
+  }
+  else
+	  is_constant = false;
 
-  return !is_contact;
+  return is_constant;
 }
 
 bool
-NodesVariablesPhaseBased::IsInContactPhase(int poly_id) const
+NodesVariablesPhaseBased::IsInConstantPhase(int poly_id) const
 {
-  return polynomial_info_.at(poly_id).is_contact_;
+  return polynomial_info_.at(poly_id).is_constant_;
 }
 
 NodesVariablesPhaseBased::NodeIds
-NodesVariablesPhaseBased::GetIndicesOfNonContactNodes() const
+NodesVariablesPhaseBased::GetIndicesOfNonConstantNodes() const
 {
   NodeIds node_ids;
 
   for (int id=0; id<GetNodes().size(); ++id)
-    if (!IsContactNode(id))
+    if (!IsConstantNode(id))
       node_ids.push_back(id);
-
-  return node_ids;
-}
-
-NodesVariablesPhaseBased::NodeIds
-NodesVariablesPhaseBased::GetIndicesOfContactNodes() const
-{
-  NodeIds node_ids;
-
-  for (int id=0; id<GetNodes().size(); ++id){
-    if (IsContactNode(id))
-      node_ids.push_back(id);}
-
-  return node_ids;
-}
-
-NodesVariablesPhaseBased::NodeIds
-NodesVariablesPhaseBased::GetIndicesOfNonSwingNodes() const
-{
-  NodeIds node_ids;
-
-  for (int id=0; id<GetNodes().size(); ++id){
-    if (!IsSwingNode(id))
-      node_ids.push_back(id);}
-
-  return node_ids;
-}
-
-NodesVariablesPhaseBased::NodeIds
-NodesVariablesPhaseBased::GetIndicesOfSwingNodes() const
-{
-  NodeIds node_ids;
-
-  for (int id=0; id<GetNodes().size(); ++id){
-    if (IsSwingNode(id))
-      node_ids.push_back(id);}
 
   return node_ids;
 }
@@ -182,7 +154,7 @@ NodesVariablesPhaseBased::GetIndicesOfSwingNodes() const
 int
 NodesVariablesPhaseBased::GetPhase (int node_id) const
 {
-  //assert(!IsConstantNode(node_id)); // because otherwise it has two phases
+//  assert(!IsConstantNode(node_id)); // because otherwise it has two phases
 
   int poly_id = GetAdjacentPolyIds(node_id).front();
   return polynomial_info_.at(poly_id).phase_;
@@ -230,11 +202,12 @@ NodesVariablesPhaseBased::GetAdjacentPolyIds (int node_id) const
 }
 
 NodesVariablesPhaseBased::PolyInfo::PolyInfo(int phase, int poly_id_in_phase,
-                               int num_polys_in_phase, bool is_contact)
+                               int num_polys_in_phase, bool is_constant, bool is_driving)
     :phase_(phase),
      poly_in_phase_(poly_id_in_phase),
      n_polys_in_phase_(num_polys_in_phase),
-     is_contact_(is_contact)
+     is_constant_(is_constant),
+	 is_driving_(is_driving)
 {
 }
 
@@ -245,15 +218,33 @@ NodesVariablesPhaseBased::SetNumberOfVariables(int n_variables)
   SetRows(n_variables);
 }
 
+void
+NodesVariablesPhaseBased::PrintOptIdxMap ()
+{
+  for(auto it = index_to_node_value_info_.cbegin(); it != index_to_node_value_info_.cend(); ++it)
+  {
+	  std::cout << it->first << ": ";
+	  auto nodes = it->second;
+	  for(auto nvi : nodes) {
+		  std::cout << "node " << nvi.id_ << ", dim: " << (char)(88+nvi.dim_) << ", deriv: " << nvi.deriv_;
+		  std::cout << ", IsConstantNode? " << IsConstantNode(nvi.id_) << std::endl;
+	  }
+  }
+}
+
 NodesVariablesEEMotion::NodesVariablesEEMotion(int phase_count,
                                                bool is_in_contact_at_start,
                                                const std::string& name,
-                                               std::vector<int> number_of_polys_per_phase)
+											   std::vector<int> n_polys_per_phase,
+											   bool y_lateral_constraint)
     :NodesVariablesPhaseBased(phase_count,
-                              is_in_contact_at_start, // contact phase for motion is constant
-                              name,
-                              number_of_polys_per_phase) {
+                              is_in_contact_at_start,
+                              name, n_polys_per_phase)
+{
+  y_lateral_constraint_ = y_lateral_constraint;
+
   index_to_node_value_info_ = GetPhaseBasedEEParameterization();
+//  PrintOptIdxMap();
   SetNumberOfVariables(index_to_node_value_info_.size());
 }
 
@@ -264,11 +255,41 @@ NodesVariablesEEMotion::GetPhaseBasedEEParameterization ()
 
   int idx = 0; // index in variables set
   for (int node_id=0; node_id<nodes_.size(); ++node_id) {
+    // swing node:
+    if (!IsConstantNode(node_id)) {
       for (int dim=0; dim<GetDim(); ++dim) {
-        // ee position trajectories are fully optimized
+        // both position and velocity is optimized during swing phase
         index_map[idx++].push_back(NodeValueInfo(node_id, kPos, dim));
         index_map[idx++].push_back(NodeValueInfo(node_id, kVel, dim));
       }
+    }
+    // stance node
+    else {
+      // both position and velocity is optimized during stance phase (hybrid motion)
+      int phase = GetPhase(node_id);
+      bool is_first_node_in_phase = (node_id == GetNodeIDAtStartOfPhase(phase));
+
+      for (int dim=0; dim<GetDim(); ++dim) {
+        index_map[idx++].push_back(NodeValueInfo(node_id, kPos, dim));
+
+		if (dim == Y) {
+			if (y_lateral_constraint_) { // otherwise non-holonomic constraint will take care of this!
+				nodes_.at(node_id).at(kVel).y() = 0.0;
+			}
+//			else
+//				index_map[idx++].push_back(NodeValueInfo(node_id, kVel, dim));
+		}
+		else if (dim == Z) {
+        	if (is_first_node_in_phase)
+        		nodes_.at(node_id).at(kVel).z() = 0.0;
+        }
+        else {
+          // wheel is allowed to move during stance!!
+		  index_map[idx++].push_back(NodeValueInfo(node_id, kVel, dim));
+        }
+
+      }
+    }
   }
 
   return index_map;
@@ -277,12 +298,13 @@ NodesVariablesEEMotion::GetPhaseBasedEEParameterization ()
 NodesVariablesEEForce::NodesVariablesEEForce(int phase_count,
                                               bool is_in_contact_at_start,
                                               const std::string& name,
-                                             std::vector<int> number_of_polys_per_phase)
+											  std::vector<int> n_polys_per_phase)
     :NodesVariablesPhaseBased(phase_count,
-                              is_in_contact_at_start,
-                              name,
-                              number_of_polys_per_phase) {
+                              !is_in_contact_at_start, // contact phase for force is non-constant
+                              name, n_polys_per_phase)
+{
   index_to_node_value_info_ = GetPhaseBasedEEParameterization();
+//  PrintOptIdxMap ();
   SetNumberOfVariables(index_to_node_value_info_.size());
 }
 
@@ -293,54 +315,17 @@ NodesVariablesEEForce::GetPhaseBasedEEParameterization ()
 
   int idx = 0; // index in variables set
   for (int id=0; id<nodes_.size(); ++id) {
-    // stance node:
-    // forces can be created during stance, so these nodes are optimized over.
-    if (!IsSwingNode(id)) {
+    // stance node: forces can be created during stance, so these nodes are optimized over.
+    if (!IsConstantNode(id)) {
       for (int dim=0; dim<GetDim(); ++dim) {
         index_map[idx++].push_back(NodeValueInfo(id, kPos, dim));
         index_map[idx++].push_back(NodeValueInfo(id, kVel, dim));
       }
     }
-    // swing node (next one will also be swing, so handle that one too)
+    // swing node
     else {
       // forces can't exist during swing phase, so no need to be optimized
       // -> all node values simply set to zero.
-      nodes_.at(id).at(kPos).setZero();
-
-      nodes_.at(id).at(kVel).setZero();
-    }
-  }
-  return index_map;
-}
-
-NodesVariablesEEDecision::NodesVariablesEEDecision(int phase_count,
-                                                   bool is_in_contact_at_start,
-                                                   const std::string& name,
-                                                   std::vector<int> number_of_polys_per_phase)
-    :NodesVariablesPhaseBased(phase_count,
-                              is_in_contact_at_start,
-                              name,
-                              number_of_polys_per_phase) {
-  index_to_node_value_info_ = GetPhaseBasedEEParameterization();
-  SetNumberOfVariables(index_to_node_value_info_.size());
-}
-
-NodesVariablesEEDecision::OptIndexMap
-NodesVariablesEEDecision::GetPhaseBasedEEParameterization() {
-  OptIndexMap index_map;
-  int idx = 0; // index in variables set
-  for (int id = 0; id < nodes_.size(); ++id) {
-    // stance node:
-    // set contact state to one
-    if (IsContactNode(id)) {
-      for (int dim = 0; dim < GetDim(); ++dim) {
-        nodes_.at(id).at(kPos).setOnes();
-        nodes_.at(id).at(kVel).setZero();
-      }
-    }
-    // stance node:
-    // set contact state to zero
-    else {
       nodes_.at(id).at(kPos).setZero();
       nodes_.at(id).at(kVel).setZero();
     }

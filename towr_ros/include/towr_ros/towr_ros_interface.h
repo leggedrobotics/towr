@@ -100,7 +100,6 @@ private:
   void UserCommandCallback(const TowrCommandMsg& msg);
   XppVec GetTrajectory() const;
   virtual BaseState GetGoalState(const TowrCommandMsg& msg) const;
-  virtual BaseState GetGoalStatev(const TowrCommandMsg& msg) const;
   void PublishInitialState();
   std::vector<XppVec>GetIntermediateSolutions();
   xpp_msgs::RobotParameters BuildRobotParametersMsg(const RobotModel& model) const;
@@ -109,6 +108,11 @@ private:
                                 const TowrCommandMsg user_command_msg,
                                 bool include_iterations=false);
   void SaveTrajectoryInRosbag (rosbag::Bag&,
+                               const std::vector<xpp::RobotStateCartesian>& traj,
+                               const std::string& topic) const;
+
+  // trajectory for anymal_wheels_ctrl_track controller
+  void SaveTrajectoryAsRosbag (const std::string& bag_name,
                                const std::vector<xpp::RobotStateCartesian>& traj,
                                const std::string& topic) const;
 };

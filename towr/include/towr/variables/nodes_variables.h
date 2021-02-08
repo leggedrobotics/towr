@@ -214,7 +214,8 @@ public:
                              const VectorXd& offset_full,
                              HeightMap::Ptr  terrain,
                              double angle_init,
-                             bool incontact_start);
+                             bool incontact_start,
+                             HeightMap::TerrainID terrainID);
 
   /**
    * @brief Sets nodes for the base position andvance. follows curve.
@@ -236,7 +237,9 @@ public:
                                double des_w,
                                double des_vx,
                                double des_vy,
-                               double angle_init);
+                               double angle_init,
+                               HeightMap::Ptr  terrain,
+                               HeightMap::TerrainID terrainID);
 
   /**
    * @brief Restricts the first node in the spline.
@@ -255,6 +258,16 @@ public:
    */
   void AddFinalBound(Dx deriv, const std::vector<int>& dimensions,
                      const VectorXd& val);
+
+  /**
+   * @brief Restricts all nodes in the spline.
+   * @param deriv Which derivative (pos,vel,...) should be restricted.
+   * @param dimensions Which dimensions (x,y,z) should be restricted.
+   * @param val_min The minimum value the bounds should be set to.
+   * @param val_max The maximum value the bounds should be set to.
+   */
+  void AddAllNodesBounds (Dx d, const std::vector<int>& dimensions,
+		  	  	  	  	  const VectorXd& val_min, const VectorXd& val_max);
 
 protected:
   /**

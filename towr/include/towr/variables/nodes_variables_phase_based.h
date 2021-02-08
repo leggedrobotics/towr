@@ -58,9 +58,10 @@ namespace towr {
  */
 class NodesVariablesPhaseBased : public NodesVariables {
 public:
-  using Ptr         = std::shared_ptr<NodesVariablesPhaseBased>;
-  using NodeIds     = std::vector<int>;
-  using OptIndexMap = std::map<int, std::vector<NodeValueInfo> >;
+  using Ptr           = std::shared_ptr<NodesVariablesPhaseBased>;
+  using NodeIds       = std::vector<int>;
+  using OptIndexMap   = std::map<int, std::vector<NodeValueInfo> >;
+  using VecDurations  = std::vector<double>;
 
   /**
    * @brief Holds semantic information each polynomial in spline.
@@ -69,24 +70,25 @@ public:
     int phase_; ///< The phase ID this polynomial represents.
     int poly_in_phase_; ///< is this the 1st, 2nd, ... polynomial or this phase.
     int n_polys_in_phase_; ///< the number of polynomials used for this phase.
-    bool is_contact_; ///< Does this polynomial represent a contact phase.
-    PolyInfo(int phase, int poly_in_phase, int n_polys_in_phase, bool is_contact);
+    bool is_constant_; ///< Does this polynomial represent a constant phase.
+    bool is_driving_;  // does this polynomial represent a driving phase or a still contact phase.
+    PolyInfo(int phase, int poly_in_phase, int n_polys_in_phase, bool is_const, bool is_drive);
   };
 
   /**
    * @brief Constructs a variable set of node variables.
    * @param phase_count  The number of phases (swing, stance) to represent.
-   * @param first_phase_contact  Whether first node belongs to a contact phase.
+   * @param first_phase_constant  Whether first node belongs to a constant phase.
    * @param var_name  The name given to this set of optimization variables.
-   * @param n_polys_in_contact  How many polynomials should be used to
-   *                                   paramerize each contact phase.
-   * @param n_polys_in_air  How many polynomials should be used to
-   *                                   paramerize each swing phase.
+   * @param n_polys_in_changing_phase  How many polynomials should be used to
+   *                                   paramerize each non-constant phase.
    */
   NodesVariablesPhaseBased (int phase_count,
-                            bool first_phase_contact,
+                            bool first_phase_constant,
                             const std::string& var_name,
-                            std::vector<int> number_of_polys_per_phase);
+							std::vector<int> n_polys_per_phase);
+//	                        int n_polys_in_swing_phase,
+//							int n_polys_in_stance_phase);
 
   virtual ~NodesVariablesPhaseBased() = default;
 
@@ -108,42 +110,20 @@ public:
   int GetPhase(int node_id) const;
 
   /**
-   * @brief node is contact if either left or right polynomial belongs to a
-   * contact phase.
-   * @note a node can be both contact and swing node if it is on the border
+   * @brief node is constant if either left or right polynomial belongs to a
+   * constant phase.
    */
-  virtual bool IsContactNode(int node_id) const;
+  virtual bool IsConstantNode(int node_id) const;
+
+  bool AdjacentPolyIdsConstant (int node_id) const;
 
   /**
-   * @brief node is swing if either left or right polynomial belongs to a
-   * swing phase.
-   * @note a node can be both contact and swing node if it is on the border
+   * @brief The indices of those nodes that don't belong to a constant phase.
+   *
+   * For forces nodes these are the stance phases (can produce force), and for
+   * feet these are the swing phases (can move end-effector).
    */
-  virtual bool IsSwingNode(int node_id) const;
-
-  /**
-   * @brief The indices of those nodes that don't belong to a contact phase.
-   * @note a node can be both contact and swing node if it is on the border
-   */
-  NodeIds GetIndicesOfNonContactNodes() const;
-
-  /**
-   * @brief The indices of those nodes that do belong to a contact phase.
-   * @note a node can be both contact and swing node if it is on the border
-   */
-  NodeIds GetIndicesOfContactNodes() const;
-
-  /**
-   * @brief The indices of those nodes that don't belong to a swing phase.
-   * @note a node can be both contact and swing node if it is on the border
-   */
-  NodeIds GetIndicesOfNonSwingNodes() const;
-
-  /**
-   * @brief The indices of those nodes that do belong to a swing phase.
-   * @note a node can be both contact and swing node if it is on the border
-   */
-  NodeIds GetIndicesOfSwingNodes() const;
+  NodeIds GetIndicesOfNonConstantNodes() const;
 
   /**
    * @brief Converts durations of swing and stance phases to polynomial durations.
@@ -177,10 +157,10 @@ public:
   GetNumberOfPrevPolynomialsInPhase(int polynomial_id) const;
 
   /**
-   * @brief Is the polynomial representing a contact.
+   * @brief Is the polynomial constant, so not changing the value.
    * @param polynomial_id The ID of the polynomial within the spline.
    */
-  virtual bool IsInContactPhase(int polynomial_id) const;
+  virtual bool IsInConstantPhase(int polynomial_id) const;
 
 protected:
   /**
@@ -196,6 +176,8 @@ protected:
   }
 
   void SetNumberOfVariables(int n_variables);
+
+  void PrintOptIdxMap ();
 
 private:
   /** @brief semantic information associated with each polynomial */
@@ -216,12 +198,17 @@ private:
  */
 class NodesVariablesEEMotion : public NodesVariablesPhaseBased {
 public:
-  NodesVariablesEEMotion(int phase_count,
-                         bool is_in_contact_at_start,
-                         const std::string& name,
-                         std::vector<int> number_of_polys_per_phase);
+  NodesVariablesEEMotion (int phase_count,
+	                      bool is_in_contact_at_start,
+	                      const std::string& name,
+						  std::vector<int> n_polys_per_phase,
+						  bool y_lateral_constraint);
   virtual ~NodesVariablesEEMotion() = default;
   OptIndexMap GetPhaseBasedEEParameterization ();
+
+private:
+  bool y_lateral_constraint_ = false;
+
 };
 
 
@@ -232,28 +219,11 @@ public:
  */
 class NodesVariablesEEForce : public NodesVariablesPhaseBased {
 public:
-  NodesVariablesEEForce(int phase_count,
-                        bool is_in_contact_at_start,
-                        const std::string& name,
-                        std::vector<int> number_of_polys_per_phase);
+  NodesVariablesEEForce (int phase_count,
+						 bool first_phase_constant,
+						 const std::string& var_name,
+					     std::vector<int> n_polys_per_phase);
   virtual ~NodesVariablesEEForce() = default;
-  OptIndexMap GetPhaseBasedEEParameterization ();
-};
-
-
-/**
- * @brief Variables fully defining the endeffector contact state scalarly.
- * implemented as 3d vector to use existing structure. All components should be
- * exaclty equal. They are not optimized so no aditional burden for solver.
- *
- * @ingroup Variables
- */
-class NodesVariablesEEDecision : public NodesVariablesPhaseBased {
-public:
-  NodesVariablesEEDecision(int phase_count,
-                           bool is_in_contact_at_start,
-                           const std::string& name, std::vector<int> number_of_polys_per_phase);
-  virtual ~NodesVariablesEEDecision() = default;
   OptIndexMap GetPhaseBasedEEParameterization ();
 };
 

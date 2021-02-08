@@ -40,48 +40,42 @@ namespace towr {
 Parameters::Parameters ()
 {
   // constructs optimization variables
-  duration_base_polynomial_ = 0.1; //0.1
-  polynomials2_force_per_stance_phase_ = 3;
-  polynomials2_force_per_swing_phase_ = 1; // so step can at least lift leg
-  polynomials2_motion_per_stance_phase_ = 3;
-  polynomials2_motion_per_swing_phase_ = 2; // so step can at least lift leg
-  polynomials2_decision_per_stance_phase_ = 7;
-  polynomials2_decision_per_swing_phase_ = 7; // so step can at least lift leg
+  duration_base_polynomial_ = 0.1;
+  n_polynomials_per_swing_phase_ = 2; // so step can at least lift leg
+  min_distance_above_terrain_ = 0.0;  // default is zero, unless set in the config file
 
   // parameters related to specific constraints (only used when it is added as well)
-  force_limit_in_normal_direction_ = 200;//1000   good:130  soft:80
-
-  dt_constraint_range_of_motion_ = 0.01;//0.01
-  dt_constraint_dynamic_ = 0.1;//0.1
-  dt_non_holonomic_ = 0.01;//0.01
-  dt_force_ = 0.01;//0.03,0.01
-  dt_terrain_discretized_=0.01;//0.01
-
+  force_limit_in_normal_direction_ = 1000;
+  dt_constraint_range_of_motion_ = 0.1;
+  dt_drive_constraint_ = 0.1;
+  dt_constraint_dynamic_ = 0.1;
   dt_constraint_base_motion_ = duration_base_polynomial_/4.; // only for base RoM constraint
-  bound_phase_duration_ = std::make_pair(0.15, 10.0);  // used only when optimizing phase durations, so gait (putting minimum to low -> spikey,
-  // putting to high->problem with initialisation (when initialisation is lower then minimum)
+  bound_phase_duration_ = std::make_pair(0.2, 1.0);  // used only when optimizing phase durations, so gait
 
-  motion_stance_nodes_per_s = 3;
-  force_stance_nodes_per_s = 3;
-  decision_stance_nodes_per_s = 10;
+  // maximum acceleration for smooth motions
+  max_base_acc_lin_ = {10.0, 10.0, 10.0};
+  max_base_acc_ang_ = {10.0, 10.0, 10.0};
+  max_wheels_acc_ = {20.0, 0.0, 40.0};
 
-  constraints_.clear();
-  constraints_.push_back(ForceDiscretized);//Make sure EE above terrain always
-  constraints_.push_back(WheelsNonHolonomic);//Make sure the wheels move only how they should
-  constraints_.push_back(TerrainDiscretized);//Make sure EE above terrain always
+  DeleteAllConstraints();
+
+  // a minimal set of basic constraints
+  constraints_.push_back(Terrain);
   constraints_.push_back(Dynamic); //Ensures that the dynamic model is fullfilled at discrete times.
   constraints_.push_back(BaseAcc); // so accelerations don't jump between polynomials
   constraints_.push_back(EndeffectorRom); //Ensures that the range of motion is respected at discrete times.
-
-  constraints_.push_back(TotalTime);//optimize timings
+  constraints_.push_back(Force); // ensures unilateral forces and inside the friction cone.
+//  constraints_.push_back(Swing); // creates smoother swing motions, not absolutely required.
+  constraints_.push_back(EEAccLimits); // ensures maximum acc on the ee motions
+  constraints_.push_back(EndeffectorAcc); // so accelerations don't jump between polynomials
 
   // optional costs to e.g penalize endeffector forces
-  // costs_.push_back({ForcesCostID, 1.0}); weighed by 1.0 relative to other costs
+  //costs_.push_back({EEMotionCostID, 1.0}); //weighed by 1.0 relative to other costs
 
   // bounds on final 6DoF base state
   bounds_final_lin_pos_ = {X,Y};
   bounds_final_lin_vel_ = {X,Y,Z};
-  bounds_final_ang_pos_ = {X,Y,Z};
+  bounds_final_ang_pos_ = {Y,Z};
   bounds_final_ang_vel_ = {X,Y,Z};
 
   // additional restrictions are set directly on the variables in nlp_factory,
@@ -89,10 +83,20 @@ Parameters::Parameters ()
 }
 
 void
+Parameters::SetBaseAccLimitsContraint () {
+  constraints_.push_back(BaseAccLimits);
+}
 
+void
+Parameters::SetNonHolonomicConstraint () {
+  constraints_.push_back(WheelsLateralConstraint);
+  use_non_holonomic_constraint_ = true;
+}
+
+void
 Parameters::OptimizePhaseDurations ()
 {
-  //constraints_.push_back(TotalTime); already above
+  constraints_.push_back(TotalTime);
 }
 
 Parameters::VecTimes
@@ -148,6 +152,12 @@ Parameters::IsOptimizeTimings () const
   ConstraintName c = TotalTime;
   auto v = constraints_; // shorthand
   return std::find(v.begin(), v.end(), c) != v.end();
+}
+
+void
+Parameters::DeleteAllConstraints()
+{
+  constraints_.clear();
 }
 
 } // namespace towr

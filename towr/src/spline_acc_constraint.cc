@@ -29,26 +29,35 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <towr/constraints/spline_acc_constraint.h>
 
+#include <towr/variables/variable_names.h>
+
+#include <iostream>
+
 namespace towr {
 
 SplineAccConstraint::SplineAccConstraint (const NodeSpline::Ptr& spline,
-                                          std::string node_variable_name)
+                                          std::string node_variable_name,
+										  const std::vector<int>& dimensions)
     :ConstraintSet(kSpecifyLater, "splineacc-" + node_variable_name)
 {
   spline_ = spline;
   node_variables_id_ = node_variable_name;
 
-  n_dim_       = spline->GetPoint(0.0).p().rows();
+  dimensions_  = dimensions;
+  n_dim_       = dimensions.size();
   n_junctions_ = spline->GetPolynomialCount() - 1;
   T_           = spline->GetPolyDurations();
 
   SetRows(n_dim_*n_junctions_);
+
 }
 
 Eigen::VectorXd
 SplineAccConstraint::GetValues () const
 {
   VectorXd g(GetRows());
+
+  int row = 0;
 
   for (int j=0; j<n_junctions_; ++j) {
     int p_prev = j; // id of previous polynomial
@@ -57,7 +66,8 @@ SplineAccConstraint::GetValues () const
     int p_next = j+1;
     VectorXd acc_next = spline_->GetPoint(p_next, 0.0).a();
 
-    g.segment(j*n_dim_, n_dim_) = acc_prev - acc_next;
+    for (auto dim : dimensions_)
+    	g(row++) = acc_prev(dim) - acc_next(dim);
   }
 
   return g;
@@ -67,6 +77,7 @@ void
 SplineAccConstraint::FillJacobianBlock (std::string var_set, Jacobian& jac) const
 {
   if (var_set == node_variables_id_) {
+	int row = 0;
     for (int j=0; j<n_junctions_; ++j) {
       int p_prev = j; // id of previous polynomial
       Jacobian acc_prev = spline_->GetJacobianWrtNodes(p_prev, T_.at(p_prev), kAcc);
@@ -74,7 +85,8 @@ SplineAccConstraint::FillJacobianBlock (std::string var_set, Jacobian& jac) cons
       int p_next = j+1;
       Jacobian acc_next = spline_->GetJacobianWrtNodes(p_next, 0.0, kAcc);
 
-      jac.middleRows(j*n_dim_, n_dim_) = acc_prev - acc_next;
+      for (auto dim : dimensions_)
+      	jac.row(row++) = acc_prev.row(dim) - acc_next.row(dim);
     }
   }
 }
